@@ -4,7 +4,7 @@ Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that
 
 **Topics**
 
-| Topics                        | Categories                                                                      |
+| Topic                         | Categories                                                                      |
 | :---------------------------- | :------------------------------------------------------------------------------ |
 | [Use](#use)                   | [Types](#types), [YML](#yml), [Command Line](#command-line), [Output](#output)  |
 | [Matcher](#matcher)           | [Convert](#convert)                                                             |
