@@ -1,0 +1,43 @@
+# Define where the code will be generated.
+generated:
+  name: ./copygen.go
+  package: copygen
+
+# Define the imports that are included in the generated file.
+import:
+  - github.com/switchupcb/copygen/domain
+  - github.com/switchupcb/copygen/models
+  - github.com/switchupcb/copygen/converter
+
+# Define the function(s) to be generated.
+# Properties with `# default` are NOT necessary to include.
+function:
+  name: ModelsToDomain
+
+  # Define the types to be copied (to and from).
+  # Note: Type-properties (i.e 'struct') can have any name.
+  types:
+    to:
+      struct: Account
+        filename: ./domain/domain.go
+        error:    true        # default: false 
+        pointer:  true        # default: false  (Optimization)
+        deepcopy: false       # default: false  (Optimization)
+       
+    from:
+      struct: User
+        filename: ./models/model.go
+
+        # Match fields to the to-type.
+        fields:
+          ID:
+            to: UserID
+            convert: c.Itoa   # default: none  (Matcher)
+
+      struct: Account
+        filename: ./models/model.go
+        fields:
+          ID:
+            to: ID
+          Name:
+            to: Name

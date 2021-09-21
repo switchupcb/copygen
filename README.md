@@ -10,40 +10,64 @@ Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that
 
 ## Use
 
-This example uses two type-structs (`INSERT NAME` and `INSERT NAME 2`) to generate the `ModelsToDomain()` function.
+This [example](https://github.com/switchupcb/copygen/blob/main/example) uses three type-structs to generate the `ModelsToDomain()` function. All paths are specified from the `types.yml` file path in `examples`.
 
-### Structs
+### Types
 
-`path/to/domain`
+`./domain/domain.go`
 
 ```go
+// The domain package contains business logic models.
 package domain
-// INSERT STRUCT CODE
+
+// Account represents a user account.
+type Account struct {
+	ID     int
+	UserID string
+	Name   string
+	Other  string // The other field is not used.
+}
 ```
 
-`path/to/models`
+`./models/model.go`
+
 ```go
+// The models package contains data storage models (i.e database).
 package models
-// INSERT STRUCT CODE
+
+// Account represents the data model for account.
+type Account struct {
+	ID       int
+	Name     string
+	Password string
+	Email    string
+}
+
+// A user represents the data model for a user.
+type User struct {
+	ID       int
+	Name     int
+	UserData string
+}
 ```
 
 ### YML
 
 A YML file is used to configure the code that is generated.
 
-**struct.yml**
+**types.yml**
 
 ```yml
 # Define where the code will be generated.
 generated:
-  name: INSERT EXAMPLE COPYGEN PATH
+  name: ./copygen.go
   package: copygen
 
 # Define the imports that are included in the generated file.
 import:
-  - INSERT EXAMPLE DOMAIN PACKAGE
-  - INSERT EXAMPLE MODEL PACKAGE
-  - INSERT EXAMPLE CONVERTER PACKAGE c
+  - github.com/switchupcb/copygen/domain
+  - github.com/switchupcb/copygen/models
+  - github.com/switchupcb/copygen/converter
 
 # Define the function(s) to be generated.
 # Properties with `# default` are NOT necessary to include.
@@ -54,32 +78,32 @@ function:
   # Note: Type-properties (i.e 'struct') can have any name.
   types:
     to:
-      struct: INSERT DOMAIN
-        filename: INSERT PATH TO DOMAIN
+      struct: Account
+        filename: ./domain/domain.go
+        error:    true        # default: false 
         pointer:  true        # default: false  (Optimization)
         deepcopy: false       # default: false  (Optimization)
        
     from:
-      struct: INSERT MODEL
-        filename: INSERT PATH TO MODEL
+      struct: User
+        filename: ./models/model.go
 
         # Match fields to the to-type.
         fields:
-          INSERT EXAMPLE FIELD:
-            to: INSERT RESPECTIVE TO-FIELD
-            convert: c.itoa   # default: none  (Matcher)
-          INSERT EXAMPLE FIELD2:
-            to: INSERT RESPECTIVE TO-FIELD.
-            convert: new
+          ID:
+            to: UserID
+            convert: c.Itoa   # default: none  (Matcher)
 
-      struct: INSERT MODEL2
-        filename: INSERT PATH TO MODEL2
+      struct: Account
+        filename: ./models/model.go
         fields:
-          INSERT EXAMPLE FIELD:
-            to: INSERT RESPECTIVE TO-FIELD
+          ID:
+            to: ID
+          Name:
+            to: Name
 ```
 
-_See [Optimization]() or [Matcher]() for information on respective properties._
+_See [Optimization](https://github.com/switchupcb/copygen#Optimization) or [Matcher](https://github.com/switchupcb/copygen#matcher) for information on respective properties._
 
 ### Command Line
 
@@ -96,15 +120,29 @@ Run with given options.
 copygen -yml path/to/yml
 ```
 
+_The path to the YML file is specified in reference to the current working directory._
+
 ### Output
 
-This will output a `copygen.go` file _(defined in the .yml above)_ with the specified functions.
+This example outputs a `copygen.go` file with the specified imports and functions.
 
 ```go
-// INSERT OUTPUT RESULT
-```
+package copygen
 
- View the [example]() or [tests]().
+import (
+	"github.com/switchupcb/copygen/example/converter"
+	"github.com/switchupcb/copygen/example/domain"
+	"github.com/switchupcb/copygen/example/models"
+)
+
+// ModelsToDomain copies fields from a models User and models Account to a domain Account.
+func ModelsToDomain(tA *domain.Account, fU models.User, fA models.Account) error {
+	tA.UserID = c.Itoa(fU.ID)
+	tA.ID = fA.ID
+	tA.Name = fA.Name
+	return nil
+}
+```
 
 ## Matcher
 
