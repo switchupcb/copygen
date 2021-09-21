@@ -2,6 +2,14 @@
 
 Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that uses [Jennifer](https://github.com/dave/jennifer) in order to generate type-to-type and field-to-field struct code without reflection.
 
+**Topics**
+
+| Topics                        | Categories                                                                      |
+| :---------------------------- | :------------------------------------------------------------------------------ |
+| [Use](#use)                   | [Types](#types), [YML](#yml), [Command Line](#command-line), [Output](#output)  |
+| [Matcher](#matcher)           | [Convert](#convert)                                                             |
+| [Optimization](#optimization) | [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy), [Pointers](#pointers) |
+
 ## Benchmark
 
 **The benefit to using Copygen is performance**: A benchmark by [gotidy/copy](https://github.com/gotidy/copy#benchmark) shows that a manual copy is **391x faster** than [jinzhu/copier](https://github.com/jinzhu/copier) and **3.97x faster** than the best reflection-based solution.
