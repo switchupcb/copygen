@@ -68,7 +68,7 @@ A YML file is used to configure the code that is generated.
 ```yml
 # Define where the code will be generated.
 generated:
-  name: ./copygen.go
+  filepath: ./copygen.go
   package: copygen
 
 # Define the imports that are included in the generated file.
@@ -77,24 +77,23 @@ import:
   - github.com/switchupcb/copygen/models
   - github.com/switchupcb/copygen/converter
 
-# Define the function(s) to be generated.
-# Properties with `# default` are NOT necessary to include.
-function:
-  name: ModelsToDomain
+# Define the functions to be generated.
+functions:
 
   # Define the types to be copied (to and from).
-  # Note: Type-properties (i.e 'struct') can have any name.
-  types:
+  # Properties with `# default` are NOT necessary to include.
+  ModelsToDomain:
+    error: true               # default: false 
     to:
-      struct: Account
-        filename: ./domain/domain.go
-        error:    true        # default: false 
+      Account:
+        filepath: ./domain/domain.go
         pointer:  true        # default: false  (Optimization)
         deepcopy: false       # default: false  (Optimization)
-       
+
     from:
-      struct: User
-        filename: ./models/model.go
+      User:
+        filepath: ./models/model.go
+        pointer: false        # default: false
 
         # Match fields to the to-type.
         fields:
@@ -102,8 +101,8 @@ function:
             to: UserID
             convert: c.Itoa   # default: none  (Matcher)
 
-      struct: Account
-        filename: ./models/model.go
+      Account:
+        filepath: ./models/model.go
         fields:
           ID:
             to: ID
@@ -180,3 +179,7 @@ Go parameters are _pass-by-value_ which means that a parameter's value _(i.e int
 As a result, passing pointers to functions is more efficient **if the byte size of a pointer is less than the total byte size of the struct member's references**. However, be advised that doing so adds memory to the heap _[which can result in less performance](https://medium.com/@vCabbage/go-are-pointers-a-performance-optimization-a95840d3ef85)_. 
 
 You can read this article for more information on memory: [What Every Programmer Should Know About Memory](https://lwn.net/Articles/250967/).
+
+## Contributing
+
+You can contribute to this repository by viewing the [Project Structure](CONTRIBUTING.md).

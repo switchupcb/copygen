@@ -1,10 +1,12 @@
-// Package cli contains the primary logic of the copygen command-line application.
+// package cli contains the primary logic of the copygen command-line application.
 package cli
 
 import (
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/switchupcb/copygen/cli/loader"
 )
 
 // Environment represents the copygen environment.
@@ -48,14 +50,11 @@ func (e *Environment) parseArgs(args []string) error {
 }
 
 func (e *Environment) run() error {
-	file, err := os.ReadFile(e.YML)
+	generator, err := loader.LoadYML(e.YML)
 	if err != nil {
-		return fmt.Errorf("The specified .yml filepath doesn't exist.")
+		return err
 	}
 
-	str := string(file) // convert content to a 'string'
-
-	fmt.Println(str) // print the content as a 'string'
-
+	fmt.Println(*generator)
 	return nil
 }
