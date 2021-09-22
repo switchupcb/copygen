@@ -4,6 +4,7 @@ package loader
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/switchupcb/copygen/cli/models"
 	"gopkg.in/yaml.v3"
@@ -22,12 +23,12 @@ func LoadYML(filepath string) (*models.Generator, error) {
 		return nil, fmt.Errorf("There is an issue with the provided .yml file.\n%v", err)
 	}
 
-	g := parseYMLMap(m)
+	g := parseYML(m)
 	return &g, nil
 }
 
-// parseYMLMap parses a YMLMAP into a Generator.
-func parseYMLMap(m YML) models.Generator {
+// parseYML parses a YML into a Generator.
+func parseYML(m YML) models.Generator {
 	var g models.Generator
 
 	// define the generator options.
@@ -39,48 +40,90 @@ func parseYMLMap(m YML) models.Generator {
 	for name, function := range m.Functions {
 		var gf models.Function
 		gf.Name = name
-		gf.Options.Error = function.Error
 
 		// define the To types of the function.
-		var gtt models.Type
+		var gtType models.Type
+		gtMap := make(map[string]bool) // A "set" of parameters
 		for toName, toType := range function.To {
-			gtt.Name = toName
-			gtt.Filepath = toType.Filepath
-			gtt.Options = models.TypeOptions{
-				Pointer:  toType.Pointer,
-				Deepcopy: toType.Deepcopy,
+			varName := createVariable(gtMap, "t"+string(toName[0]), 0)
+			gtMap[varName] = true
+
+			gtType.Name = toName
+			gtType.VariableName = varName
+			gtType.Package = toType.Package
+			gtType.Options = models.TypeOptions{
+				Pointer: toType.Pointer,
+				Custom:  toType.Options,
 			}
-			gf.To = append(gf.To, gtt)
+			gf.To = append(gf.To, gtType)
 		}
 
 		// define the From types of the function.
-		var gtf models.Type
+		var gfType models.Type
+		gfMap := make(map[string]bool) // A "set" of parameters
 		for fromName, fromType := range function.From {
-			gtf.Name = fromName
-			gtf.Filepath = fromType.Filepath
-			gtf.Options = models.TypeOptions{
+			varName := createVariable(gfMap, "f"+string(fromName[0]), 0)
+			gfMap[varName] = true
+
+			gfType.Name = fromName
+			gfType.VariableName = varName
+			gfType.Package = fromType.Package
+			gfType.Options = models.TypeOptions{
 				Pointer: fromType.Pointer,
+				Custom:  fromType.Options,
 			}
 
-			// define the fields of the From type.
-			for fieldName, fieldOptions := range fromType.Fields {
-				var gfdto models.Field
-				gfdto.Name = fieldOptions["to"]
-				gfdto.Convert = fieldOptions["convert"]
+			// define the fields of each type using the FromType.
+			for fieldName, field := range fromType.Fields {
+				// fromField
+				var gfField models.Field
+				gfField.Parent = gfType
+				gfField.Name = fieldName
+				gfField.Convert = field.Convert
+				gfField.Options = models.FieldOptions{
+					Custom: field.Options,
+				}
 
-				var gfdfrom models.Field
-				gfdfrom.Name = fieldName
-				gfdfrom.Convert = fieldOptions["convert"]
-				gfdfrom.To = &gfdto
+				// toField
+				var gtField models.Field
+				gtField.Parent = gtType
+				gtField.Name = field.To
+				gtField.Convert = field.Convert
+				gtField.Options = models.FieldOptions{
+					Custom: field.Options,
+				}
 
-				gtt.Fields = append(gtt.Fields, gfdto)
-				gtf.Fields = append(gtf.Fields, gfdfrom)
+				// point the fields
+				gfField.To = &gtField
+				gfType.Fields = append(gfType.Fields, gfField)
+
+				gtField.From = &gfField
+				gtType.Fields = append(gtType.Fields, gtField)
 			}
-
-			gf.From = append(gf.From, gtf)
+			gf.From = append(gf.From, gfType)
 		}
 
+		gf.Options = models.FunctionOptions{
+			Custom: function.Options,
+		}
 		g.Functions = append(g.Functions, gf)
 	}
 	return g
+}
+
+// createVariable generates a valid variable name for a list of parameters.
+func createVariable(parameters map[string]bool, typename string, occurrence int) string {
+	if occurrence < 0 {
+		createVariable(parameters, typename, 0)
+	}
+
+	varName := typename
+	if occurrence > 0 {
+		varName += strconv.Itoa(occurrence + 1)
+	}
+
+	if _, exists := parameters[varName]; exists {
+		createVariable(parameters, typename, occurrence+1)
+	}
+	return varName
 }

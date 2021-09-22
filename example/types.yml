@@ -10,31 +10,39 @@ import:
   - github.com/switchupcb/copygen/converter
 
 # Define the functions to be generated.
+# Properties with `# default` are NOT necessary to include.
 functions:
 
-  # Define the types to be copied (to and from).
-  # Properties with `# default` are NOT necessary to include.
-  ModelsToDomain:
-    error: true               # default: false 
+ # Custom function options can be defined for template use.
+ ModelsToDomain:
+    options:                  # default: none
+      custom: true
+
+    # Define the types to be copied (to and from).
+    # Custom type options (to and from) can be defined for template use.
     to:
       Account:
-        filepath: ./domain/domain.go
-        pointer:  true        # default: false  (Optimization)
-        deepcopy: false       # default: false  (Optimization)
+        package:  domain      # default: none
+        pointer:  true        # default: false  (Optimization) 
+        options:              # default: none
+          custom: false
 
     from:
       User:
-        filepath: ./models/model.go
+        package: models       # default: none
         pointer: false        # default: false
 
         # Match fields to the to-type.
+        # Custom field options can be defined for template use.
         fields:
           ID:
             to: UserID
             convert: c.Itoa   # default: none  (Matcher)
+            options:          # default: none
+              custom: false
 
       Account:
-        filepath: ./models/model.go
+        package: models       # default: none
         fields:
           ID:
             to: ID
