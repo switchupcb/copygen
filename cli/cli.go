@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/switchupcb/copygen/cli/loader"
+	loader "github.com/switchupcb/copygen/cli/loader/yml"
 )
 
 // Environment represents the copygen environment.
