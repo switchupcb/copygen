@@ -1,0 +1,55 @@
+# Define where the code will be generated.
+generated:
+  filepath: ./copygen.go
+  package: copygen
+
+  # Define the optional custom templates used to generate the file.
+  templates:
+    header: ./templates/header.go
+    function: ./templates/function.go
+
+# Define the imports that are included in the generated file.
+import:
+  - github.com/switchupcb/copygen/examples/error/domain
+  - github.com/switchupcb/copygen/examples/error/models
+  - github.com/switchupcb/copygen/examples/error/converter
+
+# Define the functions to be generated.
+# Properties with `# default` are NOT necessary to include.
+functions:
+
+ # Custom function options can be defined for template use.
+ ModelsToDomain:
+    options:                  # default: none
+      custom: true
+
+    # Define the types to be copied (to and from).
+    # Custom type options (to and from) can be defined for template use.
+    to:
+      Account:
+        package:  domain      # default: none
+        pointer:  true        # default: false  (Optimization) 
+        options:              # default: none
+          custom: false
+
+    from:
+      User:
+        package: models       # default: none
+        pointer: false        # default: false
+
+        # Match fields to the to-type.
+        # Custom field options can be defined for template use.
+        fields:
+          ID:
+            to: UserID
+            convert: c.Itoa   # default: none  (Matcher)
+            options:          # default: none
+              custom: false
+
+      Account:
+        package: models       # default: none
+        fields:
+          ID:
+            to: ID
+          Name:
+            to: Name

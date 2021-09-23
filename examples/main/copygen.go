@@ -3,9 +3,9 @@
 package copygen
 
 import (
-	"github.com/switchupcb/copygen/example/main/converter"
-	"github.com/switchupcb/copygen/example/main/domain"
-	"github.com/switchupcb/copygen/example/main/models"
+	"github.com/switchupcb/copygen/examples/main/converter"
+	"github.com/switchupcb/copygen/examples/main/domain"
+	"github.com/switchupcb/copygen/examples/main/models"
 )
 
 // ModelsToDomain copies a User, Account to a Account.

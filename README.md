@@ -18,7 +18,7 @@ Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that
 
 ## Use
 
-This [example](https://github.com/switchupcb/copygen/blob/main/example) uses three type-structs to generate the `ModelsToDomain()` function. All paths are specified from the `types.yml` file path in `examples`.
+This [example](https://github.com/switchupcb/copygen/blob/main/example/main) uses three type-structs to generate the `ModelsToDomain()` function. All paths are specified from the `types.yml` file path in `examples/main`.
 
 ### Types
 
@@ -73,9 +73,9 @@ generated:
 
 # Define the imports that are included in the generated file.
 import:
-  - github.com/switchupcb/copygen/example/main/domain
-  - github.com/switchupcb/copygen/example/main/models
-  - github.com/switchupcb/copygen/example/main/converter
+  - github.com/switchupcb/copygen/examples/main/domain
+  - github.com/switchupcb/copygen/examples/main/models
+  - github.com/switchupcb/copygen/examples/main/converter
 
 # Define the functions to be generated.
 # Properties with `# default` are NOT necessary to include.
