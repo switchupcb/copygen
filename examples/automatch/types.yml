@@ -1,0 +1,29 @@
+# Define where the code will be generated.
+generated:
+  filepath: ./copygen.go
+  package: copygen
+
+# Define the imports that are included in the generated file.
+import:
+  - github.com/switchupcb/copygen/examples/automatch/domain
+  - github.com/switchupcb/copygen/examples/automatch/models
+
+# Define the functions to be generated.
+# Properties with `# default` are NOT necessary to include.
+functions:
+
+ # Custom function options can be defined for template use (see Main).
+ ModelsToDomain:
+
+    # Define the types to be copied (to and from).
+    # Custom type options (to and from) can be defined for template use (see Main).
+    to:
+      Account:
+        package:  domain      # default: none
+      
+    from:
+      User:
+        package: models       # default: none
+        
+      Account:
+        package: models       # default: none
