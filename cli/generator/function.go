@@ -1,11 +1,34 @@
+// package template implements an interpreter used to provide customizable functions to the generator.
 package generator
 
 import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// Function generates code for a function.
-func Function(f *models.Function) string {
+// Function determines the func to generate function code.
+func Function(g *models.Generator) (string, error) {
+	var functions string
+
+	// determine the method to analyze each function.
+	if g.Template.Funcpath == "" {
+		for _, function := range g.Functions {
+			functions += defaultFunction(&function) + "\n"
+		}
+		return functions, nil
+	}
+
+	fn, err := interpretFunction(g)
+	if err != nil {
+		return "", err
+	}
+	for _, function := range g.Functions {
+		functions += fn(&function) + "\n"
+	}
+	return functions, nil
+}
+
+// defaultFunction creates the header of the generated file using the default method.
+func defaultFunction(f *models.Function) string {
 	var function string
 
 	// comment
@@ -116,4 +139,17 @@ func generateBody(f *models.Function) string {
 
 func generateReturn(f *models.Function) string {
 	return ""
+}
+
+// interpretFunction creates the header of the generated file using an interpreted template file.
+func interpretFunction(g *models.Generator) (func(f *models.Function) string, error) {
+	fn, err := Interpret(g.Loadpath, g.Template.Funcpath, "generator.Function")
+	if err != nil {
+		return nil, err
+	}
+
+	// run the interpreted function.
+	return func(f *models.Function) string {
+		return fn(f)
+	}, nil
 }

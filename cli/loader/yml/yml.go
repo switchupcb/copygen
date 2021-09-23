@@ -14,13 +14,13 @@ import (
 func LoadYML(filepath string) (*models.Generator, error) {
 	file, err := os.ReadFile(filepath)
 	if err != nil {
-		return nil, fmt.Errorf("The specified .yml filepath doesn't exist.")
+		return nil, fmt.Errorf("The specified .yml filepath doesn't exist: %v.\n%v", filepath, err)
 	}
 
 	var m YML
 	err = yaml.Unmarshal(file, &m)
 	if err != nil {
-		return nil, fmt.Errorf("There is an issue with the provided .yml file.\n%v", err)
+		return nil, fmt.Errorf("There is an issue with the provided .yml file: %v\n%v", filepath, err)
 	}
 
 	g := parseYML(m)
@@ -33,9 +33,13 @@ func parseYML(m YML) models.Generator {
 	var g models.Generator
 
 	// define the generator options.
-	g.Filepath = m.Generated["filepath"]
-	g.Package = m.Generated["package"]
+	g.Filepath = m.Generated["filepath"].(string)
+	g.Package = m.Generated["package"].(string)
 	g.Imports = m.Import
+	g.Template = models.Template{
+		Headpath: m.Generated["templates"].(map[string]interface{})["header"].(string),
+		Funcpath: m.Generated["templates"].(map[string]interface{})["function"].(string),
+	}
 
 	// define the generator functions.
 	for name, function := range m.Functions {

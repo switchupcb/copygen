@@ -2,15 +2,13 @@
 
 Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that generates type-to-type and field-to-field struct code without reflection.
 
-**Topics**
+| Topic                         | Categories                                                                                                      |
+| :---------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| [Use](#use)                   | [Types](#types), [YML](#yml), [Command Line](#command-line), [Output](#output), [Customization](#customization) |
+| [Matcher](#matcher)           | [Automatch](#automatch), [Convert](#convert)                                                                    |
+| [Optimization](#optimization) | [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy), [Pointers](#pointers)                                 |
 
-| Topic                         | Categories                                                                      |
-| :---------------------------- | :------------------------------------------------------------------------------ |
-| [Use](#use)                   | [Types](#types), [YML](#yml), [Command Line](#command-line), [Output](#output)  |
-| [Matcher](#matcher)           | [Convert](#convert)                                                             |
-| [Optimization](#optimization) | [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy), [Pointers](#pointers) |
-
-## Benchmark
+### Benchmark
 
 **The benefit to using Copygen is performance**: A benchmark by [gotidy/copy](https://github.com/gotidy/copy#benchmark) shows that a manual copy is **391x faster** than [jinzhu/copier](https://github.com/jinzhu/copier) and **3.97x faster** than the best reflection-based solution.
 
@@ -18,7 +16,7 @@ Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that
 
 ## Use
 
-This [example](https://github.com/switchupcb/copygen/blob/main/example/main) uses three type-structs to generate the `ModelsToDomain()` function. All paths are specified from the `types.yml` file path in `examples/main`.
+This [example](https://github.com/switchupcb/copygen/blob/main/examples/main) uses three type-structs to generate the `ModelsToDomain()` function. All paths are specified from the `types.yml` file path in `examples/main`.
 
 ### Types
 
@@ -61,7 +59,7 @@ type User struct {
 
 ### YML
 
-A YML file is used to configure the code that is generated.
+A YML file is used to configure the code that is generated. View [Customization](#customization) for an example using custom templates.
 
 **types.yml**
 
@@ -91,7 +89,7 @@ functions:
     to:
       Account:
         package:  domain      # default: none
-        pointer:  true        # default: false  (Optimization) 
+        pointer:  true        # default: false     (# Optimization) 
         options:              # default: none
           custom: false
 
@@ -102,10 +100,10 @@ functions:
 
         # Match fields to the to-type.
         # Custom field options can be defined for template use.
-        fields:
+        fields:               # default: automatch (# Matcher) [UNIMPL]
           ID:
             to: UserID
-            convert: c.Itoa   # default: none  (Matcher)
+            convert: c.Itoa   # default: none      (# Matcher)
             options:          # default: none
               custom: false
 
@@ -145,9 +143,9 @@ This example outputs a `copygen.go` file with the specified imports and function
 package copygen
 
 import (
-	"github.com/switchupcb/copygen/example/main/converter"
-	"github.com/switchupcb/copygen/example/main/domain"
-	"github.com/switchupcb/copygen/example/main/models"
+	"github.com/switchupcb/copygen/examples/main/converter"
+	"github.com/switchupcb/copygen/examples/main/domain"
+	"github.com/switchupcb/copygen/examples/main/models"
 )
 
 // ModelsToDomain copies a Account, User to a Account.
@@ -160,13 +158,43 @@ func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
 }
 ```
 
+### Customization
+
+The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main) modifies the .yml to use **custom functions** which `return error`. This is done by modifying the .yml and creating custom template files. All paths are specified from the `types.yml` file path in `examples/error`.
+
+**types.yml**
+
+```yml
+# Define where the code will be generated.
+generated:
+  filepath: ./copygen.go
+  package: copygen
+
+  # Define the optional custom templates used to generate the file.
+  templates:
+    header: ./templates/header.go
+    function: ./templates/function.go
+```
+
+#### Templates
+
+Templates can be created using **Go** to customize the generated code. The `copygen` generator uses the `package generator` `Header(*models.Generator)` to generate header code and `Function(*models.Function)` to generate code for each function. As a result, these _(package generator with functions)_ are **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Templates are interpreted by [yaegi](https://github.com/traefik/yaegi).
+
+#### Options
+
+Function, Type, and Field custom options can be defined for template use. These are read into the respective [models](https://github.com/switchupcb/copygen/blob/main/cli/models) by [yaml](https://github.com/go-yaml/yaml).
+
 ## Matcher
 
-Matching is specified in the `.yml` _(which functions as a schema in relation to other generators)_. This library assumes that it's used with other code generators which would make using tags difficult. We also avoid automatic matching _(by name or position)_ because there is only a few cases where it's viable.
+Matching is specified in the `.yml` _(which functions as a schema in relation to other generators)_. This library assumes that it's used with other code generators: This complicates the use of tags which is why they aren't used.
+
+### Automatch
+
+If `fields` isn't specified for a `from` type, Copygen will attempt to automatch type-fields by name. Duplicate fields will simply be reassigned by default. All `from` type-fields are assigned to respective `to` types.
 
 ### Convert
 
-The `convert` property is used to specify a converter function. This is useful when you need to copy a value between two fields with different types, or provide another use-case. A _converter function_ uses the following signature:
+The `convert` property is used to specify a converter function. This is useful when you need to copy a value between two fields with different types, or provide another use-case. A default-template _converter function_ uses the following signature:
 
 ```go
 func convert(f Field) Type {
@@ -175,19 +203,15 @@ func convert(f Field) Type {
 }
 ```
 
-where `Field` is replaced with the field it will receive _(i.e int)_, and `Type` is replaced with type it will return _(i.e string)_.
+where `Field` is replaced with the field it will receive _(i.e int)_, and `Type` is replaced with the type it will return _(i.e string)_.
 
 ## Optimization 
 
 ### Shallow Copy vs. Deep Copy
-The library generates a [shallow copy](https://en.m.wikipedia.org/wiki/Object_copying#Shallow_copy) by default. An easy way to deep-copy fields with the same return type is by using `new()` as/in a converter function.
+The library generates a [shallow copy](https://en.m.wikipedia.org/wiki/Object_copying#Shallow_copy) by default. An easy way to deep-copy fields with the same return type is by using `new()` as/in a converter function or use a custom template.
 
 ### Pointers
-Go parameters are _pass-by-value_ which means that a parameter's value _(i.e int, memory address, etc)_ is copied into another location of memory.
-
-As a result, passing pointers to functions is more efficient **if the byte size of a pointer is less than the total byte size of the struct member's references**. However, be advised that doing so adds memory to the heap _[which can result in less performance](https://medium.com/@vCabbage/go-are-pointers-a-performance-optimization-a95840d3ef85)_. 
-
-You can read this article for more information on memory: [What Every Programmer Should Know About Memory](https://lwn.net/Articles/250967/).
+Go parameters are _pass-by-value_ which means that a parameter's value _(i.e int, memory address, etc)_ is copied into another location of memory. As a result, passing pointers to functions is more efficient **if the byte size of a pointer is less than the total byte size of the struct member's references**. However, be advised that doing so adds memory to the heap _[which can result in less performance](https://medium.com/@vCabbage/go-are-pointers-a-performance-optimization-a95840d3ef85)_. Read this article for more information on memory: [What Every Programmer Should Know About Memory](https://lwn.net/Articles/250967/).
 
 ## Contributing
 

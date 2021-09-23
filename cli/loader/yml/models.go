@@ -2,9 +2,9 @@ package loader
 
 // YML represents the first level of the YML file.
 type YML struct {
-	Generated map[string]string   `yaml:"generated"`
-	Import    []string            `yaml:"import"`
-	Functions map[string]Function `yaml:"functions"`
+	Generated map[string]interface{} `yaml:"generated"`
+	Import    []string               `yaml:"import"`
+	Functions map[string]Function    `yaml:"functions"`
 }
 
 // Function represents the function level of the YML file.

@@ -50,7 +50,7 @@ func generateComment(f *models.Function) string {
 
 // generateSignature generates a function's signature.
 func generateSignature(f *models.Function) string {
-	s := "func " + f.Name + "(" + generateParameters(f) + ") {"
+	s := "func " + f.Name + "(" + generateParameters(f) + ") error {"
 	return s
 }
 
@@ -115,5 +115,5 @@ func generateBody(f *models.Function) string {
 }
 
 func generateReturn(f *models.Function) string {
-	return ""
+	return "error"
 }
