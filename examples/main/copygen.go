@@ -8,11 +8,11 @@ import (
 	"github.com/switchupcb/copygen/examples/main/models"
 )
 
-// ModelsToDomain copies a User, Account to a Account.
-func ModelsToDomain(tA *domain.Account, fU models.User, fA models.Account) {
+// ModelsToDomain copies a Account, User to a Account.
+func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
 	// Account fields
-	tA.UserID = c.Itoa(tA.ID)
 	tA.ID = fA.ID
 	tA.Name = fA.Name
+	tA.UserID = c.Itoa(tA.ID)
 
 }

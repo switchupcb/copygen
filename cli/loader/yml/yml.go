@@ -37,8 +37,9 @@ func parseYML(m YML) models.Generator {
 	g.Package = m.Generated["package"].(string)
 	g.Imports = m.Import
 	g.Template = models.Template{
-		Headpath: m.Generated["templates"].(map[string]interface{})["header"].(string),
-		Funcpath: m.Generated["templates"].(map[string]interface{})["function"].(string),
+		Headpath: parseTemplate(m.Generated, "header"),
+		Funcpath: parseTemplate(m.Generated, "function"),
+		Autopath: parseTemplate(m.Generated, "automatch"),
 	}
 
 	// define the generator functions.
@@ -131,4 +132,17 @@ func createVariable(parameters map[string]bool, typename string, occurrence int)
 		createVariable(parameters, typename, occurrence+1)
 	}
 	return varName
+}
+
+func parseTemplate(m map[string]interface{}, k string) string {
+	if template, exists := m["templates"]; exists {
+		if templateMap, ok := template.(map[string]interface{}); ok {
+			if option, exists := templateMap[k]; exists {
+				if value, ok := option.(string); ok {
+					return value
+				}
+			}
+		}
+	}
+	return ""
 }
