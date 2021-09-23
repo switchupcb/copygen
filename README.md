@@ -73,9 +73,9 @@ generated:
 
 # Define the imports that are included in the generated file.
 import:
-  - github.com/switchupcb/copygen/example/domain
-  - github.com/switchupcb/copygen/example/models
-  - github.com/switchupcb/copygen/example/converter
+  - github.com/switchupcb/copygen/example/main/domain
+  - github.com/switchupcb/copygen/example/main/models
+  - github.com/switchupcb/copygen/example/main/converter
 
 # Define the functions to be generated.
 # Properties with `# default` are NOT necessary to include.
@@ -145,17 +145,17 @@ This example outputs a `copygen.go` file with the specified imports and function
 package copygen
 
 import (
-	"github.com/switchupcb/copygen/example/converter"
-	"github.com/switchupcb/copygen/example/domain"
-	"github.com/switchupcb/copygen/example/models"
+	"github.com/switchupcb/copygen/example/main/converter"
+	"github.com/switchupcb/copygen/example/main/domain"
+	"github.com/switchupcb/copygen/example/main/models"
 )
 
-// ModelsToDomain copies a User, Account to a Account.
-func ModelsToDomain(tA *domain.Account, fU models.User, fA models.Account) {
+// ModelsToDomain copies a Account, User to a Account.
+func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
 	// Account fields
-	tA.UserID = c.Itoa(tA.ID)
 	tA.ID = fA.ID
 	tA.Name = fA.Name
+	tA.UserID = c.Itoa(tA.ID)
 
 }
 ```
