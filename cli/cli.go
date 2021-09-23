@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/switchupcb/copygen/cli/generator"
 	loader "github.com/switchupcb/copygen/cli/loader/yml"
 )
 
@@ -50,11 +51,13 @@ func (e *Environment) parseArgs(args []string) error {
 }
 
 func (e *Environment) run() error {
-	generator, err := loader.LoadYML(e.YML)
+	gen, err := loader.LoadYML(e.YML)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(*generator)
+	if err = generator.Generate(gen); err != nil {
+		return err
+	}
 	return nil
 }

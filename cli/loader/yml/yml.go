@@ -24,6 +24,7 @@ func LoadYML(filepath string) (*models.Generator, error) {
 	}
 
 	g := parseYML(m)
+	g.Loadpath = filepath
 	return &g, nil
 }
 
@@ -32,8 +33,8 @@ func parseYML(m YML) models.Generator {
 	var g models.Generator
 
 	// define the generator options.
-	g.GenFile = m.Generated["filepath"]
-	g.GenPackage = m.Generated["package"]
+	g.Filepath = m.Generated["filepath"]
+	g.Package = m.Generated["package"]
 	g.Imports = m.Import
 
 	// define the generator functions.

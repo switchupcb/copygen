@@ -73,9 +73,9 @@ generated:
 
 # Define the imports that are included in the generated file.
 import:
-  - github.com/switchupcb/copygen/domain
-  - github.com/switchupcb/copygen/models
-  - github.com/switchupcb/copygen/converter
+  - github.com/switchupcb/copygen/example/domain
+  - github.com/switchupcb/copygen/example/models
+  - github.com/switchupcb/copygen/example/converter
 
 # Define the functions to be generated.
 # Properties with `# default` are NOT necessary to include.
@@ -150,18 +150,19 @@ import (
 	"github.com/switchupcb/copygen/example/models"
 )
 
-// ModelsToDomain copies fields from a models User and models Account to a domain Account.
-func ModelsToDomain(tA *domain.Account, fU models.User, fA models.Account) error {
-	tA.UserID = c.Itoa(fU.ID)
+// ModelsToDomain copies a User, Account to a Account.
+func ModelsToDomain(tA *domain.Account, fU models.User, fA models.Account) {
+	// Account fields
+	tA.UserID = c.Itoa(tA.ID)
 	tA.ID = fA.ID
 	tA.Name = fA.Name
-	return nil
+
 }
 ```
 
 ## Matcher
 
-Matching is specified in the `.yml` _(which functions as a schema in relation to other generators)_. This library assumes that it's used with other code generators which would make using tags difficult. We also avoid automatic matching _(by name or position)_ because there are few cases where it's viable.
+Matching is specified in the `.yml` _(which functions as a schema in relation to other generators)_. This library assumes that it's used with other code generators which would make using tags difficult. We also avoid automatic matching _(by name or position)_ because there is only a few cases where it's viable.
 
 ### Convert
 
