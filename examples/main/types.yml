@@ -23,7 +23,7 @@ functions:
     to:
       Account:
         package:  domain      # default: none
-        pointer:  true        # default: false  (Optimization) 
+        pointer:  true        # default: false     (# Optimization) 
         options:              # default: none
           custom: false
 
@@ -34,10 +34,10 @@ functions:
 
         # Match fields to the to-type.
         # Custom field options can be defined for template use.
-        fields:
+        fields:               # default: automatch (# Matcher)
           ID:
             to: UserID
-            convert: c.Itoa   # default: none  (Matcher)
+            convert: c.Itoa   # default: none      (# Matcher)
             options:          # default: none
               custom: false
 

@@ -1,8 +1,9 @@
 // package template implements an interpreter used to provide customizable functions to the generator.
-package generator
+package template
 
 import (
 	"github.com/switchupcb/copygen/cli/models"
+	"github.com/switchupcb/copygen/cli/pkg/interpreter"
 )
 
 // Function determines the func to generate function code.
@@ -143,7 +144,7 @@ func generateReturn(f *models.Function) string {
 
 // interpretFunction creates the header of the generated file using an interpreted template file.
 func interpretFunction(g *models.Generator) (func(f *models.Function) string, error) {
-	fn, err := Interpret(g.Loadpath, g.Template.Funcpath, "generator.Function")
+	fn, err := interpreter.InterpretFunc(g.Loadpath, g.Template.Funcpath, "generator.Function")
 	if err != nil {
 		return nil, err
 	}

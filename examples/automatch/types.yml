@@ -9,7 +9,7 @@ import:
   - github.com/switchupcb/copygen/examples/automatch/models
 
 # Define the functions to be generated.
-# Properties with `# default` are NOT necessary to include.
+# Properties with `# default` are NOT necessary to include (see Main).
 functions:
 
  # Custom function options can be defined for template use (see Main).

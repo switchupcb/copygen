@@ -1,7 +1,8 @@
-package generator
+package template
 
 import (
 	"github.com/switchupcb/copygen/cli/models"
+	"github.com/switchupcb/copygen/cli/pkg/interpreter"
 )
 
 // Header determines the func to generate header code.
@@ -33,7 +34,7 @@ func defaultHeader(g *models.Generator) string {
 
 // interpretHeader creates the header of the generated file using an interpreted template file.
 func interpretHeader(g *models.Generator) (string, error) {
-	fn, err := Interpret(g.Loadpath, g.Template.Funcpath, "generator.Function")
+	fn, err := interpreter.InterpretFunc(g.Loadpath, g.Template.Funcpath, "generator.Header")
 	if err != nil {
 		return "", err
 	}
