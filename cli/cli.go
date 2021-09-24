@@ -1,4 +1,3 @@
-// package cli contains the primary logic of the copygen command-line application.
 package cli
 
 import (
@@ -20,12 +19,12 @@ func CLI(args []string) int {
 	var env Environment
 	err := env.parseArgs(args)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Argument error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return 2
 	}
 
 	if err = env.run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Runtime error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return 1
 	}
 	return 0
@@ -44,7 +43,7 @@ func (e *Environment) parseArgs(args []string) error {
 	if ymlLen == 0 {
 		return fmt.Errorf("No .yml configuration file was specified using -yml.")
 	} else if ymlLen < 4 || ".yml" != (*ymlPtr)[ymlLen-4:] {
-		return fmt.Errorf("The specified file is not a .yml file.")
+		return fmt.Errorf("The specified file (-yml) is not a .yml file.")
 	}
 	e.YML = *ymlPtr
 	return nil
