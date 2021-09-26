@@ -167,8 +167,8 @@ import (
 func ModelsToDomain(tA *domain.Account, fU models.User, fA models.Account) {
 	// Account fields
 	tA.UserID = c.Itoa(tA.ID)
-	tA.ID = fA.ID
 	tA.Name = fA.Name
+	tA.ID = fA.ID
 
 }
 ```
@@ -218,7 +218,7 @@ Matching is specified in the `.yml` _(which functions as a schema in relation to
 
 ### Automatch
 
-If `fields` isn't specified for a `from` type, Copygen will attempt to automatch type-fields by name. Automatch **supports field-depth** (where types are located within fields) **and recursive types** (where the same type is in another type). **You must specify the import path for types that use the automatcher.** Automatch loads types from Go modules _(in GOPATH)_. Ensure your modules are up to date by using `go get -u <insert/module/import/path>`.
+If `fields` isn't specified for a `from` type, copygen will attempt to automatch type-fields by name. Automatch **supports field-depth** (where types are located within fields) **and recursive types** (where the same type is in another type). **You must specify the import path for types that use the automatcher.** Automatch loads types from Go modules _(in GOPATH)_. Ensure your modules are up to date by using `go get -u <insert/module/import/path>`.
 
 #### Depth
 

@@ -13,13 +13,15 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// AST provides AST analysis to find fields.
+// AST uses Abstract Syntax Tree analysis to find fields.
 type AST struct {
-	cache map[string][]models.Field // ASTCache is a key value cache used to reduce the amount of AST operations.
+	Depth    int                       // The current depth level of the ASTSearcher.
+	MaxDepth int                       // The maximum depth of the ASTSearcher.
+	cache    map[string][]models.Field // A key value cache used to reduce the amount of AST operations.
 }
 
-// ASTSearch searches a .go source file for a type and its fields.
-func (a *AST) ASTSearch(imprt string, pkg string, typename string) ([]models.Field, error) {
+// Search searches a .go source file for a type and its fields using an Abstract Syntax Tree.
+func (a *AST) Search(imprt string, pkg string, typename string) ([]models.Field, error) {
 	if a.cache == nil {
 		a.cache = make(map[string][]models.Field)
 	}
@@ -104,7 +106,7 @@ func (a *AST) astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, 
 			}
 
 			// if a field is a custom type it may have fields of its own
-			if !isBasic(xField.Type()) {
+			if !isBasic(xField.Type()) && (a.Depth <= a.MaxDepth || a.MaxDepth == 0) {
 				// find the custom type field.
 				splitDefinition := strings.Split(field.Definition, ".")
 				if len(splitDefinition) == 2 {
@@ -126,7 +128,8 @@ func (a *AST) astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, 
 						newPkg = pkg
 						newType = definitionType
 					}
-					depthFields, err := a.ASTSearch(newImprt, newPkg, newType)
+					a.Depth++
+					depthFields, err := a.Search(newImprt, newPkg, newType)
 					if err != nil {
 						fmt.Printf("WARNING: An error occurred searching for the %v in-depth field '%v' with import \"%v\".\n%v\n", newType, field.Definition, newImprt, err)
 					}
@@ -189,10 +192,10 @@ func astTypeSearch(file *ast.File, typename string) (*ast.TypeSpec, error) {
 			}
 		}
 	}
-	return nil, fmt.Errorf("The type %v could not be found in the AST.", typename)
+	return nil, fmt.Errorf("The type %v could not be found in the Abstract Syntax Tree.", typename)
 }
 
-// astDepthFields finds fields of fields using an AST.
+// astDepthFields finds fields of fields using an Abstract Syntax Tree.
 func astSelectorSearch(ts *ast.TypeSpec, selector string) *ast.SelectorExpr {
 	if strct, ok := ts.Type.(*ast.StructType); ok {
 		for _, field := range strct.Fields.List {
@@ -208,7 +211,7 @@ func astSelectorSearch(ts *ast.TypeSpec, selector string) *ast.SelectorExpr {
 	return nil
 }
 
-// astLocateType finds the import path, package, and typename of a type in an AST.
+// astLocateType finds the import path, package, and typename of a type in an Abstract Syntax Tree.
 func astLocateType(file *ast.File, sel *ast.SelectorExpr) (string, string, string) {
 	fieldTypePkg := sel.X.(*ast.Ident).Name // 'log' in 'Field log.Logger'
 	fieldTypeName := sel.Sel.Name           // 'Logger' in 'Field log.Logger'
@@ -246,8 +249,8 @@ func astLocateType(file *ast.File, sel *ast.SelectorExpr) (string, string, strin
 	return "", fieldTypePkg, fieldTypeName
 }
 
-// printFields shows a tree of fields for a given type.
-func PrintFields(typename string, fields []models.Field, tabs string) {
+// PrintFieldTree prints a tree of fields for a given type to standard output.
+func PrintFieldTree(typename string, fields []models.Field, tabs string) {
 	if tabs == "" {
 		fmt.Println(tabs + "type " + typename)
 	}
@@ -256,7 +259,7 @@ func PrintFields(typename string, fields []models.Field, tabs string) {
 	for _, field := range fields {
 		fmt.Println(tabs + field.Name + "\t" + field.Definition)
 		if len(field.Fields) != 0 {
-			PrintFields(field.Definition, field.Fields, tabs+"\t")
+			PrintFieldTree(field.Definition, field.Fields, tabs+"\t")
 		}
 	}
 }

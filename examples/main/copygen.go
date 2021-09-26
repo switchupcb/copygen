@@ -12,7 +12,7 @@ import (
 func ModelsToDomain(tA *domain.Account, fU models.User, fA models.Account) {
 	// Account fields
 	tA.UserID = c.Itoa(tA.ID)
-	tA.ID = fA.ID
 	tA.Name = fA.Name
+	tA.ID = fA.ID
 
 }
