@@ -1,3 +1,5 @@
+github.com/patrickmn/go-cache v2.1.0+incompatible h1:HRMgzkcYKYpi3C8ajMPV8OFXaaRUnok+kx1WdO15EQc=
+github.com/patrickmn/go-cache v2.1.0+incompatible/go.mod h1:3Qf8kWWT7OJRJbdiICTKqZju1ZixQ/KpMGzzAfe6+WQ=
 github.com/traefik/yaegi v0.10.0 h1:c/0rhUcj5+KJhJX++eCrPeKXnJaOZ17X8gYCznU9Xxc=
 github.com/traefik/yaegi v0.10.0/go.mod h1:RuCwD8/wsX7b6KoQHOaIFUfuH3gQIK4KWnFFmJMw5VA=
 github.com/yuin/goldmark v1.4.0/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=

@@ -55,8 +55,9 @@ func ParseYML(m YML) (*models.Generator, error) {
 	}
 
 	// define the generator functions
+	a := AST{}
 	for name, function := range m.Functions {
-		modelFunction, err := parseFunction(function, name)
+		modelFunction, err := parseFunction(function, name, &a)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +103,7 @@ func parseTemplate(m map[string]interface{}, k string) string {
 }
 
 // parseFunction parses a YML function.
-func parseFunction(f Function, name string) (*models.Function, error) {
+func parseFunction(f Function, name string, a *AST) (*models.Function, error) {
 	var function models.Function
 	function.Name = name
 
@@ -143,12 +144,9 @@ func parseFunction(f Function, name string) (*models.Function, error) {
 			}
 
 			// define the fields of a from type
-			toFields, fromFields, err := parseFields(from, &toType, &fromType)
+			toFields, fromFields, err := parseFields(from, &toType, &fromType, a)
 			if err != nil {
 				return nil, err
-			}
-			for _, k := range toFields {
-				fmt.Println(k.From)
 			}
 			fromType.Fields = fromFields
 			toType.Fields = append(toType.Fields, toFields...)
@@ -163,10 +161,10 @@ func parseFunction(f Function, name string) (*models.Function, error) {
 }
 
 // parseFields parses the fields of two types.
-func parseFields(from From, toType *models.Type, fromType *models.Type) ([]models.Field, []models.Field, error) {
+func parseFields(from From, toType *models.Type, fromType *models.Type, a *AST) ([]models.Field, []models.Field, error) {
 	if len(from.Fields) == 0 {
 		var err error
-		toFields, fromFields, err := Automatch(toType, fromType)
+		toFields, fromFields, err := a.Automatch(toType, fromType)
 		if err != nil {
 			return nil, nil, err
 		}

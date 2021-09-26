@@ -13,8 +13,20 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+// AST provides AST analysis to find fields.
+type AST struct {
+	cache map[string][]models.Field // ASTCache is a key value cache used to reduce the amount of AST operations.
+}
+
 // ASTSearch searches a .go source file for a type and its fields.
-func ASTSearch(imprt string, pkg string, typename string) ([]models.Field, error) {
+func (a *AST) ASTSearch(imprt string, pkg string, typename string) ([]models.Field, error) {
+	if a.cache == nil {
+		a.cache = make(map[string][]models.Field)
+	}
+	if search, ok := a.cache[imprt+pkg+typename]; ok {
+		return search, nil
+	}
+
 	packages, err := packages.Load(&packages.Config{Logf: nil}, imprt)
 	if err != nil {
 		return nil, fmt.Errorf("An error occurred retrieving a package from the GOPATH: %v\n%v", imprt, err)
@@ -56,16 +68,110 @@ func ASTSearch(imprt string, pkg string, typename string) ([]models.Field, error
 
 	// find the fields
 	for _, file := range astFiles {
-		fields := astFieldSearch(info, file, ts, imprt, pkg)
-		if fields.Error != nil {
-			return nil, fields.Error
+		fieldSearch := a.astFieldSearch(info, file, ts, imprt, pkg)
+		if fieldSearch.Error != nil {
+			return nil, fieldSearch.Error
 		}
 
-		if len(fields.Fields) != 0 || fields.Basic {
-			return fields.Fields, nil
+		if len(fieldSearch.Fields) != 0 || fieldSearch.Basic {
+			a.cache[imprt+pkg+typename] = fieldSearch.Fields
+			return fieldSearch.Fields, nil
 		}
 	}
 	return nil, fmt.Errorf("The type %v could not be loaded from the specified module: %v\n", pkg+"."+typename, imprt)
+}
+
+// fieldSearch represents a search for a field.
+type fieldSearch struct {
+	Fields []models.Field // The fields present in the search.
+	Basic  bool           // Whether there are fields that are basic.
+	Error  error          // Whether an error occured.
+}
+
+// astFieldSearch searches through an ast.Typespec for fields.
+func (a *AST) astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, imprt string, pkg string) fieldSearch {
+	var fields []models.Field
+	switch x := info.Types[ts.Type].Type.(type) {
+	// structs have fields that can have fields.
+	case *types.Struct:
+		for i := 0; i < x.NumFields(); i++ {
+			xField := x.Field(i)
+			fieldname := xField.Name()
+			definition := xField.Type().String()
+			field := models.Field{
+				Name:       fieldname,
+				Definition: definition,
+			}
+
+			// if a field is a custom type it may have fields of its own
+			if !isBasic(xField.Type()) {
+				// find the custom type field.
+				splitDefinition := strings.Split(field.Definition, ".")
+				if len(splitDefinition) == 2 {
+					definitionPkg := splitDefinition[0]
+					definitionType := splitDefinition[1]
+
+					// use the selector on a custom type to determine its field
+					var newImprt, newPkg, newType string
+					if definitionPkg != pkg {
+						sel := astSelectorSearch(ts, definitionPkg+"."+definitionType)
+						if sel == nil {
+							return fieldSearch{
+								Error: fmt.Errorf("Could not find the selector for the %v in-depth field %v", ts.Name.Name, field.Definition),
+							}
+						}
+						newImprt, newPkg, newType = astLocateType(file, sel)
+					} else {
+						newImprt = imprt
+						newPkg = pkg
+						newType = definitionType
+					}
+					depthFields, err := a.ASTSearch(newImprt, newPkg, newType)
+					if err != nil {
+						fmt.Printf("WARNING: An error occurred searching for the %v in-depth field '%v' with import \"%v\".\n%v\n", newType, field.Definition, newImprt, err)
+					}
+					field.Fields = depthFields
+				}
+			}
+			fields = append(fields, field)
+		}
+	// interfaces have method fields
+	case *types.Interface:
+		for i := 0; i < x.NumMethods(); i++ {
+			xMethod := x.Method(i)
+			fieldname := xMethod.Name()
+			definition := xMethod.Type().String()
+			field := models.Field{
+				Name:       fieldname,
+				Definition: definition,
+			}
+			fields = append(fields, field)
+		}
+	// if no fields are present, this is a basic type.
+	default:
+		return fieldSearch{
+			Basic: true,
+		}
+	}
+	return fieldSearch{
+		Fields: fields,
+	}
+}
+
+// isBasic determines whether a type is a basic (non-custom) type.
+func isBasic(t types.Type) bool {
+	switch x := t.(type) {
+	case *types.Basic:
+		return true
+	case *types.Slice:
+		return true
+	case *types.Map:
+		return true
+	case *types.Pointer:
+		return isBasic(x.Elem())
+	default:
+		return false
+	}
 }
 
 // astTypeSearch searches through an ast.File for ast.Types.
@@ -138,99 +244,6 @@ func astLocateType(file *ast.File, sel *ast.SelectorExpr) (string, string, strin
 		}
 	}
 	return "", fieldTypePkg, fieldTypeName
-}
-
-// isBasic determines whether a type is a basic (non-custom) type.
-func isBasic(t types.Type) bool {
-	switch x := t.(type) {
-	case *types.Basic:
-		return true
-	case *types.Slice:
-		return true
-	case *types.Map:
-		return true
-	case *types.Pointer:
-		return isBasic(x.Elem())
-	default:
-		return false
-	}
-}
-
-// fieldSearch represents a search for a field.
-type fieldSearch struct {
-	Fields []models.Field // The fields present in the search.
-	Basic  bool           // Whether there are fields that are basic.
-	Error  error          // Whether an error occured.
-}
-
-// astFieldSearch searches through an ast.Typespec for fields.
-func astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, imprt string, pkg string) fieldSearch {
-	var fields []models.Field
-	switch x := info.Types[ts.Type].Type.(type) {
-	// structs have fields that can have fields.
-	case *types.Struct:
-		for i := 0; i < x.NumFields(); i++ {
-			xField := x.Field(i)
-			fieldname := xField.Name()
-			definition := xField.Type().String()
-			field := models.Field{
-				Name:       fieldname,
-				Definition: definition,
-			}
-
-			// if a field is a custom type it may have fields of its own
-			if !isBasic(xField.Type()) {
-				// find the custom type field.
-				splitDefinition := strings.Split(field.Definition, ".")
-				if len(splitDefinition) == 2 {
-					definitionPkg := splitDefinition[0]
-					definitionType := splitDefinition[1]
-
-					// use the selector on a custom type to determine its field
-					var newImprt, newPkg, newType string
-					if definitionPkg != pkg {
-						sel := astSelectorSearch(ts, definitionPkg+"."+definitionType)
-						if sel == nil {
-							return fieldSearch{
-								Error: fmt.Errorf("Could not find the selector for the %v in-depth field %v", ts.Name.Name, field.Definition),
-							}
-						}
-						newImprt, newPkg, newType = astLocateType(file, sel)
-					} else {
-						newImprt = imprt
-						newPkg = pkg
-						newType = definitionType
-					}
-					depthFields, err := ASTSearch(newImprt, newPkg, newType)
-					if err != nil {
-						fmt.Printf("WARNING: An error occurred searching for the %v in-depth field '%v' with import \"%v\".\n%v\n", newType, field.Definition, newImprt, err)
-					}
-					field.Fields = depthFields
-				}
-			}
-			fields = append(fields, field)
-		}
-	// interfaces have method fields
-	case *types.Interface:
-		for i := 0; i < x.NumMethods(); i++ {
-			xMethod := x.Method(i)
-			fieldname := xMethod.Name()
-			definition := xMethod.Type().String()
-			field := models.Field{
-				Name:       fieldname,
-				Definition: definition,
-			}
-			fields = append(fields, field)
-		}
-	// if no fields are present, this is a basic type.
-	default:
-		return fieldSearch{
-			Basic: true,
-		}
-	}
-	return fieldSearch{
-		Fields: fields,
-	}
 }
 
 // printFields shows a tree of fields for a given type.
