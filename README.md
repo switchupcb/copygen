@@ -2,11 +2,12 @@
 
 Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that generates type-to-type and field-to-field struct code without adding any reflection or dependencies to your project.
 
-| Topic                         | Categories                                                                                                      |
-| :---------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| [Use](#use)                   | [Types](#types), [YML](#yml), [Command Line](#command-line), [Output](#output), [Customization](#customization) |
-| [Matcher](#matcher)           | [Convert](#convert), [Automatch](#automatch)                                                                    |
-| [Optimization](#optimization) | [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy), [Pointers](#pointers)                                 |
+| Topic                           | Categories                                                                      |
+| :------------------------------ | :------------------------------------------------------------------------------ |
+| [Use](#use)                     | [Types](#types), [YML](#yml), [Command Line](#command-line), [Output](#output)  |
+| [Customization](#customization) | [Templates](#templates), [Convert](#convert)                                    |
+| [Matcher](#matcher)             | [Automatch](#automatch)                                                         |
+| [Optimization](#optimization)   | [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy), [Pointers](#pointers) |
 
 ### Benchmark
 
@@ -18,13 +19,13 @@ Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that
 
 Each example has a **README**.
 
-| Example       | Description                                                  |
-| :------------ | :----------------------------------------------------------- |
-| main          | The default example _(README)_.                              |
-| [error]()     | Uses templates to return an error.                           |
-| [automatch]() | Uses the automatch feature _(doesn't require fields)_.       |
-| [fullmatch]() | Uses the automatch feature with modules and recursive types. |
-| deepcopy      | Uses templates to create a deepcopy.                         |
+| Example                                                                         | Description                                                  |
+| :------------------------------------------------------------------------------ | :----------------------------------------------------------- |
+| main                                                                            | The default example _(README)_.                              |
+| [error](https://github.com/switchupcb/copygen/tree/main/examples/error)         | Uses templates to return an error.                           |
+| [automatch](https://github.com/switchupcb/copygen/tree/main/examples/automatch) | Uses the automatch feature _(doesn't require fields)_.       |
+| [fullmatch]()                                                                   | Uses the automatch feature with modules and recursive types. |
+| deepcopy                                                                        | Uses templates to create a deepcopy.                         |
 
 This [example](https://github.com/switchupcb/copygen/blob/main/examples/main) uses three type-structs to generate the `ModelsToDomain()` function. All paths are specified from the `types.yml` filepath in `examples/main`.
 
@@ -69,7 +70,7 @@ type User struct {
 
 ### YML
 
-A YML file is used to configure the code that is generated. View [Customization](#customization) for an example using custom templates.
+A YML file is used to configure the code that is generated. View [Customization](#customization) for an example using custom templates. _Properties with `# default` are NOT necessary to include._
 
 **types.yml**
 
@@ -99,7 +100,7 @@ functions:
       Account:
         package:  domain      # default: none
         pointer:  true        # default: false     (# Optimization) 
-        depth:    false       # default: false
+        depth:    0           # default: false
   
         # Custom type options (to and from) can be defined for template use.
         options:              # default: none
@@ -116,7 +117,6 @@ functions:
           ID:
             to: UserID
             convert: c.Itoa   # default: none      (# Matcher)
-            depth:    false       # default: false
 
             # Custom field options can be defined for template use.
             options:          # default: none
@@ -195,15 +195,7 @@ generated:
 
 Templates can be created using **Go** to customize the generated code. The `copygen` generator uses the `package generator` `Header(*models.Generator)` to generate header code and `Function(*models.Function)` to generate code for each function. As a result, these _(package generator with functions)_ are **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Templates are interpreted by [yaegi](https://github.com/traefik/yaegi).
 
-#### Options
-
-Function, Type, and Field custom options can be defined for template use. These are read into the respective [models](https://github.com/switchupcb/copygen/blob/main/cli/models) by [yaml](https://github.com/go-yaml/yaml).
-
-## Matcher
-
-Matching is specified in the `.yml` _(which functions as a schema in relation to other generators)_. All `from` type-fields are assigned to respective `to` types. The library assumes that it's used with other code generators: This complicates the use of tags which is why they aren't used.
-
-### Convert
+#### Convert
 
 The `convert` property is used to specify a converter function. This is useful when you need to copy a value between two fields with different types, or provide another use-case. A default-template _converter function_ uses the following signature:
 
@@ -216,6 +208,14 @@ func convert(f Field) Type {
 
 where `Field` is replaced with the field it will receive _(i.e int)_, and `Type` is replaced with the type it will return _(i.e string)_.
 
+#### Options
+
+Function, Type, and Field custom options can be defined for template use. These are read into the respective [models](https://github.com/switchupcb/copygen/blob/main/cli/models) by [yaml](https://github.com/go-yaml/yaml).
+
+## Matcher
+
+Matching is specified in the `.yml` _(which functions as a schema in relation to other generators)_. All `from` type-fields are assigned to respective `to` types. The library assumes that it's used with other code generators: This complicates the use of tags which is why they aren't used.
+
 ### Automatch
 
 If `fields` isn't specified for a `from` type, Copygen will attempt to automatch type-fields by name. Automatch **supports field-depth** (where types are located within fields) **and recursive types** (where the same type is in another type). **You must specify the import path for types that use the automatcher.** Automatch loads types from Go modules _(in GOPATH)_. Ensure your modules are up to date by using `go get -u <insert/module/import/path>`.
@@ -225,29 +225,30 @@ If `fields` isn't specified for a `from` type, Copygen will attempt to automatch
 A depth level of 0 will match the first-level fields. Increasing the depth level will match more fields.
 
 ```go
+// depth level
 type Account
-  // depth level 0
+  // 0
   ID      int
   Name    string
   Email   string
-  Basic   domain.T  // type T int
+  Basic   domain.T // int
   User    domain.DomainUser
-              // depth Level 1
+              // 1
               UserID   string
               Name     string
               UserData map[string]interface{}
-  // depth level 0
+  // 0
   Depth   log.Logger
-              // depth Level 1
+              // 1
               mu      sync.Mutex
-                          // depth Level 2
+                          // 2
                           state   int32
                           sema    uint32
-              // depth Level 1
+              // 1
               prefix  string
               flag    int
               out     io.Writer
-                          // depth Level 2
+                          // 2
                           Write   func(p []byte) (n int, err error)
               buf     []byte
 ```
@@ -262,13 +263,4 @@ Go parameters are _pass-by-value_ which means that a parameter's value _(i.e int
 
 ## Contributing
 
-You can contribute to this repository by viewing the [Project Structure and Code Specifications](CONTRIBUTING.md).
-
-| Topic             |
-| :---------------- |
-| License           |
-| Pull Requests     |
-| Domain            |
-| Project Structure |
-| Specification     |
-| Roadmap           |
+You can contribute to this repository by viewing the [Project Structure, Code Specifications, and Roadmap](CONTRIBUTING.md).

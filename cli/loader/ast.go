@@ -17,35 +17,35 @@ import (
 func ASTSearch(imprt string, pkg string, typename string) ([]models.Field, error) {
 	packages, err := packages.Load(&packages.Config{Logf: nil}, imprt)
 	if err != nil {
-		return nil, fmt.Errorf("There was an error retrieving a package from the GOPATH: %v\n%v", imprt, err)
+		return nil, fmt.Errorf("An error occurred retrieving a package from the GOPATH: %v\n%v", imprt, err)
 	}
 	var gofiles []string
 	for _, pkgs := range packages {
 		gofiles = append(gofiles, pkgs.GoFiles...)
 	}
 
-	fs := token.NewFileSet()
-	var astfs []*ast.File
+	fileset := token.NewFileSet()
+	var astFiles []*ast.File
 	for _, filepath := range gofiles {
-		file, err := parser.ParseFile(fs, filepath, nil, parser.AllErrors)
+		file, err := parser.ParseFile(fileset, filepath, nil, parser.AllErrors)
 		if err != nil {
-			return nil, fmt.Errorf("An error occured parsing the file: %v\n%v", filepath, err)
+			return nil, fmt.Errorf("An error occurred parsing a file for the matcher: %v\n%v", filepath, err)
 		}
-		astfs = append(astfs, file)
+		astFiles = append(astFiles, file)
 	}
 
 	// check the package types
 	conf := types.Config{Importer: importer.Default()}
-	info := types.Info{Types: make(map[ast.Expr]types.TypeAndValue), Defs: make(map[*ast.Ident]types.Object)}
-	_, err = (conf.Check(pkg, fs, astfs, &info))
+	info := types.Info{Types: make(map[ast.Expr]types.TypeAndValue)}
+	_, err = (conf.Check(pkg, fileset, astFiles, &info))
 	if err != nil {
-		return nil, fmt.Errorf("An error occured determining the types of a package.\n%v", err)
+		return nil, fmt.Errorf("An error occurred determining the types of a package.\n%v", err)
 	}
 
 	// find the type in the AST
 	var ts *ast.TypeSpec
-	for _, f := range astfs {
-		ts, _ = astTypeSearch(f, typename)
+	for _, file := range astFiles {
+		ts, _ = astTypeSearch(file, typename)
 		if ts != nil {
 			break
 		}
@@ -55,8 +55,8 @@ func ASTSearch(imprt string, pkg string, typename string) ([]models.Field, error
 	}
 
 	// find the fields
-	for _, f := range astfs {
-		fields := astFieldSearch(info, f, ts, imprt, pkg)
+	for _, file := range astFiles {
+		fields := astFieldSearch(info, file, ts, imprt, pkg)
 		if fields.Error != nil {
 			return nil, fields.Error
 		}
@@ -69,13 +69,13 @@ func ASTSearch(imprt string, pkg string, typename string) ([]models.Field, error
 }
 
 // astTypeSearch searches through an ast.File for ast.Types.
-func astTypeSearch(f *ast.File, t string) (*ast.TypeSpec, error) {
-	for _, d := range f.Decls {
-		if gd, ok := d.(*ast.GenDecl); ok {
-			if gd.Tok == token.TYPE {
-				for _, s := range gd.Specs {
-					if ts, ok := s.(*ast.TypeSpec); ok {
-						if t == ts.Name.Name {
+func astTypeSearch(file *ast.File, typename string) (*ast.TypeSpec, error) {
+	for _, decl := range file.Decls {
+		if gendecl, ok := decl.(*ast.GenDecl); ok {
+			if gendecl.Tok == token.TYPE {
+				for _, spec := range gendecl.Specs {
+					if ts, ok := spec.(*ast.TypeSpec); ok {
+						if typename == ts.Name.Name {
 							return ts, nil
 						}
 					}
@@ -83,11 +83,11 @@ func astTypeSearch(f *ast.File, t string) (*ast.TypeSpec, error) {
 			}
 		}
 	}
-	return nil, fmt.Errorf("The type %v could not be found in the AST.", t)
+	return nil, fmt.Errorf("The type %v could not be found in the AST.", typename)
 }
 
 // astDepthFields finds fields of fields using an AST.
-func astSelectorSearch(f *ast.File, ts *ast.TypeSpec, selector string) *ast.SelectorExpr {
+func astSelectorSearch(ts *ast.TypeSpec, selector string) *ast.SelectorExpr {
 	if strct, ok := ts.Type.(*ast.StructType); ok {
 		for _, field := range strct.Fields.List {
 			if sel, ok := field.Type.(*ast.SelectorExpr); ok {
@@ -103,14 +103,14 @@ func astSelectorSearch(f *ast.File, ts *ast.TypeSpec, selector string) *ast.Sele
 }
 
 // astLocateType finds the import path, package, and typename of a type in an AST.
-func astLocateType(f *ast.File, fld *ast.SelectorExpr) (string, string, string) {
-	fldTypePkg := fld.X.(*ast.Ident).Name // 'log' in 'Field log.Logger'
-	fldTypeName := fld.Sel.Name           // 'Logger' in 'Field log.Logger'
+func astLocateType(file *ast.File, sel *ast.SelectorExpr) (string, string, string) {
+	fieldTypePkg := sel.X.(*ast.Ident).Name // 'log' in 'Field log.Logger'
+	fieldTypeName := sel.Sel.Name           // 'Logger' in 'Field log.Logger'
 
 	// don't alter the original file's slice
 	var checkedImprts []*ast.ImportSpec
-	for _, v := range f.Imports {
-		checkedImprts = append(checkedImprts, v)
+	for _, imprt := range file.Imports {
+		checkedImprts = append(checkedImprts, imprt)
 	}
 
 	// check imports that have variable names
@@ -120,8 +120,8 @@ func astLocateType(f *ast.File, fld *ast.SelectorExpr) (string, string, string) 
 		// if an import has a variable name
 		if imprt.Name != nil {
 			// if an import variable matches the package name (i.e 'log' in 'log.Logger')
-			if fldTypePkg == imprt.Name.Name {
-				return imprt.Path.Value, fldTypePkg, fldTypeName
+			if fieldTypePkg == imprt.Name.Name {
+				return imprt.Path.Value, fieldTypePkg, fieldTypeName
 			} else {
 				// remove
 				checkedImprts = checkedImprts[:len(checkedImprts)-1]
@@ -133,13 +133,14 @@ func astLocateType(f *ast.File, fld *ast.SelectorExpr) (string, string, string) 
 	for _, imprt := range checkedImprts {
 		imprtPath := imprt.Path.Value
 		imprtPath = imprtPath[1 : len(imprtPath)-1] // "log" -> log
-		if fldTypePkg == imprtPath {
-			return imprtPath, fldTypePkg, fldTypeName
+		if fieldTypePkg == imprtPath {
+			return imprtPath, fieldTypePkg, fieldTypeName
 		}
 	}
-	return "", fldTypePkg, fldTypeName
+	return "", fieldTypePkg, fieldTypeName
 }
 
+// isBasic determines whether a type is a basic (non-custom) type.
 func isBasic(t types.Type) bool {
 	switch x := t.(type) {
 	case *types.Basic:
@@ -155,54 +156,54 @@ func isBasic(t types.Type) bool {
 	}
 }
 
-// FieldSearch represents a search for a field.
+// fieldSearch represents a search for a field.
 type fieldSearch struct {
 	Fields []models.Field // The fields present in the search.
-	Basic  bool           // Whether there are fields are basic.
+	Basic  bool           // Whether there are fields that are basic.
 	Error  error          // Whether an error occured.
 }
 
 // astFieldSearch searches through an ast.Typespec for fields.
-func astFieldSearch(info types.Info, f *ast.File, ts *ast.TypeSpec, imprt string, pkg string) fieldSearch {
+func astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, imprt string, pkg string) fieldSearch {
 	var fields []models.Field
 	switch x := info.Types[ts.Type].Type.(type) {
 	// structs have fields that can have fields.
 	case *types.Struct:
 		for i := 0; i < x.NumFields(); i++ {
-			xfield := x.Field(i)
-			fieldname := xfield.Name()
-			definition := xfield.Type().String()
+			xField := x.Field(i)
+			fieldname := xField.Name()
+			definition := xField.Type().String()
 			field := models.Field{
 				Name:       fieldname,
 				Definition: definition,
 			}
 
 			// if a field is a custom type it may have fields of its own
-			if !isBasic(xfield.Type()) {
+			if !isBasic(xField.Type()) {
 				// find the custom type field.
-				defs := strings.Split(field.Definition, ".")
-				if len(defs) == 2 {
-					dpkg := defs[0]
-					dtyp := defs[1]
+				splitDefinition := strings.Split(field.Definition, ".")
+				if len(splitDefinition) == 2 {
+					definitionPkg := splitDefinition[0]
+					definitionType := splitDefinition[1]
 
 					// use the selector on a custom type to determine its field
-					var nimprt, npkg, ntype string
-					if dpkg != pkg {
-						sel := astSelectorSearch(f, ts, dpkg+"."+dtyp)
+					var newImprt, newPkg, newType string
+					if definitionPkg != pkg {
+						sel := astSelectorSearch(ts, definitionPkg+"."+definitionType)
 						if sel == nil {
 							return fieldSearch{
 								Error: fmt.Errorf("Could not find the selector for the %v in-depth field %v", ts.Name.Name, field.Definition),
 							}
 						}
-						nimprt, npkg, ntype = astLocateType(f, sel)
+						newImprt, newPkg, newType = astLocateType(file, sel)
 					} else {
-						nimprt = imprt
-						npkg = pkg
-						ntype = dtyp
+						newImprt = imprt
+						newPkg = pkg
+						newType = definitionType
 					}
-					depthFields, err := ASTSearch(nimprt, npkg, ntype)
+					depthFields, err := ASTSearch(newImprt, newPkg, newType)
 					if err != nil {
-						fmt.Printf("WARNING: An error occured searching for the %v in-depth field '%v' with import \"%v\".\n%v\n", ntype, field.Definition, imprt, err)
+						fmt.Printf("WARNING: An error occurred searching for the %v in-depth field '%v' with import \"%v\".\n%v\n", newType, field.Definition, newImprt, err)
 					}
 					field.Fields = depthFields
 				}
@@ -233,9 +234,9 @@ func astFieldSearch(info types.Info, f *ast.File, ts *ast.TypeSpec, imprt string
 }
 
 // printFields shows a tree of fields for a given type.
-func PrintFields(t string, fields []models.Field, tabs string) {
+func PrintFields(typename string, fields []models.Field, tabs string) {
 	if tabs == "" {
-		fmt.Println(tabs + "type " + t)
+		fmt.Println(tabs + "type " + typename)
 	}
 
 	tabs += "\t" // field tab

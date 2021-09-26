@@ -7,83 +7,81 @@ import (
 )
 
 // Function determines the func to generate function code.
-func Function(g *models.Generator) (string, error) {
+func Function(gen *models.Generator) (string, error) {
 	var functions string
 
 	// determine the method to analyze each function.
-	if g.Template.Funcpath == "" {
-		for _, function := range g.Functions {
+	if gen.Template.Funcpath == "" {
+		for _, function := range gen.Functions {
 			functions += defaultFunction(&function) + "\n"
 		}
 		return functions, nil
 	}
 
-	fn, err := interpretFunction(g)
+	fn, err := interpretFunction(gen)
 	if err != nil {
 		return "", err
 	}
-	for _, function := range g.Functions {
+	for _, function := range gen.Functions {
 		functions += fn(&function) + "\n"
 	}
 	return functions, nil
 }
 
 // defaultFunction creates the header of the generated file using the default method.
-func defaultFunction(f *models.Function) string {
-	var function string
-
+func defaultFunction(function *models.Function) string {
 	// comment
-	function += generateComment(f) + "\n"
+	fn := generateComment(function) + "\n"
 
 	// signature
-	function += generateSignature(f) + "\n"
+	fn += generateSignature(function) + "\n"
 
 	// body
-	function += generateBody(f) + "\n"
+	fn += generateBody(function) + "\n"
 
 	// return
-	function += generateReturn(f) + "\n"
+	fn += generateReturn(function) + "\n"
 
 	// end of function
-	function += "}"
-	return function
+	fn += "}"
+	return fn
 }
 
 // generateComment generates a function comment.
-func generateComment(f *models.Function) string {
-	var tComment string
-	for _, toType := range f.To {
-		tComment += toType.Name + ", "
+func generateComment(function *models.Function) string {
+	var toComment string
+	for _, toType := range function.To {
+		toComment += toType.Name + ", "
 	}
-	if len(tComment) != 0 {
+	if len(toComment) != 0 {
 		// remove last ", "
-		tComment = tComment[:len(tComment)-2]
+		toComment = toComment[:len(toComment)-2]
 	}
 
-	var fComment string
-	for _, fromType := range f.From {
-		fComment += fromType.Name + ", "
+	var fromComment string
+	for _, fromType := range function.From {
+		fromComment += fromType.Name + ", "
 	}
-	if len(fComment) != 0 {
+	if len(fromComment) != 0 {
 		// remove last ", "
-		fComment = fComment[:len(fComment)-2]
+		fromComment = fromComment[:len(fromComment)-2]
 	}
 
-	return "// " + f.Name + " copies a " + fComment + " to a " + tComment + "."
+	return "// " + function.Name + " copies a " + fromComment + " to a " + toComment + "."
 }
 
 // generateSignature generates a function's signature.
-func generateSignature(f *models.Function) string {
-	s := "func " + f.Name + "(" + generateParameters(f) + ") {"
-	return s
+func generateSignature(function *models.Function) string {
+	sig := "func " + function.Name + "(" + generateParameters(function) + ") {"
+	return sig
 }
 
 // generateParameters generates the parameters of a function.
-func generateParameters(f *models.Function) string {
+func generateParameters(function *models.Function) string {
 	var parameters string
 
 	// Generate To-Type parameters
-	for _, toType := range f.To {
+	for _, toType := range function.To {
 		parameters += toType.VariableName + " "
 		if toType.Options.Pointer {
 			parameters += "*"
@@ -95,7 +93,7 @@ func generateParameters(f *models.Function) string {
 	}
 
 	// Generate From-Type parameters
-	for _, fromType := range f.From {
+	for _, fromType := range function.From {
 		parameters += fromType.VariableName + " "
 		if fromType.Options.Pointer {
 			parameters += "*"
@@ -115,11 +113,11 @@ func generateParameters(f *models.Function) string {
 }
 
 // generateBody generates the body of a function.
-func generateBody(f *models.Function) string {
+func generateBody(function *models.Function) string {
 	var body string
 
 	// Assign fields to ToType(s)
-	for _, toType := range f.To {
+	for _, toType := range function.To {
 		body += "// " + toType.Name + " fields\n"
 
 		for _, toField := range toType.Fields {
@@ -138,19 +136,19 @@ func generateBody(f *models.Function) string {
 	return body
 }
 
-func generateReturn(f *models.Function) string {
+func generateReturn(function *models.Function) string {
 	return ""
 }
 
 // interpretFunction creates the header of the generated file using an interpreted template file.
-func interpretFunction(g *models.Generator) (func(f *models.Function) string, error) {
-	fn, err := interpreter.InterpretFunc(g.Loadpath, g.Template.Funcpath, "generator.Function")
+func interpretFunction(gen *models.Generator) (func(f *models.Function) string, error) {
+	fn, err := interpreter.InterpretFunc(gen.Loadpath, gen.Template.Funcpath, "generator.Function")
 	if err != nil {
 		return nil, err
 	}
 
 	// run the interpreted function.
-	return func(f *models.Function) string {
-		return fn(f)
+	return func(function *models.Function) string {
+		return fn(function)
 	}, nil
 }

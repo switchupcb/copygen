@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/switchupcb/copygen/cli/models"
 	"gopkg.in/yaml.v3"
@@ -23,122 +24,67 @@ func LoadYML(filepath string) (*models.Generator, error) {
 		return nil, fmt.Errorf("There is an issue with the provided .yml file: %v\n%v", filepath, err)
 	}
 
-	g, err := parseYML(m)
+	gen, err := ParseYML(m)
 	if err != nil {
 		return nil, err
 	}
-	g.Loadpath = filepath
-	return g, nil
+	gen.Loadpath = filepath
+	return gen, nil
 }
 
-// parseYML parses a YML into a Generator.
-func parseYML(m YML) (*models.Generator, error) {
-	var g models.Generator
-	importMap := make(map[string]string) // a 'set' of imports.
+// ParseYML parses a YML into a Generator.
+func ParseYML(m YML) (*models.Generator, error) {
+	var gen models.Generator
 
 	// define the generator options.
 	if filepath, ok := m.Generated["filepath"].(string); ok {
-		g.Filepath = filepath
+		gen.Filepath = filepath
 	} else {
 		return nil, fmt.Errorf("There is an issue with the .yml configuration for generated.filepath.")
 	}
 
 	if pkg, ok := m.Generated["package"].(string); ok {
-		g.Package = pkg
+		gen.Package = pkg
 	} else {
 		return nil, fmt.Errorf("There is an issue with .yml configuration for generated.package.")
 	}
 
-	for _, imprt := range m.Import {
-		importMap[imprt] = ""
-	}
-
-	g.Template = models.Template{
+	gen.Template = models.Template{
 		Headpath: parseTemplate(m.Generated, "header"),
 		Funcpath: parseTemplate(m.Generated, "function"),
 	}
 
-	// define the generator functions.
+	// define the generator functions
 	for name, function := range m.Functions {
-		var gf models.Function
-		gf.Name = name
-
-		// define the To types of the function.
-		gtMap := make(map[string]bool) // A "set" of parameters
-		for toName, toType := range function.To {
-			var gtType models.Type
-			varName := createVariable(gtMap, "t"+string(toName[0]), 0)
-			gtMap[varName] = true
-			gtType.Name = toName
-			gtType.VariableName = varName
-			gtType.Package = toType.Package
-			gtType.Options = models.TypeOptions{
-				Import:   toType.Import,
-				Pointer:  toType.Pointer,
-				Depth:    toType.Depth,
-				Deepcopy: toType.Deepcopy,
-				Custom:   toType.Options,
-			}
-			importMap[gtType.Options.Import] = ""
-
-			// define the From types of the function.
-			gfMap := make(map[string]bool) // A "set" of parameters
-			for fromName, fromType := range function.From {
-				var gfType models.Type
-				varName := createVariable(gfMap, "f"+string(fromName[0]), 0)
-				gfMap[varName] = true
-				gfType.Name = fromName
-				gfType.VariableName = varName
-				gfType.Package = fromType.Package
-				gfType.Options = models.TypeOptions{
-					Import:   fromType.Import,
-					Pointer:  fromType.Pointer,
-					Depth:    fromType.Depth,
-					Deepcopy: fromType.Deepcopy,
-					Custom:   fromType.Options,
-				}
-				importMap[gfType.Options.Import] = ""
-
-				// define the fields of each type using the FromType.
-				var toFields, fromFields []models.Field
-				if len(fromType.Fields) == 0 {
-					var err error
-					toFields, fromFields, err = Automatch(&gtType, &gfType)
-					if err != nil {
-						return nil, err
-					}
-				} else {
-					toFields, fromFields = DefineFieldsByFromType(&fromType)
-				}
-				gtType.Fields = append(gtType.Fields, toFields...)
-				gfType.Fields = append(gfType.Fields, fromFields...)
-				for _, field := range gtType.Fields {
-					if len(field.Fields) != 0 {
-						field.Parent = gtType
-					}
-				}
-				gfType.Fields = fromFields
-				for _, field := range gfType.Fields {
-					if len(field.Fields) != 0 {
-						field.Parent = gtType
-					}
-				}
-				gf.From = append(gf.From, gfType)
-			}
-			gf.To = append(gf.To, gtType)
+		modelFunction, err := parseFunction(function, name)
+		if err != nil {
+			return nil, err
 		}
-		gf.Options = models.FunctionOptions{
-			Custom: function.Options,
-		}
-		g.Functions = append(g.Functions, gf)
+		gen.Functions = append(gen.Functions, *modelFunction)
 	}
-	for imprt := range importMap {
+
+	imprtMap := make(map[string]bool) // a 'set' of imports.
+	for _, imprt := range m.Import {
 		if imprt != "" {
-			g.Imports = append(g.Imports, imprt)
+			imprtMap[strings.TrimSpace(imprt)] = true
 		}
 	}
-	return &g, nil
-
+	for _, function := range gen.Functions {
+		for _, toType := range function.To {
+			if toType.Options.Import != "" {
+				imprtMap[strings.TrimSpace(toType.Options.Import)] = true
+			}
+		}
+		for _, fromType := range function.From {
+			if fromType.Options.Import != "" {
+				imprtMap[strings.TrimSpace(fromType.Options.Import)] = true
+			}
+		}
+	}
+	for imprt := range imprtMap {
+		gen.Imports = append(gen.Imports, imprt)
+	}
+	return &gen, nil
 }
 
 // parseTemplate parses a template map for a template key (option).
@@ -146,13 +92,89 @@ func parseTemplate(m map[string]interface{}, k string) string {
 	if template, exists := m["templates"]; exists {
 		if templateMap, ok := template.(map[string]interface{}); ok {
 			if option, exists := templateMap[k]; exists {
-				if value, ok := option.(string); ok {
-					return value
+				if str, ok := option.(string); ok {
+					return str
 				}
 			}
 		}
 	}
 	return ""
+}
+
+// parseFunction parses a YML function.
+func parseFunction(f Function, name string) (*models.Function, error) {
+	var function models.Function
+	function.Name = name
+
+	// define the To types of the function.
+	toParams := make(map[string]bool) // A "set" of parameters
+	for toname, to := range f.To {
+		tovarname := createVariable(toParams, "t"+string(toname[0]), 0)
+		toParams[tovarname] = true
+		toType := models.Type{
+			Name:         toname,
+			VariableName: tovarname,
+			Package:      to.Package,
+			Options: models.TypeOptions{
+				Import:   to.Import,
+				Pointer:  to.Pointer,
+				Depth:    to.Depth,
+				Deepcopy: to.Deepcopy,
+				Custom:   to.Options,
+			},
+		}
+
+		// define the From types of the function.
+		fromParams := make(map[string]bool) // A "set" of parameters
+		for fromname, from := range f.From {
+			fromvarname := createVariable(fromParams, "f"+string(fromname[0]), 0)
+			fromParams[fromvarname] = true
+			fromType := models.Type{
+				Name:         fromname,
+				VariableName: fromvarname,
+				Package:      from.Package,
+				Options: models.TypeOptions{
+					Import:   from.Import,
+					Pointer:  from.Pointer,
+					Depth:    from.Depth,
+					Deepcopy: from.Deepcopy,
+					Custom:   from.Options,
+				},
+			}
+
+			// define the fields of a from type
+			toFields, fromFields, err := parseFields(from, &toType, &fromType)
+			if err != nil {
+				return nil, err
+			}
+			for _, k := range toFields {
+				fmt.Println(k.From)
+			}
+			fromType.Fields = fromFields
+			toType.Fields = append(toType.Fields, toFields...)
+			function.From = append(function.From, fromType)
+		}
+		function.To = append(function.To, toType)
+	}
+	function.Options = models.FunctionOptions{
+		Custom: f.Options,
+	}
+	return &function, nil
+}
+
+// parseFields parses the fields of two types.
+func parseFields(from From, toType *models.Type, fromType *models.Type) ([]models.Field, []models.Field, error) {
+	if len(from.Fields) == 0 {
+		var err error
+		toFields, fromFields, err := Automatch(toType, fromType)
+		if err != nil {
+			return nil, nil, err
+		}
+		return toFields, fromFields, nil
+	} else {
+		toFields, fromFields := DefineFieldsByFrom(&from, toType, fromType)
+		return toFields, fromFields, nil
+	}
 }
 
 // createVariable generates a valid variable name for a list of parameters.

@@ -6,14 +6,14 @@ type Type struct {
 	Name         string      // The name of the type in the provided file.
 	VariableName string      // The variable name the type is assigned.
 	Fields       []Field     // The fields of the type.
-	Options      TypeOptions // The type options used for this type.
+	Options      TypeOptions // The type options used for the type.
 }
 
 // TypeOptions represent options for a Type.
 type TypeOptions struct {
 	Import   string                 // The import path for the type.
 	Pointer  bool                   // Whether the type should be used with a pointer.
-	Depth    string                 // Whether the type fields should be copied recursively (in-depth).
+	Depth    int                    // The level fields should be copied to/from.
 	Deepcopy string                 // Whether the type should be deepcopied.
 	Custom   map[string]interface{} // The custom options of a function.
 }

@@ -20,8 +20,6 @@ functions:
 
  # Custom function options can be defined for template use.
  ModelsToDomain:
-    options:                  # default: none
-      custom: true
 
     # Define the types to be copied (to and from).
     # Custom type options (to and from) can be defined for template use.
@@ -29,8 +27,6 @@ functions:
       Account:
         package:  domain      # default: none
         pointer:  true        # default: false     (# Optimization) 
-        options:              # default: none
-          custom: false
 
     from:
       User:
@@ -43,8 +39,6 @@ functions:
           ID:
             to: UserID
             convert: c.Itoa   # default: none      (# Matcher)
-            options:          # default: none
-              custom: false
 
       Account:
         package: models       # default: none

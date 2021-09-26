@@ -12,18 +12,20 @@ import:
 # Define the functions to be generated.
 # Properties with `# default` are NOT necessary to include.
 functions:
-
- # Custom function options can be defined for template use.
  ModelsToDomain:
+
+    # Custom function options can be defined for template use.
     options:                  # default: none
       custom: true
 
     # Define the types to be copied (to and from).
-    # Custom type options (to and from) can be defined for template use.
     to:
       Account:
         package:  domain      # default: none
         pointer:  true        # default: false     (# Optimization) 
+        depth:    0           # default: 0
+
+        # Custom type options (to and from) can be defined for template use.
         options:              # default: none
           custom: false
 
@@ -31,13 +33,15 @@ functions:
       User:
         package: models       # default: none
         pointer: false        # default: false
+        depth:   0            # default: 0
 
         # Match fields to the to-type.
-        # Custom field options can be defined for template use.
         fields:               # default: automatch (# Matcher)
           ID:
             to: UserID
             convert: c.Itoa   # default: none      (# Matcher)
+
+            # Custom field options can be defined for template use.
             options:          # default: none
               custom: false
 

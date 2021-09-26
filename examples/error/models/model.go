@@ -9,7 +9,7 @@ type Account struct {
 	Email    string
 }
 
-// A user represents the data model for a user.
+// A User represents the data model for a user.
 type User struct {
 	ID       int
 	Name     int

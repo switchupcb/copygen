@@ -11,7 +11,8 @@ import (
 
 // Environment represents the copygen environment.
 type Environment struct {
-	YML string // The yml file path used as a configuration file.
+	YMLPath string // The .yml file path used as a configuration file.
+	Output  bool   // Whether to print the generated code to stdout.
 }
 
 // CLI runs the copygen command and returns its exit status.
@@ -34,6 +35,7 @@ func CLI(args []string) int {
 func (e *Environment) parseArgs(args []string) error {
 	// define the command line arguments.
 	ymlPtr := flag.String("yml", "", "The path to the .yml flag used for code generation (from the current working directory).")
+	output := flag.Bool("o", false, "Use -o to print generated code to the screen.")
 
 	// parse the command line arguments.
 	flag.Parse()
@@ -41,21 +43,24 @@ func (e *Environment) parseArgs(args []string) error {
 	// yml
 	ymlLen := len(*ymlPtr)
 	if ymlLen == 0 {
-		return fmt.Errorf("No .yml configuration file was specified using -yml.")
+		return fmt.Errorf("You must specify a .yml configuration file using -yml.")
 	} else if ymlLen < 4 || ".yml" != (*ymlPtr)[ymlLen-4:] {
 		return fmt.Errorf("The specified file (-yml) is not a .yml file.")
 	}
-	e.YML = *ymlPtr
+	e.YMLPath = *ymlPtr
+
+	// output
+	e.Output = *output
 	return nil
 }
 
 func (e *Environment) run() error {
-	gen, err := loader.LoadYML(e.YML)
+	gen, err := loader.LoadYML(e.YMLPath)
 	if err != nil {
 		return err
 	}
 
-	if err = generator.Generate(gen); err != nil {
+	if err = generator.Generate(gen, e.Output); err != nil {
 		return err
 	}
 	return nil

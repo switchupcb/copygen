@@ -7,43 +7,38 @@ type YML struct {
 	Functions map[string]Function    `yaml:"functions"`
 }
 
-// Function represents the function level of the YML file.
+// Function represents function properties of the YML file.
 type Function struct {
 	To      map[string]To          `yaml:"to"`
 	From    map[string]From        `yaml:"from"`
 	Options map[string]interface{} `yaml:"options"`
 }
 
-// To represents the to-type in the YML file.
+// To represents to-type properties in the YML file.
 type To struct {
-	Package string `yaml:"package"`
-	Import  string `yaml:"import"`
-
-	// Optional
+	Package  string                 `yaml:"package"`
+	Import   string                 `yaml:"import"`
 	Pointer  bool                   `yaml:"pointer"`
-	Depth    string                 `yaml:"depth"`
+	Depth    int                    `yaml:"depth"`
 	Deepcopy string                 `yaml:"deepcopy"`
 	Options  map[string]interface{} `yaml:"options"`
 }
 
-// From represents the from-type in the YML file.
+// From represents from-type properties in the YML file.
 type From struct {
-	Package string           `yaml:"package"`
-	Import  string           `yaml:"import"`
-	Fields  map[string]Field `yaml:"fields"`
-
-	// Optional
+	Package  string                 `yaml:"package"`
+	Import   string                 `yaml:"import"`
+	Fields   map[string]Field       `yaml:"fields"`
 	Pointer  bool                   `yaml:"pointer"`
-	Depth    string                 `yaml:"depth"`
+	Depth    int                    `yaml:"depth"`
 	Deepcopy string                 `yaml:"deepcopy"`
 	Options  map[string]interface{} `yaml:"options"`
 }
 
-// Field represents the field options of the YML file.
+// Field represents the field properties of the YML file.
 type Field struct {
 	To       string                 `yaml:"to"`
 	Convert  string                 `yaml:"convert"`
-	Depth    string                 `yaml:"depth"`
 	Deepcopy string                 `yaml:"deepcopy"`
 	Options  map[string]interface{} `yaml:"options"`
 }
