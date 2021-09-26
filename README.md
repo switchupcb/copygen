@@ -1,11 +1,11 @@
 # Copygen
 
-Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that generates type-to-type and field-to-field struct code without reflection.
+Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that generates type-to-type and field-to-field struct code without adding any reflection or dependencies to your project.
 
 | Topic                         | Categories                                                                                                      |
 | :---------------------------- | :-------------------------------------------------------------------------------------------------------------- |
 | [Use](#use)                   | [Types](#types), [YML](#yml), [Command Line](#command-line), [Output](#output), [Customization](#customization) |
-| [Matcher](#matcher)           | [Automatch](#automatch), [Convert](#convert)                                                                    |
+| [Matcher](#matcher)           | [Convert](#convert), [Automatch](#automatch)                                                                    |
 | [Optimization](#optimization) | [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy), [Pointers](#pointers)                                 |
 
 ### Benchmark
@@ -16,7 +16,17 @@ Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that
 
 ## Use
 
-This [example](https://github.com/switchupcb/copygen/blob/main/examples/main) uses three type-structs to generate the `ModelsToDomain()` function. All paths are specified from the `types.yml` file path in `examples/main`.
+Each example has a **README**.
+
+| Example       | Description                                                  |
+| :------------ | :----------------------------------------------------------- |
+| main          | The default example _(README)_.                              |
+| [error]()     | Uses templates to return an error.                           |
+| [automatch]() | Uses the automatch feature _(doesn't require fields)_.       |
+| [fullmatch]() | Uses the automatch feature with modules and recursive types. |
+| deepcopy      | Uses templates to create a deepcopy.                         |
+
+This [example](https://github.com/switchupcb/copygen/blob/main/examples/main) uses three type-structs to generate the `ModelsToDomain()` function. All paths are specified from the `types.yml` filepath in `examples/main`.
 
 ### Types
 
@@ -78,18 +88,20 @@ import:
 # Define the functions to be generated.
 # Properties with `# default` are NOT necessary to include.
 functions:
-
- # Custom function options can be defined for template use.
  ModelsToDomain:
+
+    # Custom function options can be defined for template use.
     options:                  # default: none
       custom: true
 
     # Define the types to be copied (to and from).
-    # Custom type options (to and from) can be defined for template use.
     to:
       Account:
         package:  domain      # default: none
         pointer:  true        # default: false     (# Optimization) 
+        depth:    false       # default: false
+  
+        # Custom type options (to and from) can be defined for template use.
         options:              # default: none
           custom: false
 
@@ -97,13 +109,16 @@ functions:
       User:
         package: models       # default: none
         pointer: false        # default: false
+        depth:   0            # default: 0
 
         # Match fields to the to-type.
-        # Custom field options can be defined for template use.
-        fields:               # default: automatch (# Matcher) [UNIMPL]
+        fields:               # default: automatch (# Matcher)
           ID:
             to: UserID
             convert: c.Itoa   # default: none      (# Matcher)
+            depth:    false       # default: false
+
+            # Custom field options can be defined for template use.
             options:          # default: none
               custom: false
 
@@ -148,12 +163,12 @@ import (
 	"github.com/switchupcb/copygen/examples/main/models"
 )
 
-// ModelsToDomain copies a Account, User to a Account.
-func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
+// ModelsToDomain copies a User, Account to a Account.
+func ModelsToDomain(tA *domain.Account, fU models.User, fA models.Account) {
 	// Account fields
+	tA.UserID = c.Itoa(tA.ID)
 	tA.ID = fA.ID
 	tA.Name = fA.Name
-	tA.UserID = c.Itoa(tA.ID)
 
 }
 ```
@@ -186,11 +201,7 @@ Function, Type, and Field custom options can be defined for template use. These 
 
 ## Matcher
 
-Matching is specified in the `.yml` _(which functions as a schema in relation to other generators)_. This library assumes that it's used with other code generators: This complicates the use of tags which is why they aren't used.
-
-### Automatch
-
-If `fields` isn't specified for a `from` type, Copygen will attempt to automatch type-fields by name. Duplicate fields will simply be reassigned by default. All `from` type-fields are assigned to respective `to` types.
+Matching is specified in the `.yml` _(which functions as a schema in relation to other generators)_. All `from` type-fields are assigned to respective `to` types. The library assumes that it's used with other code generators: This complicates the use of tags which is why they aren't used.
 
 ### Convert
 
@@ -205,14 +216,59 @@ func convert(f Field) Type {
 
 where `Field` is replaced with the field it will receive _(i.e int)_, and `Type` is replaced with the type it will return _(i.e string)_.
 
+### Automatch
+
+If `fields` isn't specified for a `from` type, Copygen will attempt to automatch type-fields by name. Automatch **supports field-depth** (where types are located within fields) **and recursive types** (where the same type is in another type). **You must specify the import path for types that use the automatcher.** Automatch loads types from Go modules _(in GOPATH)_. Ensure your modules are up to date by using `go get -u <insert/module/import/path>`.
+
+#### Depth
+
+A depth level of 0 will match the first-level fields. Increasing the depth level will match more fields.
+
+```go
+type Account
+  // depth level 0
+  ID      int
+  Name    string
+  Email   string
+  Basic   domain.T  // type T int
+  User    domain.DomainUser
+              // depth Level 1
+              UserID   string
+              Name     string
+              UserData map[string]interface{}
+  // depth level 0
+  Depth   log.Logger
+              // depth Level 1
+              mu      sync.Mutex
+                          // depth Level 2
+                          state   int32
+                          sema    uint32
+              // depth Level 1
+              prefix  string
+              flag    int
+              out     io.Writer
+                          // depth Level 2
+                          Write   func(p []byte) (n int, err error)
+              buf     []byte
+```
+
 ## Optimization 
 
 ### Shallow Copy vs. Deep Copy
-The library generates a [shallow copy](https://en.m.wikipedia.org/wiki/Object_copying#Shallow_copy) by default. An easy way to deep-copy fields with the same return type is by using `new()` as/in a converter function or use a custom template.
+The library generates a [shallow copy](https://en.m.wikipedia.org/wiki/Object_copying#Shallow_copy) by default. An easy way to deep-copy fields with the same return type is by using `new()` as/in a converter function or by using a custom template.
 
 ### Pointers
 Go parameters are _pass-by-value_ which means that a parameter's value _(i.e int, memory address, etc)_ is copied into another location of memory. As a result, passing pointers to functions is more efficient **if the byte size of a pointer is less than the total byte size of the struct member's references**. However, be advised that doing so adds memory to the heap _[which can result in less performance](https://medium.com/@vCabbage/go-are-pointers-a-performance-optimization-a95840d3ef85)_. Read this article for more information on memory: [What Every Programmer Should Know About Memory](https://lwn.net/Articles/250967/).
 
 ## Contributing
 
-You can contribute to this repository by viewing the [Project Structure](CONTRIBUTING.md).
+You can contribute to this repository by viewing the [Project Structure and Code Specifications](CONTRIBUTING.md).
+
+| Topic             |
+| :---------------- |
+| License           |
+| Pull Requests     |
+| Domain            |
+| Project Structure |
+| Specification     |
+| Roadmap           |

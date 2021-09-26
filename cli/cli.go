@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/switchupcb/copygen/cli/generator"
-	loader "github.com/switchupcb/copygen/cli/loader/yml"
+	"github.com/switchupcb/copygen/cli/loader"
 )
 
 // Environment represents the copygen environment.
