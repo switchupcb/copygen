@@ -4,9 +4,9 @@ generated:
   package: copygen
 
 # Define the imports that are included in the generated file.
-import:
-  - github.com/switchupcb/copygen/examples/automatch/domain
-  - github.com/switchupcb/copygen/examples/automatch/models
+# Imports can also be defined in the type-property.
+# import:
+#  - github.com/switchupcb/copygen/examples/automatch/domain
 
 # Define the functions to be generated.
 # Properties with `# default` are NOT necessary to include (see Main).
@@ -19,11 +19,19 @@ functions:
     # Custom type options (to and from) can be defined for template use (see Main).
     to:
       Account:
+        # Define the import path for the type (required for automatch).
+        import: github.com/switchupcb/copygen/examples/automatch/domain
         package:  domain      # default: none
       
     from:
       User:
+        import: github.com/switchupcb/copygen/examples/automatch/models
         package: models       # default: none
         
       Account:
+        import: github.com/switchupcb/copygen/examples/automatch/models
         package: models       # default: none
+      
+      T:
+        import: github.com/switchupcb/copygen/examples/automatch/domain
+        package:  domain      # default: none

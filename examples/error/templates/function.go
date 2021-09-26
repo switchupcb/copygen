@@ -2,8 +2,8 @@
 package generator
 
 import (
+	"github.com/switchupcb/copygen/cli/generator/interpreter"
 	"github.com/switchupcb/copygen/cli/models"
-	"github.com/switchupcb/copygen/cli/pkg/interpreter"
 )
 
 // Function determines the func to generate function code.
