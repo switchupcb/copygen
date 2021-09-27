@@ -1,6 +1,6 @@
 # Copygen
 
-Copygen is a [Go code generator](https://github.com/gophersgang/go-codegen) that generates type-to-type and field-to-field struct code without adding any reflection or dependencies to your project.
+Copygen is a command-line [code generator](https://github.com/gophersgang/go-codegen) that generates type-to-type and field-to-field struct code without adding any reflection or dependencies to your project.
 
 | Topic                           | Categories                                                                      |
 | :------------------------------ | :------------------------------------------------------------------------------ |
@@ -193,7 +193,7 @@ generated:
 
 #### Templates
 
-Templates can be created using **Go** to customize the generated code. The `copygen` generator uses the `package generator` `Header(*models.Generator)` to generate header code and `Function(*models.Function)` to generate code for each function. As a result, these _(package generator with functions)_ are **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Templates are interpreted by [yaegi](https://github.com/traefik/yaegi).
+Templates can be created using **Go** to customize the generated code. The `copygen` generator uses the `package generator` `Header(*models.Generator)` to generate header code and `Function(*models.Function)` to generate code for each function. As a result, these _(package generator with functions)_ are **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Templates are interpreted by [yaegi](https://github.com/traefik/yaegi) which currently has limitations on module imports.
 
 #### Convert
 

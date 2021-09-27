@@ -34,7 +34,7 @@ func defaultHeader(gen *models.Generator) string {
 
 // interpretHeader creates the header of the generated file using an interpreted template file.
 func interpretHeader(gen *models.Generator) (string, error) {
-	fn, err := interpreter.InterpretFunc(gen.Loadpath, gen.Template.Funcpath, "generator.Header")
+	fn, err := interpreter.InterpretFunc(gen.Loadpath, gen.Template.Headpath, "generator.Header")
 	if err != nil {
 		return "", err
 	}

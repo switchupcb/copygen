@@ -7,8 +7,8 @@ import (
 	"github.com/switchupcb/copygen/examples/automatch/models"
 )
 
-// ModelsToDomain copies a User, Account, T to a Account.
-func ModelsToDomain(tA domain.Account, fU models.User, fA models.Account, fT domain.T) {
+// ModelsToDomain copies a T, User, Account to a Account.
+func ModelsToDomain(tA domain.Account, fT domain.T, fU models.User, fA models.Account) {
 	// Account fields
 	tA.ID = fA.ID
 	tA.Name = fA.Name

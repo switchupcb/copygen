@@ -40,9 +40,13 @@ func interpretFile(loadpath string, templatepath, symbol string) (*interp.Interp
 	source := string(file)
 
 	// interpret the source file
-	i := interp.New(interp.Options{})
+	goCache, err := os.UserCacheDir()
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred loading the template file. Is the GOCACHE set?", err)
+	}
+	i := interp.New(interp.Options{GoPath: os.Getenv("GOPATH"), GoCache: goCache})
 	if _, err := i.Eval(source); err != nil {
-		return nil, fmt.Errorf("An error occurred running the template file: %v\n%v", absfilepath, err)
+		return nil, fmt.Errorf("An error occurred loading the template file: %v\n%v", absfilepath, err)
 	}
 	return i, nil
 }
