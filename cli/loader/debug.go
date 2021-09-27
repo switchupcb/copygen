@@ -42,7 +42,7 @@ func PrintFieldRelation(toFields []*models.Field, fromFields []*models.Field) {
 	}
 }
 
-// printFieldRelation prints the relatinship between two fields.
+// printFieldRelation prints the relationship between two fields.
 func printFieldRelation(toField *models.Field, fromField *models.Field) {
 	if (*toField).From == fromField && (*fromField).To == toField {
 		fmt.Printf("To Field %v%v (%v) and From Field %v%v (%v) are related to each other.\n", toField.Definition+" ", toField.Name, toField.Parent.Package+"."+toField.Parent.Name, fromField.Definition+" ", fromField.Name, fromField.Parent.Package+"."+fromField.Parent.Name)

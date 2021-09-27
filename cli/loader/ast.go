@@ -106,7 +106,7 @@ func (a *AST) astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, 
 			}
 
 			// if a field is a custom type it may have fields of its own
-			if !isBasic(xField.Type()) {
+			if a.Depth < a.MaxDepth && !isBasic(xField.Type()) {
 				// find the custom type field.
 				splitDefinition := strings.Split(field.Definition, ".")
 				if len(splitDefinition) == 2 {

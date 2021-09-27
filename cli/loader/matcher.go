@@ -45,11 +45,15 @@ func DefineFieldsByFrom(from *From, toType *models.Type, fromType *models.Type) 
 // Automatch uses an AST to automatically match the fields of a toType by name.
 // Used when no field options are specified in the loader.
 func (a *AST) Automatch(toType *models.Type, fromType *models.Type) ([]*models.Field, []*models.Field, error) {
+	a.MaxDepth = toType.Options.Depth
+	a.Depth = 0
 	toFields, err := a.Search(toType.Options.Import, toType.Package, toType.Name)
 	if err != nil {
 		return nil, nil, err
 	}
 
+	a.MaxDepth = fromType.Options.Depth
+	a.Depth = 0
 	fromFields, err := a.Search(fromType.Options.Import, fromType.Package, fromType.Name)
 	if err != nil {
 		return nil, nil, err

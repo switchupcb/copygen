@@ -154,11 +154,6 @@ func (p *Parser) parseFunction(name string) (*models.Function, error) {
 			}
 
 			// determine the fields of a from type
-			if toType.Options.Depth >= fromType.Options.Depth {
-				p.AST.MaxDepth = toType.Options.Depth
-			} else {
-				p.AST.MaxDepth = fromType.Options.Depth
-			}
 			toFields, fromFields, err := p.parseFields(from, &toType, &fromType)
 			if err != nil {
 				return nil, err

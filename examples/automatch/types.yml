@@ -22,12 +22,14 @@ functions:
         # Define the import path for the type (required for automatch).
         import: github.com/switchupcb/copygen/examples/automatch/domain
         package:  domain      # default: none
-        depth: 1              # default: 0
+        depth:    1           # default: 0
+
       
     from:
       User:
         import: github.com/switchupcb/copygen/examples/automatch/models
         package: models       # default: none
+        depth:   2            # default: 0
         
       Account:
         import: github.com/switchupcb/copygen/examples/automatch/models
