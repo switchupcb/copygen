@@ -5,7 +5,7 @@ type Type struct {
 	Package      string      // The package the type is defined in.
 	Name         string      // The name of the type in the provided file.
 	VariableName string      // The variable name the type is assigned.
-	Fields       []Field     // The fields of the type.
+	Fields       []*Field    // The fields of the type.
 	Options      TypeOptions // The type options used for the type.
 }
 

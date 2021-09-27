@@ -55,44 +55,57 @@ func (a *AST) Automatch(toType *models.Type, fromType *models.Type) ([]*models.F
 		return nil, nil, err
 	}
 
-	// ASTSearch finds all the fields for each type.
-	// The name and definition can be used to determine a to-from field pair
-	// The field pair requires parents and to point to each other.
+	// The AST Search finds all the fields for each type at the specified depth level.
+	// The name and definition can be used to determine a to-from field pair.
+	// The field pair still needs to be pointed to its parent and to its respective field.
 	var newToFields, newFromFields []*models.Field
 	for i := 0; i < len(toFields); i++ {
 		for j := 0; j < len(fromFields); j++ {
-			if toFields[i].Name == fromFields[j].Name && toFields[i].Definition == fromFields[j].Definition {
-				toFields[i].Parent = *toType
-				fromFields[j].Parent = *fromType
-				toFields[i].From = &fromFields[j]
-				fromFields[j].To = &toFields[i]
-
-				// keep track of the pointer for field.To and field.From comparison if required
-				newToFields = append(newToFields, &toFields[i])
-				newFromFields = append(newFromFields, &fromFields[j])
+			toField, fromField, err := matchFields(toFields[i], fromFields[j], toType, fromType)
+			if err != nil {
+				continue
 			}
+			// keep track of the pointer for field.To and field.From comparison if required
+			newToFields = append(newToFields, toField)
+			newFromFields = append(newFromFields, fromField)
 		}
 	}
 	return newToFields, newFromFields, nil
 }
 
-// PrintFieldGraph prints a list of fields with the related fields.
-func PrintFieldGraph(fields []models.Field, tabs string) {
-	for _, field := range fields {
-		fmt.Println(field)
-		if len(field.Fields) != 0 {
-			PrintFieldGraph(field.Fields, tabs+"\t")
+// matchFields points respective fields to each other and a parent.
+func matchFields(toField *models.Field, fromField *models.Field, toType *models.Type, fromType *models.Type) (*models.Field, *models.Field, error) {
+	if toField.Name == fromField.Name && toField.Definition == fromField.Definition {
+		toField.Parent = *toType
+		fromField.Parent = *fromType
+		toField.From = fromField
+		fromField.To = toField
+		return toField, fromField, nil
+	} else {
+		// reminder: AST search only find fields at the depth-level specified.
+		// if a field has the same name, but wrong definition (i.e models.User vs. domain.User)
+		// there is a chance for it contain a match at the next depth-level.
+		//
+		// when both fields have nested fields, there an be a direct match between any level.
+		if len(toField.Fields) != 0 && len(fromField.Fields) != 0 {
+			for _, nestedToField := range toField.Fields {
+				for _, nestedFromField := range fromField.Fields {
+					return matchFields(nestedToField, nestedFromField, toType, fromType)
+				}
+			}
 		}
-	}
-}
 
-// PrintFieldRelation prints the relatinship between to and from field slices.
-func PrintFieldRelation(toFields []*models.Field, fromFields []*models.Field) {
-	for i := 0; i < len(toFields); i++ {
-		for j := 0; j < len(fromFields); j++ {
-			if (*toFields[i]).From == fromFields[j] {
-				fmt.Printf("To Field %v (%v) is related to From Field %v (%v).\n", toFields[i].Name, toFields[i].Parent.Name, fromFields[j].Name, fromFields[j].Parent.Name)
+		// when a toField has fields but a fromField doesn't, there can be a direct match
+		// from the fields of the toField to the fromField (see automatch example: User.UserID -> UserID).
+		if len(toField.Fields) != 0 {
+			for _, nestedToField := range toField.Fields {
+				return matchFields(nestedToField, fromField, toType, fromType)
+			}
+		} else if len(fromField.Fields) != 0 {
+			for _, nestedFromField := range fromField.Fields {
+				return matchFields(toField, nestedFromField, toType, fromType)
 			}
 		}
 	}
+	return nil, nil, fmt.Errorf("The fields %v and %v could not be matched.", toField, fromField)
 }

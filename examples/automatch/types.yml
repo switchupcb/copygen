@@ -32,7 +32,3 @@ functions:
       Account:
         import: github.com/switchupcb/copygen/examples/automatch/models
         package: models       # default: none
-      
-      T:
-        import: github.com/switchupcb/copygen/examples/automatch/domain
-        package:  domain      # default: none

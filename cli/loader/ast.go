@@ -15,15 +15,15 @@ import (
 
 // AST uses Abstract Syntax Tree analysis to find fields.
 type AST struct {
-	Depth    int                       // The current depth level of the ASTSearcher.
-	MaxDepth int                       // The maximum depth of the ASTSearcher.
-	cache    map[string][]models.Field // A key value cache used to reduce the amount of AST operations.
+	Depth    int                        // The current depth level of the ASTSearcher.
+	MaxDepth int                        // The maximum depth of the ASTSearcher.
+	cache    map[string][]*models.Field // A key value cache used to reduce the amount of AST operations.
 }
 
 // Search searches a .go source file for a type and its fields using an Abstract Syntax Tree.
-func (a *AST) Search(imprt string, pkg string, typename string) ([]models.Field, error) {
+func (a *AST) Search(imprt string, pkg string, typename string) ([]*models.Field, error) {
 	if a.cache == nil {
-		a.cache = make(map[string][]models.Field)
+		a.cache = make(map[string][]*models.Field)
 	}
 	if search, ok := a.cache[imprt+pkg+typename]; ok {
 		return search, nil
@@ -85,14 +85,14 @@ func (a *AST) Search(imprt string, pkg string, typename string) ([]models.Field,
 
 // fieldSearch represents a search for a field.
 type fieldSearch struct {
-	Fields []models.Field // The fields present in the search.
-	Basic  bool           // Whether there are fields that are basic.
-	Error  error          // Whether an error occured.
+	Fields []*models.Field // The fields present in the search.
+	Basic  bool            // Whether there are fields that are basic.
+	Error  error           // Whether an error occured.
 }
 
 // astFieldSearch searches through an ast.Typespec for fields.
 func (a *AST) astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, imprt string, pkg string) fieldSearch {
-	var fields []models.Field
+	var fields []*models.Field
 	switch x := info.Types[ts.Type].Type.(type) {
 	// structs have fields that can have fields.
 	case *types.Struct:
@@ -106,7 +106,7 @@ func (a *AST) astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, 
 			}
 
 			// if a field is a custom type it may have fields of its own
-			if !isBasic(xField.Type()) && (a.Depth <= a.MaxDepth || a.MaxDepth == 0) {
+			if !isBasic(xField.Type()) {
 				// find the custom type field.
 				splitDefinition := strings.Split(field.Definition, ".")
 				if len(splitDefinition) == 2 {
@@ -136,7 +136,7 @@ func (a *AST) astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, 
 					field.Fields = depthFields
 				}
 			}
-			fields = append(fields, field)
+			fields = append(fields, &field)
 		}
 	// interfaces have method fields
 	case *types.Interface:
@@ -148,7 +148,7 @@ func (a *AST) astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, 
 				Name:       fieldname,
 				Definition: definition,
 			}
-			fields = append(fields, field)
+			fields = append(fields, &field)
 		}
 	// if no fields are present, this is a basic type.
 	default:
@@ -247,19 +247,4 @@ func astLocateType(file *ast.File, sel *ast.SelectorExpr) (string, string, strin
 		}
 	}
 	return "", fieldTypePkg, fieldTypeName
-}
-
-// PrintFieldTree prints a tree of fields for a given type to standard output.
-func PrintFieldTree(typename string, fields []models.Field, tabs string) {
-	if tabs == "" {
-		fmt.Println(tabs + "type " + typename)
-	}
-
-	tabs += "\t" // field tab
-	for _, field := range fields {
-		fmt.Println(tabs + field.Name + "\t" + field.Definition)
-		if len(field.Fields) != 0 {
-			PrintFieldTree(field.Definition, field.Fields, tabs+"\t")
-		}
-	}
 }
