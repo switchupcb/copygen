@@ -1,6 +1,8 @@
 package template
 
 import (
+	"fmt"
+
 	"github.com/switchupcb/copygen/cli/generator/interpreter"
 	"github.com/switchupcb/copygen/cli/models"
 )
@@ -10,7 +12,8 @@ func Header(gen *models.Generator) (string, error) {
 	if gen.Template.Headpath == "" {
 		return defaultHeader(gen), nil
 	} else {
-		return interpretHeader(gen)
+		return "", fmt.Errorf("Templates are temporarily unsupported.")
+		// return interpretHeader(gen)
 	}
 }
 

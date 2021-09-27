@@ -4,6 +4,7 @@ generated:
   package: copygen
   
   # Define the optional custom templates used to generate the file.
+  # Templates are currently unsupported.
   templates:
     header: ./templates/header.go
     function: ./templates/function.go

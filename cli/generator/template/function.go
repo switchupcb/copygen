@@ -2,6 +2,8 @@
 package template
 
 import (
+	"fmt"
+
 	"github.com/switchupcb/copygen/cli/generator/interpreter"
 	"github.com/switchupcb/copygen/cli/models"
 )
@@ -17,6 +19,7 @@ func Function(gen *models.Generator) (string, error) {
 		}
 		return functions, nil
 	}
+	return "", fmt.Errorf("Templates are temporarily unsupported.")
 
 	fn, err := interpretFunction(gen)
 	if err != nil {
