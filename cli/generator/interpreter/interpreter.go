@@ -2,7 +2,6 @@ package interpreter
 
 import (
 	"fmt"
-	"go/build"
 	"os"
 	"path"
 	"path/filepath"
@@ -29,13 +28,13 @@ func interpretFunc(loadpath string, templatepath, symbol string) (*reflect.Value
 	source := string(file)
 
 	// setup the interpreter
-	goCache, err := os.UserCacheDir()
+	/* goCache, err := os.UserCacheDir()
 	if err != nil {
 		return nil, fmt.Errorf("An error occurred loading the template file. Is the GOCACHE set in `go env`?", err)
-	}
+	} */
 
 	// create the interpreter
-	i := interp.New(interp.Options{GoPath: os.Getenv("GOPATH"), GoCache: goCache, GoToolDir: build.ToolDir})
+	i := interp.New(interp.Options{GoPath: os.Getenv("GOPATH") /*, GoCache: goCache, GoToolDir: build.ToolDir*/})
 	i.Use(stdlib.Symbols)
 	if _, err := i.Eval(source); err != nil {
 		return nil, fmt.Errorf("An error occurred loading the template file: %v\n%v", absfilepath, err)
@@ -44,7 +43,7 @@ func interpretFunc(loadpath string, templatepath, symbol string) (*reflect.Value
 	// get the func from the interpreter
 	v, err := i.Eval(symbol)
 	if err != nil {
-		return nil, fmt.Errorf("An error occured loading a template function.\n%v", err)
+		return nil, fmt.Errorf("An error occurred loading a template function.\n%v", err)
 	}
 	return &v, nil
 }

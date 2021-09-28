@@ -1,4 +1,4 @@
-// The domain package contains business logic models.
+// Package domain contains business logic models.
 package domain
 
 // Account represents a user account.

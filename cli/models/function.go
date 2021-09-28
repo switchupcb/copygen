@@ -8,7 +8,7 @@ type Function struct {
 	Options FunctionOptions // The custom options of a function.
 }
 
-// FuncOptions represent options for a Function.
+// FunctionOptions represent options for a Function.
 type FunctionOptions struct {
 	Custom map[string]interface{} // The custom options of a function.
 }

@@ -1,4 +1,4 @@
-// package loader loads generator information from an external file.
+// Package loader loads generator information from an external file.
 package loader
 
 import (
@@ -19,7 +19,7 @@ type Parser struct {
 
 }
 
-// YML loads a .yml file into a Generator.
+// LoadYML loads a .yml file into a Generator.
 func LoadYML(filepath string) (*models.Generator, error) {
 	file, err := os.ReadFile(filepath)
 	if err != nil {
@@ -183,10 +183,10 @@ func (p *Parser) parseFields(from From, toType *models.Type, fromType *models.Ty
 			return nil, nil, err
 		}
 		return toFields, fromFields, nil
-	} else {
-		toFields, fromFields := DefineFieldsByFrom(&from, toType, fromType)
-		return toFields, fromFields, nil
 	}
+	// otherwise use the match-by-hand method
+	toFields, fromFields := DefineFieldsByFrom(&from, toType, fromType)
+	return toFields, fromFields, nil
 }
 
 // createVariable p.Generatorerates a valid variable name for a list of parameters.

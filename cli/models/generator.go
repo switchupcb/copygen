@@ -10,6 +10,7 @@ type Generator struct {
 	Functions []Function // The functions to generate.
 }
 
+// Template represets the template used to generate code.
 type Template struct {
 	Headpath string // The filepath to the template that generates header code.
 	Funcpath string // The filepath to the template that generates function code.

@@ -1,15 +1,16 @@
 // DO NOT CHANGE PACKAGE
-// package templates provides a template used by copygen to generate custom code.
+
+// Package templates provides a template used by copygen to generate custom code.
 package templates
 
 import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
+// Function provides the generated code for each function.
 // GENERATOR FUNCTION
 // EDITABLE.
 // DO NOT REMOVE.
-// Function provides the generated code for each function.
 func Function(function models.Function) string {
 	return DefaultFunction(function)
 }

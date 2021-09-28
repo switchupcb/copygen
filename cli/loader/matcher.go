@@ -99,34 +99,33 @@ func (fm fieldMatcher) matchFields() (*models.Field, *models.Field, error) {
 		fm.toField.From = fm.fromField
 		fm.fromField.To = fm.toField
 		return fm.toField, fm.fromField, nil
-	} else {
-		// reminder: AST search only find fields at the depth-level specified.
-		// if a field has the same name, but wrong definition (i.e models.User vs. domain.User)
-		// there is a chance for it contain a match at the next depth-level.
-		//
-		// when both fields have nested fields, there an be a direct match between any level.
-		if len(fm.toField.Fields) != 0 && len(fm.fromField.Fields) != 0 {
-			for i := 0; i < len(fm.toField.Fields); i++ {
-				fm.toField = fm.toField.Fields[i]
-				for j := 0; j < len(fm.fromField.Fields); j++ {
-					fm.fromField = fm.fromField.Fields[j]
-					return fm.matchFields()
-				}
+	}
+	// reminder: AST search only find fields at the depth-level specified.
+	// if a field has the same name, but wrong definition (i.e models.User vs. domain.User)
+	// there is a chance for it contain a match at the next depth-level.
+	//
+	// when both fields have nested fields, there an be a direct match between any level.
+	if len(fm.toField.Fields) != 0 && len(fm.fromField.Fields) != 0 {
+		for i := 0; i < len(fm.toField.Fields); i++ {
+			fm.toField = fm.toField.Fields[i]
+			for j := 0; j < len(fm.fromField.Fields); j++ {
+				fm.fromField = fm.fromField.Fields[j]
+				return fm.matchFields()
 			}
 		}
+	}
 
-		// when a toField has fields but a fromField doesn't, there can be a direct match
-		// from the fields of the toField to the fromField (see automatch example: User.UserID -> UserID).
-		if len(fm.toField.Fields) != 0 {
-			for i := 0; i < len(fm.toField.Fields); i++ {
-				fm.toField = fm.toField.Fields[i]
-				return fm.matchFields()
-			}
-		} else if len(fm.fromField.Fields) != 0 {
-			for i := 0; i < len(fm.fromField.Fields); i++ {
-				fm.fromField = fm.fromField.Fields[i]
-				return fm.matchFields()
-			}
+	// when a toField has fields but a fromField doesn't, there can be a direct match
+	// from the fields of the toField to the fromField (see automatch example: User.UserID -> UserID).
+	if len(fm.toField.Fields) != 0 {
+		for i := 0; i < len(fm.toField.Fields); i++ {
+			fm.toField = fm.toField.Fields[i]
+			return fm.matchFields()
+		}
+	} else if len(fm.fromField.Fields) != 0 {
+		for i := 0; i < len(fm.fromField.Fields); i++ {
+			fm.fromField = fm.fromField.Fields[i]
+			return fm.matchFields()
 		}
 	}
 	return nil, nil, fmt.Errorf("The fields %v and %v with parents %v and %v could not be matched.", fm.toField, fm.fromField, fm.toType, fm.fromType)

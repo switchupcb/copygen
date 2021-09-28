@@ -87,7 +87,7 @@ func (a *AST) Search(imprt string, pkg string, typename string) ([]*models.Field
 type fieldSearch struct {
 	Fields []*models.Field // The fields present in the search.
 	Basic  bool            // Whether there are fields that are basic.
-	Error  error           // Whether an error occured.
+	Error  error           // Whether an error occurred.
 }
 
 // astFieldSearch searches through an ast.Typespec for fields.
@@ -235,10 +235,9 @@ func astLocateType(file *ast.File, sel *ast.SelectorExpr) (string, string, strin
 			// if an import variable matches the package name (i.e 'log' in 'log.Logger')
 			if fieldTypePkg == imprt.Name.Name {
 				return imprt.Path.Value, fieldTypePkg, fieldTypeName
-			} else {
-				// remove
-				checkedImprts = checkedImprts[:len(checkedImprts)-1]
 			}
+			// otherwise remove it from the list of imports to check later
+			checkedImprts = checkedImprts[:len(checkedImprts)-1]
 		}
 	}
 

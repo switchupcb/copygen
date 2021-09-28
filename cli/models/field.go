@@ -15,6 +15,7 @@ type Field struct {
 	Options    FieldOptions // The custom options of a field.
 }
 
+// FieldOptions represent options for a Field.
 type FieldOptions struct {
 	Deepcopy string                 // Whether the field should be deepcopied.
 	Custom   map[string]interface{} // The custom options of a field.

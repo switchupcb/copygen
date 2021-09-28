@@ -40,7 +40,7 @@ func Generate(gen *models.Generator, output bool) error {
 	// determine actual filepath
 	absfilepath, err := filepath.Abs(gen.Loadpath)
 	if err != nil {
-		return fmt.Errorf("An error occurred while determing the absolute file path of the generated file.\n%v", absfilepath)
+		return fmt.Errorf("An error occurred while determining the absolute file path of the generated file.\n%v", absfilepath)
 	}
 	absfilepath = path.Join(filepath.Dir(absfilepath), gen.Filepath)
 
