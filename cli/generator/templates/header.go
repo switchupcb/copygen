@@ -1,4 +1,6 @@
-package template
+// DO NOT CHANGE PACKAGE
+// package templates provides a template used by copygen to generate custom code.
+package templates
 
 import (
 	"github.com/switchupcb/copygen/cli/models"
@@ -8,12 +10,12 @@ import (
 // EDITABLE.
 // DO NOT REMOVE.
 // Header provides the header of the generated coe.
-func Header(gen *models.Generator) string {
+func Header(gen models.Generator) string {
 	return DefaultHeader(gen)
 }
 
 // DefaultHeader provides the header of the generated file using the default method.
-func DefaultHeader(gen *models.Generator) string {
+func DefaultHeader(gen models.Generator) string {
 	var header string
 
 	// package

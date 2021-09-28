@@ -1,5 +1,6 @@
-// package template implements an interpreter used to provide customizable functions to the generator.
-package template
+// DO NOT CHANGE PACKAGE
+// package templates provides a template used by copygen to generate custom code.
+package templates
 
 import (
 	"github.com/switchupcb/copygen/cli/models"
@@ -9,12 +10,12 @@ import (
 // EDITABLE.
 // DO NOT REMOVE.
 // Function provides the generated code for each function.
-func Function(function *models.Function) string {
+func Function(function models.Function) string {
 	return DefaultFunction(function)
 }
 
 // DefaultFunction provides generated code for a function using the default method.
-func DefaultFunction(function *models.Function) string {
+func DefaultFunction(function models.Function) string {
 	// comment
 	fn := generateComment(function) + "\n"
 
@@ -33,7 +34,7 @@ func DefaultFunction(function *models.Function) string {
 }
 
 // generateComment generates a function comment.
-func generateComment(function *models.Function) string {
+func generateComment(function models.Function) string {
 	var toComment string
 	for _, toType := range function.To {
 		toComment += toType.Name + ", "
@@ -56,13 +57,13 @@ func generateComment(function *models.Function) string {
 }
 
 // generateSignature generates a function's signature.
-func generateSignature(function *models.Function) string {
+func generateSignature(function models.Function) string {
 	sig := "func " + function.Name + "(" + generateParameters(function) + ") {"
 	return sig
 }
 
 // generateParameters generates the parameters of a function.
-func generateParameters(function *models.Function) string {
+func generateParameters(function models.Function) string {
 	var parameters string
 
 	// Generate To-Type parameters
@@ -98,7 +99,7 @@ func generateParameters(function *models.Function) string {
 }
 
 // generateBody generates the body of a function.
-func generateBody(function *models.Function) string {
+func generateBody(function models.Function) string {
 	var body string
 
 	// Assign fields to ToType(s)
@@ -129,6 +130,6 @@ func generateAssignment(field *models.Field) string {
 }
 
 // generateReturn generates a return statement for the function.
-func generateReturn(function *models.Function) string {
+func generateReturn(function models.Function) string {
 	return ""
 }

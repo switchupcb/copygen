@@ -5,7 +5,7 @@ Copygen is a command-line [code generator](https://github.com/gophersgang/go-cod
 | Topic                           | Categories                                                                      |
 | :------------------------------ | :------------------------------------------------------------------------------ |
 | [Use](#use)                     | [Types](#types), [YML](#yml), [Command Line](#command-line), [Output](#output)  |
-| [Customization](#customization) | [Templates](#templates), [Convert](#convert)                                    |
+| [Customization](#customization) | [Templates](#templates), [Convert](#convert), [Custom Options](#options)        |
 | [Matcher](#matcher)             | [Automatch](#automatch)                                                         |
 | [Optimization](#optimization)   | [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy), [Pointers](#pointers) |
 

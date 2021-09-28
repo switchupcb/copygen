@@ -15,7 +15,7 @@ import (
 func Generate(gen *models.Generator, output bool) error {
 	// generate code
 	var content string
-	header, err := interpreter.Header(gen)
+	header, err := interpreter.Header(*gen)
 	if err != nil {
 		return fmt.Errorf("An error occurred while generating the header.\n%v", err)
 	}
