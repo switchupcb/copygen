@@ -29,7 +29,7 @@ The command-line interface _(cli)_ consists of 4 packages.
 | cli       | Contains the primary logic used to parse arguments and run the copygen command-line application. |
 | models    | Contains models based on the application's functionality _(logic)_.                              |
 | loader    | Contains external loaders used to configure the code that is generated.                          |
-| generator | Contains the generator logic used to generate code _(and interpret templates).                   |
+| generator | Contains the generator logic used to generate code _(and interpret templates)_.                  |
 
 ### Specification
 
