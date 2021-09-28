@@ -1,5 +1,9 @@
 # Copygen
 
+[![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=for-the-badge&logo=appveyor&logo=appveyor)](https://pkg.go.dev/github.com/switchupcb/copygen)
+[![Go Report Card](https://goreportcard.com/badge/github.com/switchupcb/copygen?style=for-the-badge)](https://goreportcard.com/report/github.com/switchupcb/copygen)
+[![MIT License](https://img.shields.io/github/license/switchupcb/copygen.svg?style=for-the-badge)](https://github.com/switchupcb/copygen/blob/main/LICENSE)
+
 Copygen is a command-line [code generator](https://github.com/gophersgang/go-codegen) that generates type-to-type and field-to-field struct code without adding any reflection or dependencies to your project.
 
 | Topic                           | Categories                                                                      |
@@ -12,8 +16,6 @@ Copygen is a command-line [code generator](https://github.com/gophersgang/go-cod
 ### Benchmark
 
 **The benefit to using Copygen is performance**: A benchmark by [gotidy/copy](https://github.com/gotidy/copy#benchmark) shows that a manual copy is **391x faster** than [jinzhu/copier](https://github.com/jinzhu/copier) and **3.97x faster** than the best reflection-based solution.
-
-![copy-benchmark](https://image.prntscr.com/image/-AcdCKSQSiqmrJ4KAW_ODg.png)
 
 ## Use
 
