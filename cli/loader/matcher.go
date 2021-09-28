@@ -65,7 +65,13 @@ func (a *AST) Automatch(toType *models.Type, fromType *models.Type) ([]*models.F
 	var newToFields, newFromFields []*models.Field
 	for i := 0; i < len(toFields); i++ {
 		for j := 0; j < len(fromFields); j++ {
-			toField, fromField, err := matchFields(toFields[i], fromFields[j], toType, fromType)
+			fm := fieldMatcher{
+				toField:   toFields[i],
+				fromField: fromFields[j],
+				toType:    toType,
+				fromType:  fromType,
+			}
+			toField, fromField, err := fm.matchFields()
 			if err != nil {
 				continue
 			}
@@ -77,39 +83,74 @@ func (a *AST) Automatch(toType *models.Type, fromType *models.Type) ([]*models.F
 	return newToFields, newFromFields, nil
 }
 
-// matchFields points respective fields to each other and a parent.
-func matchFields(toField *models.Field, fromField *models.Field, toType *models.Type, fromType *models.Type) (*models.Field, *models.Field, error) {
-	if toField.Name == fromField.Name && toField.Definition == fromField.Definition {
-		toField.Parent = *toType
-		fromField.Parent = *fromType
-		toField.From = fromField
-		fromField.To = toField
-		return toField, fromField, nil
+// fieldMatcher represets a matcher of two fields.
+type fieldMatcher struct {
+	toField         *models.Field
+	fromField       *models.Field
+	parentToField   *models.Field
+	parentFromField *models.Field
+	toType          *models.Type
+	fromType        *models.Type
+}
+
+// matchFields points respective fields (or their child fields) to each other and a parent.
+// the top level field is always returned in the case of a field (or child field).
+// this provides chaining functionality (i.e tA.User.UserID) during generation.
+func (fm fieldMatcher) matchFields() (*models.Field, *models.Field, error) {
+	if fm.toField.Name == fm.fromField.Name && fm.toField.Definition == fm.fromField.Definition {
+		fm.toField.Parent = *(fm.toType)
+		fm.fromField.Parent = *(fm.fromType)
+		fm.toField.From = fm.fromField
+		fm.fromField.To = fm.toField
+		if fm.parentToField != nil && fm.parentFromField != nil {
+			return fm.parentToField, fm.parentFromField, nil
+		} else if fm.parentToField != nil {
+			return fm.parentToField, fm.fromField, nil
+		} else if fm.parentFromField != nil {
+			return fm.toField, fm.parentFromField, nil
+		}
+		return fm.toField, fm.fromField, nil
 	} else {
 		// reminder: AST search only find fields at the depth-level specified.
 		// if a field has the same name, but wrong definition (i.e models.User vs. domain.User)
 		// there is a chance for it contain a match at the next depth-level.
 		//
 		// when both fields have nested fields, there an be a direct match between any level.
-		if len(toField.Fields) != 0 && len(fromField.Fields) != 0 {
-			for _, nestedToField := range toField.Fields {
-				for _, nestedFromField := range fromField.Fields {
-					return matchFields(nestedToField, nestedFromField, toType, fromType)
+		if len(fm.toField.Fields) != 0 && len(fm.fromField.Fields) != 0 {
+			if fm.parentToField == nil {
+				fm.parentToField = fm.toField
+			}
+			if fm.parentFromField == nil {
+				fm.parentFromField = fm.fromField
+			}
+			for i := 0; i < len(fm.toField.Fields); i++ {
+				fm.toField = fm.toField.Fields[i]
+				for j := 0; j < len(fm.fromField.Fields); j++ {
+					fm.fromField = fm.fromField.Fields[j]
+					return fm.matchFields()
 				}
 			}
 		}
 
 		// when a toField has fields but a fromField doesn't, there can be a direct match
 		// from the fields of the toField to the fromField (see automatch example: User.UserID -> UserID).
-		if len(toField.Fields) != 0 {
-			for _, nestedToField := range toField.Fields {
-				return matchFields(nestedToField, fromField, toType, fromType)
+		if len(fm.toField.Fields) != 0 {
+			if fm.parentToField == nil {
+				fm.parentToField = fm.toField
 			}
-		} else if len(fromField.Fields) != 0 {
-			for _, nestedFromField := range fromField.Fields {
-				return matchFields(toField, nestedFromField, toType, fromType)
+			for i := 0; i < len(fm.toField.Fields); i++ {
+				fm.toField = fm.toField.Fields[i]
+				return fm.matchFields()
+			}
+		} else if len(fm.fromField.Fields) != 0 {
+			if fm.parentFromField == nil {
+				fm.parentFromField = fm.fromField
+			}
+			for i := 0; i < len(fm.fromField.Fields); i++ {
+				fm.fromField = fm.fromField.Fields[i]
+				return fm.matchFields()
 			}
 		}
 	}
-	return nil, nil, fmt.Errorf("The fields %v and %v could not be matched.", toField, fromField)
+	return nil, nil, fmt.Errorf("The fields %v and %v with parents %v and %v could not be matched.", fm.toField, fm.fromField, fm.toType, fm.fromType)
 }

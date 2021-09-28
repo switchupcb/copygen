@@ -160,8 +160,10 @@ func (p *Parser) parseFunction(name string) (*models.Function, error) {
 			}
 
 			// assign the fields
-			toType.Fields = toFields
 			fromType.Fields = fromFields
+			for i := 0; i < len(toFields); i++ {
+				toType.Fields = append(toType.Fields, toFields[i])
+			}
 			function.From = append(function.From, fromType)
 		}
 		function.To = append(function.To, toType)

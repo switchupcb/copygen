@@ -6,14 +6,25 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
+// PrintFunctionFields prints all of a functions fields to standard output.
+func PrintFunctionFields(function models.Function) {
+	for i := 0; i < len(function.To); i++ {
+		fmt.Println("TO type " + function.To[i].Package + "." + function.To[i].Name)
+		PrintFieldGraph(function.To[i].Fields, "\t")
+	}
+
+	for i := 0; i < len(function.From); i++ {
+		fmt.Println("FROM type " + function.From[i].Package + "." + function.From[i].Name)
+		PrintFieldGraph(function.From[i].Fields, "\t")
+	}
+}
+
 // PrintFieldGraph prints a list of fields with the related fields.
 func PrintFieldGraph(fields []*models.Field, tabs string) {
-	for _, field := range fields {
-		fmt.Println(tabs, field)
-		if len(field.Fields) != 0 {
-			for _, nestedField := range field.Fields {
-				PrintFieldGraph(nestedField.Fields, tabs+"\tNESTED ")
-			}
+	for i := 0; i < len(fields); i++ {
+		fmt.Println(tabs, fields[i])
+		if len(fields[i].Fields) != 0 {
+			PrintFieldGraph(fields[i].Fields, tabs+"\t")
 		}
 	}
 }
@@ -25,10 +36,10 @@ func PrintFieldTree(typename string, fields []*models.Field, tabs string) {
 	}
 
 	tabs += "\t" // field tab
-	for _, field := range fields {
-		fmt.Println(tabs + field.Name + "\t" + field.Definition)
-		if len(field.Fields) != 0 {
-			PrintFieldTree(field.Definition, field.Fields, tabs+"\t")
+	for i := 0; i < len(fields); i++ {
+		fmt.Println(tabs + fields[i].Name + "\t" + fields[i].Definition)
+		if len(fields[i].Fields) != 0 {
+			PrintFieldTree(fields[i].Definition, fields[i].Fields, tabs+"\t")
 		}
 	}
 }
@@ -52,18 +63,18 @@ func printFieldRelation(toField *models.Field, fromField *models.Field) {
 		fmt.Printf("From Field %v%v (%v) is related to To Field %v%v (%v).\n", fromField.Definition+" ", fromField.Name, fromField.Parent.Package+"."+fromField.Parent.Name, toField.Definition+" ", toField.Name, toField.Parent.Package+"."+toField.Parent.Name)
 	} else {
 		if len(toField.Fields) != 0 && len(fromField.Fields) != 0 {
-			for _, nestedToField := range toField.Fields {
-				for _, nestedFromField := range fromField.Fields {
-					printFieldRelation(nestedToField, nestedFromField)
+			for i := 0; i < len(toField.Fields); i++ {
+				for j := 0; j < len(fromField.Fields); i++ {
+					printFieldRelation(toField.Fields[i], fromField.Fields[j])
 				}
 			}
 		} else if len(toField.Fields) != 0 {
-			for _, nestedToField := range toField.Fields {
-				printFieldRelation(nestedToField, fromField)
+			for i := 0; i < len(toField.Fields); i++ {
+				printFieldRelation(toField.Fields[i], fromField)
 			}
 		} else if len(fromField.Fields) != 0 {
-			for _, nestedFromField := range fromField.Fields {
-				printFieldRelation(toField, nestedFromField)
+			for i := 0; i < len(fromField.Fields); i++ {
+				printFieldRelation(toField, fromField.Fields[i])
 			}
 		} else {
 			fmt.Printf("To Field %v%v (%v) is not related to From Field %v%v (%v).\n", toField.Definition+" ", toField.Name, toField.Parent.Package+"."+toField.Parent.Name, fromField.Definition+" ", fromField.Name, fromField.Parent.Package+"."+fromField.Parent.Name)
