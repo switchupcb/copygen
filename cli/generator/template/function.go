@@ -2,37 +2,19 @@
 package template
 
 import (
-	"fmt"
-
-	"github.com/switchupcb/copygen/cli/generator/interpreter"
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// Function determines the func to generate function code.
-func Function(gen *models.Generator) (string, error) {
-	var functions string
-
-	// determine the method to analyze each function.
-	if gen.Template.Funcpath == "" {
-		for _, function := range gen.Functions {
-			functions += defaultFunction(&function) + "\n"
-		}
-		return functions, nil
-	}
-	return "", fmt.Errorf("Templates are temporarily unsupported.")
-
-	fn, err := interpretFunction(gen)
-	if err != nil {
-		return "", err
-	}
-	for _, function := range gen.Functions {
-		functions += fn(&function) + "\n"
-	}
-	return functions, nil
+// GENERATOR FUNCTION
+// EDITABLE.
+// DO NOT REMOVE.
+// Function provides the generated code for each function.
+func Function(function *models.Function) string {
+	return DefaultFunction(function)
 }
 
-// defaultFunction creates the header of the generated file using the default method.
-func defaultFunction(function *models.Function) string {
+// DefaultFunction provides generated code for a function using the default method.
+func DefaultFunction(function *models.Function) string {
 	// comment
 	fn := generateComment(function) + "\n"
 
@@ -149,17 +131,4 @@ func generateAssignment(field *models.Field) string {
 // generateReturn generates a return statement for the function.
 func generateReturn(function *models.Function) string {
 	return ""
-}
-
-// interpretFunction creates the header of the generated file using an interpreted template file.
-func interpretFunction(gen *models.Generator) (func(f *models.Function) string, error) {
-	fn, err := interpreter.InterpretFunc(gen.Loadpath, gen.Template.Funcpath, "generator.Function")
-	if err != nil {
-		return nil, err
-	}
-
-	// run the interpreted function.
-	return func(function *models.Function) string {
-		return fn(function)
-	}, nil
 }

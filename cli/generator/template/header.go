@@ -1,24 +1,19 @@
 package template
 
 import (
-	"fmt"
-
-	"github.com/switchupcb/copygen/cli/generator/interpreter"
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// Header determines the func to generate header code.
-func Header(gen *models.Generator) (string, error) {
-	if gen.Template.Headpath == "" {
-		return defaultHeader(gen), nil
-	} else {
-		return "", fmt.Errorf("Templates are temporarily unsupported.")
-		// return interpretHeader(gen)
-	}
+// GENERATOR FUNCTION
+// EDITABLE.
+// DO NOT REMOVE.
+// Header provides the header of the generated coe.
+func Header(gen *models.Generator) string {
+	return DefaultHeader(gen)
 }
 
-// defaultHeader creates the header of the generated file using the default method.
-func defaultHeader(gen *models.Generator) string {
+// DefaultHeader provides the header of the generated file using the default method.
+func DefaultHeader(gen *models.Generator) string {
 	var header string
 
 	// package
@@ -33,15 +28,4 @@ func defaultHeader(gen *models.Generator) string {
 	}
 	header += ")"
 	return header
-}
-
-// interpretHeader creates the header of the generated file using an interpreted template file.
-func interpretHeader(gen *models.Generator) (string, error) {
-	fn, err := interpreter.InterpretFunc(gen.Loadpath, gen.Template.Headpath, "generator.Header")
-	if err != nil {
-		return "", err
-	}
-
-	// run the interpreted function.
-	return fn(gen), nil
 }

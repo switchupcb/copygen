@@ -7,7 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/switchupcb/copygen/cli/generator/template"
+	"github.com/switchupcb/copygen/cli/generator/interpreter"
 	"github.com/switchupcb/copygen/cli/models"
 )
 
@@ -15,13 +15,13 @@ import (
 func Generate(gen *models.Generator, output bool) error {
 	// generate code
 	var content string
-	header, err := template.Header(gen)
+	header, err := interpreter.Header(gen)
 	if err != nil {
 		return fmt.Errorf("An error occurred while generating the header.\n%v", err)
 	}
 	content += header + "\n"
 
-	function, err := template.Function(gen)
+	function, err := interpreter.Function(gen)
 	if err != nil {
 		return fmt.Errorf("An error occurred while generating a function.\n%v", err)
 	}
