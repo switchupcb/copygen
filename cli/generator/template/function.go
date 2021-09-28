@@ -124,14 +124,13 @@ func generateBody(function *models.Function) string {
 		body += "// " + toType.Name + " fields\n"
 
 		for _, toField := range toType.Fields {
-			// toField
-			body += toType.VariableName + "." + toField.Name + " = "
-
-			// fromField
-			if toField.Convert != "" {
-				body += toField.Convert + "(" + toField.Parent.VariableName + "." + toField.From.Name + ")\n"
+			body += toType.VariableName + generateAssignment(toField)
+			body += " = "
+			fromField := toField.From
+			if fromField.Convert != "" {
+				body += fromField.Convert + "(" + fromField.Parent.VariableName + generateAssignment(fromField) + ")\n"
 			} else {
-				body += toField.From.Parent.VariableName + "." + toField.From.Name + "\n"
+				body += fromField.Parent.VariableName + generateAssignment(fromField) + "\n"
 			}
 		}
 		body += "\n"
@@ -139,6 +138,15 @@ func generateBody(function *models.Function) string {
 	return body
 }
 
+// generateAssignment generates an assignment operation for the assignment of fields.
+func generateAssignment(field *models.Field) string {
+	if field.Of == nil {
+		return "." + field.Name
+	}
+	return generateAssignment(field.Of) + "." + field.Name
+}
+
+// generateReturn generates a return statement for the function.
 func generateReturn(function *models.Function) string {
 	return ""
 }

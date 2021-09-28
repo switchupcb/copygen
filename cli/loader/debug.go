@@ -22,7 +22,7 @@ func PrintFunctionFields(function models.Function) {
 // PrintFieldGraph prints a list of fields with the related fields.
 func PrintFieldGraph(fields []*models.Field, tabs string) {
 	for i := 0; i < len(fields); i++ {
-		fmt.Println(tabs, fields[i])
+		fmt.Printf("%v%v\n", tabs, fields[i])
 		if len(fields[i].Fields) != 0 {
 			PrintFieldGraph(fields[i].Fields, tabs+"\t")
 		}

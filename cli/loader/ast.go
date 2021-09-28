@@ -133,7 +133,11 @@ func (a *AST) astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, 
 					if err != nil {
 						fmt.Printf("WARNING: An error occurred searching for the %v in-depth field '%v' with import \"%v\".\n%v\n", newType, field.Definition, newImprt, err)
 					}
-					field.Fields = depthFields
+					// assign the fields
+					for i := 0; i < len(depthFields); i++ {
+						depthFields[i].Of = &field
+					}
+					field.Fields = append(field.Fields, depthFields...)
 				}
 			}
 			fields = append(fields, &field)

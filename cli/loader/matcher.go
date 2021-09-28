@@ -85,30 +85,19 @@ func (a *AST) Automatch(toType *models.Type, fromType *models.Type) ([]*models.F
 
 // fieldMatcher represets a matcher of two fields.
 type fieldMatcher struct {
-	toField         *models.Field
-	fromField       *models.Field
-	parentToField   *models.Field
-	parentFromField *models.Field
-	toType          *models.Type
-	fromType        *models.Type
+	toField   *models.Field
+	fromField *models.Field
+	toType    *models.Type
+	fromType  *models.Type
 }
 
 // matchFields points respective fields (or their child fields) to each other and a parent.
-// the top level field is always returned in the case of a field (or child field).
-// this provides chaining functionality (i.e tA.User.UserID) during generation.
 func (fm fieldMatcher) matchFields() (*models.Field, *models.Field, error) {
 	if fm.toField.Name == fm.fromField.Name && fm.toField.Definition == fm.fromField.Definition {
 		fm.toField.Parent = *(fm.toType)
 		fm.fromField.Parent = *(fm.fromType)
 		fm.toField.From = fm.fromField
 		fm.fromField.To = fm.toField
-		if fm.parentToField != nil && fm.parentFromField != nil {
-			return fm.parentToField, fm.parentFromField, nil
-		} else if fm.parentToField != nil {
-			return fm.parentToField, fm.fromField, nil
-		} else if fm.parentFromField != nil {
-			return fm.toField, fm.parentFromField, nil
-		}
 		return fm.toField, fm.fromField, nil
 	} else {
 		// reminder: AST search only find fields at the depth-level specified.
@@ -117,12 +106,6 @@ func (fm fieldMatcher) matchFields() (*models.Field, *models.Field, error) {
 		//
 		// when both fields have nested fields, there an be a direct match between any level.
 		if len(fm.toField.Fields) != 0 && len(fm.fromField.Fields) != 0 {
-			if fm.parentToField == nil {
-				fm.parentToField = fm.toField
-			}
-			if fm.parentFromField == nil {
-				fm.parentFromField = fm.fromField
-			}
 			for i := 0; i < len(fm.toField.Fields); i++ {
 				fm.toField = fm.toField.Fields[i]
 				for j := 0; j < len(fm.fromField.Fields); j++ {
@@ -135,17 +118,11 @@ func (fm fieldMatcher) matchFields() (*models.Field, *models.Field, error) {
 		// when a toField has fields but a fromField doesn't, there can be a direct match
 		// from the fields of the toField to the fromField (see automatch example: User.UserID -> UserID).
 		if len(fm.toField.Fields) != 0 {
-			if fm.parentToField == nil {
-				fm.parentToField = fm.toField
-			}
 			for i := 0; i < len(fm.toField.Fields); i++ {
 				fm.toField = fm.toField.Fields[i]
 				return fm.matchFields()
 			}
 		} else if len(fm.fromField.Fields) != 0 {
-			if fm.parentFromField == nil {
-				fm.parentFromField = fm.fromField
-			}
 			for i := 0; i < len(fm.fromField.Fields); i++ {
 				fm.fromField = fm.fromField.Fields[i]
 				return fm.matchFields()

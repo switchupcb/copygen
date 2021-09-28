@@ -8,9 +8,10 @@ type Field struct {
 	Name       string       // The name of the field.
 	Definition string       // The type definition of the field.
 	Convert    string       // The convert-function used to copy the field.
-	Fields     []*Field     // The fields of the field.
-	From       *Field       // The field that the field will be copied from.
-	To         *Field       // The field that the field will be copied to.
+	Fields     []*Field     // The fields of this field.
+	Of         *Field       // The field that this field is a field of.
+	From       *Field       // The field that this field will be copied from.
+	To         *Field       // The field that this field will be copied to.
 	Options    FieldOptions // The custom options of a field.
 }
 
@@ -48,5 +49,5 @@ func (f Field) String() string {
 	if definition == "" {
 		definition = "\"\""
 	}
-	return fmt.Sprintf("%v Field %v of Definition %v%v: Parent %p Fields %v", direction, name, definition, convert, &f.Parent, f.Fields)
+	return fmt.Sprintf("%v Field %v of Definition %v%v: Parent %p Field OF %p Fields %v", direction, name, definition, convert, &f.Parent, f.Of, f.Fields)
 }

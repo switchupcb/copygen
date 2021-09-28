@@ -11,8 +11,8 @@ import (
 // ModelsToDomain copies a User, Account to a Account.
 func ModelsToDomain(tA *domain.Account, fU models.User, fA models.Account) {
 	// Account fields
-	tA.UserID = c.Itoa(tA.ID)
-	tA.Name = fA.Name
+	tA.UserID = c.Itoa(fU.ID)
 	tA.ID = fA.ID
+	tA.Name = fA.Name
 
 }
