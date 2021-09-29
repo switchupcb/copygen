@@ -38,7 +38,7 @@ func DefaultFunction(function models.Function) string {
 func generateComment(function models.Function) string {
 	var toComment string
 	for _, toType := range function.To {
-		toComment += toType.Name + ", "
+		toComment += toType.Field.Name + ", "
 	}
 	if len(toComment) != 0 {
 		// remove last ", "
@@ -47,7 +47,7 @@ func generateComment(function models.Function) string {
 
 	var fromComment string
 	for _, fromType := range function.From {
-		fromComment += fromType.Name + ", "
+		fromComment += fromType.Field.Name + ", "
 	}
 	if len(fromComment) != 0 {
 		// remove last ", "
@@ -69,26 +69,20 @@ func generateParameters(function models.Function) string {
 
 	// Generate To-Type parameters
 	for _, toType := range function.To {
-		parameters += toType.VariableName + " "
-		if toType.Options.Pointer {
-			parameters += "*"
+		parameters += toType.Field.VariableName + " "
+		if toType.Field.Package != "" {
+			parameters += toType.Field.Package + "."
 		}
-		if toType.Package != "" {
-			parameters += toType.Package + "."
-		}
-		parameters += toType.Name + ", "
+		parameters += toType.Field.Name + ", "
 	}
 
 	// Generate From-Type parameters
 	for _, fromType := range function.From {
-		parameters += fromType.VariableName + " "
-		if fromType.Options.Pointer {
-			parameters += "*"
+		parameters += fromType.Field.VariableName + " "
+		if fromType.Field.Package != "" {
+			parameters += fromType.Field.Package + "."
 		}
-		if fromType.Package != "" {
-			parameters += fromType.Package + "."
-		}
-		parameters += fromType.Name + ", "
+		parameters += fromType.Field.Name + ", "
 	}
 
 	if len(parameters) == 0 {
@@ -105,29 +99,21 @@ func generateBody(function models.Function) string {
 
 	// Assign fields to ToType(s)
 	for _, toType := range function.To {
-		body += "// " + toType.Name + " fields\n"
+		body += "// " + toType.Field.Name + " fields\n"
 
-		for _, toField := range toType.Fields {
-			body += toType.VariableName + generateAssignment(toField)
+		for _, toField := range toType.Field.Fields {
+			body += toField.FullVariableName("")
 			body += " = "
 			fromField := toField.From
-			if fromField.Convert != "" {
-				body += fromField.Convert + "(" + fromField.Parent.VariableName + generateAssignment(fromField) + ")\n"
+			if fromField.Options.Convert != "" {
+				body += fromField.Options.Convert + "(" + fromField.FullVariableName("") + ")\n"
 			} else {
-				body += fromField.Parent.VariableName + generateAssignment(fromField) + "\n"
+				body += fromField.FullVariableName("") + "\n"
 			}
 		}
 		body += "\n"
 	}
 	return body
-}
-
-// generateAssignment generates an assignment operation for the assignment of fields.
-func generateAssignment(field *models.Field) string {
-	if field.Of == nil {
-		return "." + field.Name
-	}
-	return generateAssignment(field.Of) + "." + field.Name
 }
 
 // generateReturn generates a return statement for the function.
