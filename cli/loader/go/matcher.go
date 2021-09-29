@@ -1,4 +1,5 @@
-package loader
+// Package go provides a parser and matcher to load fields into the application.
+package go
 
 import (
 	"fmt"

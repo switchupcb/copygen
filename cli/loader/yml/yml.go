@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	goloader "github.com/switchupcb/copygen/cli/loader/go"
 	"github.com/switchupcb/copygen/cli/models"
 	"gopkg.in/yaml.v3"
 )
@@ -12,7 +13,7 @@ import (
 // Parser represents a YML parser that loads properties into the program models.
 type Parser struct {
 	YML       YML              // The YML that is parsed.
-	AST       AST              // The Abstract Syntax Tree object used during matching.
+	AST       goloader.AST     // The Abstract Syntax Tree object used during matching.
 	Generator models.Generator // The generator that information is parsed to.
 
 }

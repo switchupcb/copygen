@@ -135,7 +135,7 @@ func (a *AST) astFieldSearch(info types.Info, file *ast.File, ts *ast.TypeSpec, 
 					}
 					// assign the fields
 					for i := 0; i < len(depthFields); i++ {
-						depthFields[i].Of = &field
+						depthFields[i].Parent = &field
 					}
 					field.Fields = append(field.Fields, depthFields...)
 				}

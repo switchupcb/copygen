@@ -42,7 +42,7 @@ func Generate(gen *models.Generator, output bool) error {
 	if err != nil {
 		return fmt.Errorf("An error occurred while determining the absolute file path of the generated file.\n%v", absfilepath)
 	}
-	absfilepath = path.Join(filepath.Dir(absfilepath), gen.Filepath)
+	absfilepath = path.Join(filepath.Dir(absfilepath), gen.Outpath)
 
 	// create file
 	if err := os.WriteFile(absfilepath, fmtcontent, 0222); err != nil {
