@@ -2,10 +2,11 @@ package models
 
 // Generator represents a code generator.
 type Generator struct {
-	Loadpath  string           // The loader filepath.
-	Filepath  string           // The generated filepath.
+	Loadpath  string           // The filepath the loader file is located in.
+	Setpath   string           // The filepath the setup file is located in.
+	Outpath   string           // The filepath the generated code is output to.
+	Package   string           // The generated code's package.
 	Template  Template         // The template used to generate code.
-	Package   string           // The generated package.
 	Imports   []string         // The imports included in the generated file.
 	Functions []Function       // The functions to generate.
 	Options   GeneratorOptions // The custom options for the generator.
