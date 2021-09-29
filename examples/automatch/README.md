@@ -31,45 +31,26 @@ type Account // models
 
 ## YML
 
-The YML specifies to use a depth of `1` for the domain Account. This means that the domain Account will have values set as far as a level `// 1` depth level in addition to its respective from fields. The YML specifies to use a depth of `0` for the models User (by default). This means that the domain User will only assign values (to the domain Account) if the field is at a depth level of `// 0`.
-
 ```yml
 # Define where the code will be generated.
 generated:
   filepath: ./copygen.go
   package: copygen
 
-# Define the imports that are included in the generated file.
-# Imports can also be defined in the type-property.
-# import:
-#  - github.com/switchupcb/copygen/examples/automatch/domain
+# Templates aren't used for this example.
+```
 
-# Define the functions to be generated.
-# Properties with `# default` are NOT necessary to include (see Main).
-functions:
+## Go
 
- # Custom function options can be defined for template use (see Main).
- ModelsToDomain:
+Specify a depth-level of one for all fields of `domain.Account`. Specify a depth-level of 2 for all fields of `models.User`. The depth-level for `models.Account` was not specifie, so the default will be used.
 
-    # Define the types to be copied (to and from).
-    # Custom type options (to and from) can be defined for template use (see Main).
-    to:
-      Account:
-        # Define the import path for the type (required for automatch).
-        import: github.com/switchupcb/copygen/examples/automatch/domain
-        package:  domain      # default: none
-        depth:    1           # default: 0
-
-      
-    from:
-      User:
-        import: github.com/switchupcb/copygen/examples/automatch/models
-        package: models       # default: none
-        depth:   2            # default: 0
-        
-      Account:
-        import: github.com/switchupcb/copygen/examples/automatch/models
-        package: models       # default: none
+```go
+/* Define the functions that will be generated in the `Copy` Interface. */
+type Copy interface {
+  // depth domain.Account.* 1
+  // depth models.User.* 2
+  ModelsToDomain(models.Account, models.User) domain.Account
+}
 ```
 
 ## Output
