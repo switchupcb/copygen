@@ -9,13 +9,13 @@ import (
 // PrintFunctionFields prints all of a functions fields to standard output.
 func PrintFunctionFields(function models.Function) {
 	for i := 0; i < len(function.To); i++ {
-		fmt.Println("TO type " + function.To[i].Package + "." + function.To[i].Name)
-		PrintFieldGraph(function.To[i].Fields, "\t")
+		fmt.Println(function.To[i])
+		PrintFieldGraph(function.To[i].Field.Fields, "\t")
 	}
 
 	for i := 0; i < len(function.From); i++ {
-		fmt.Println("FROM type " + function.From[i].Package + "." + function.From[i].Name)
-		PrintFieldGraph(function.From[i].Fields, "\t")
+		fmt.Println(function.From[i])
+		PrintFieldGraph(function.From[i].Field.Fields, "\t")
 	}
 }
 
@@ -56,11 +56,11 @@ func PrintFieldRelation(toFields []*models.Field, fromFields []*models.Field) {
 // printFieldRelation prints the relationship between two fields.
 func printFieldRelation(toField *models.Field, fromField *models.Field) {
 	if (*toField).From == fromField && (*fromField).To == toField {
-		fmt.Printf("To Field %v%v (%v) and From Field %v%v (%v) are related to each other.\n", toField.Definition+" ", toField.Name, toField.Parent.Package+"."+toField.Parent.Name, fromField.Definition+" ", fromField.Name, fromField.Parent.Package+"."+fromField.Parent.Name)
+		fmt.Printf("To Field %v and From Field %v are related to each other.\n", toField, fromField)
 	} else if (*toField).From == fromField {
-		fmt.Printf("To Field %v%v (%v) is related to From Field %v%v (%v).\n", toField.Definition+" ", toField.Name, toField.Parent.Package+"."+toField.Parent.Name, fromField.Definition+" ", fromField.Name, fromField.Parent.Package+"."+fromField.Parent.Name)
+		fmt.Printf("To Field %v is related to From Field %v.\n", toField, fromField)
 	} else if (*fromField).To == toField {
-		fmt.Printf("From Field %v%v (%v) is related to To Field %v%v (%v).\n", fromField.Definition+" ", fromField.Name, fromField.Parent.Package+"."+fromField.Parent.Name, toField.Definition+" ", toField.Name, toField.Parent.Package+"."+toField.Parent.Name)
+		fmt.Printf("From Field %v is related to To Field %v.\n", toField, fromField)
 	} else {
 		if len(toField.Fields) != 0 && len(fromField.Fields) != 0 {
 			for i := 0; i < len(toField.Fields); i++ {
@@ -77,7 +77,7 @@ func printFieldRelation(toField *models.Field, fromField *models.Field) {
 				printFieldRelation(toField, fromField.Fields[i])
 			}
 		} else {
-			fmt.Printf("To Field %v%v (%v) is not related to From Field %v%v (%v).\n", toField.Definition+" ", toField.Name, toField.Parent.Package+"."+toField.Parent.Name, fromField.Definition+" ", fromField.Name, fromField.Parent.Package+"."+fromField.Parent.Name)
+			fmt.Printf("To Field %v is not related to From Field %v.\n", toField, fromField)
 		}
 	}
 }
