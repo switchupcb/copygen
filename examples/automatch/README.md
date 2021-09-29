@@ -42,13 +42,13 @@ generated:
 
 ## Go
 
-Specify a depth-level of one for all fields of `domain.Account`. Specify a depth-level of 2 for all fields of `models.User`. The depth-level for `models.Account` was not specifie, so the default will be used.
+Specify a depth-level of one for all fields of `domain.Account`. Specify a depth-level of 2 for all fields of `models.User`. The depth-level for `models.Account` was not specifie, so the default will be used. A _regex_ [negative lokbehind](https://www.regular-expressions.info/lookaround.html) is used to ensure sub-fields of the first-level fields aren't applied depths of their own.
 
 ```go
-/* Define the functions that will be generated in the `Copy` Interface. */
-type Copy interface {
-  // depth domain.Account.* 1
-  // depth models.User.* 2
+/* Copygen defines the functions that will be generated. */
+type Copygen interface {
+  // depth domain.Account.*(?!\.) 1
+  // depth models.User.*(?!\.) 2
   ModelsToDomain(models.Account, models.User) domain.Account
 }
 ```

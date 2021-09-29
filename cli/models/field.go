@@ -1,24 +1,65 @@
+// Package models defines the domain models that model field relations and manipulation.
 package models
 
 import "fmt"
 
 // Field represents a field to be copied to/from.
 type Field struct {
-	Parent     Type         // The type that contains this field.
-	Name       string       // The name of the field.
-	Definition string       // The type definition of the field.
-	Convert    string       // The convert-function used to copy the field.
-	Fields     []*Field     // The fields of this field.
-	Of         *Field       // The field that this field is a field of.
-	From       *Field       // The field that this field will be copied from.
-	To         *Field       // The field that this field will be copied to.
-	Options    FieldOptions // The custom options of a field.
+	// The variable name the field is assigned for assignment.
+	// This value will always be unique in the context of the application.
+	// Type variable names do not contain '.' (i.e 'tA' in 'tA.UserID')
+	// Field variable names are defined by their specifier (i.e '.UserID' in 'domain.Account.UserID').
+	VariableName string
+
+	// The package the field is defined in.
+	Package string
+
+	// The name of the field (i.e ID in `ID int`).
+	Name string
+
+	// The type definition of the field (i.e int in `ID int`, struct, or interface).
+	Definition string
+
+	// The type or field that contains this field.
+	Parent *Field
+
+	// The field that this field will be copied from (or nil).
+	From *Field
+
+	// The field that this field will be copied to (or nil).
+	To *Field
+
+	// The fields of this field.
+	Fields []*Field
+
+	// The custom options of a field.
+	Options FieldOptions
 }
 
 // FieldOptions represent options for a Field.
 type FieldOptions struct {
-	Deepcopy string                 // Whether the field should be deepcopied.
-	Custom   map[string]interface{} // The custom options of a field.
+	Depth    int               // The level at which sub-fields are discovered.
+	Deepcopy bool              // Whether the field should be deepcopied.
+	Convert  map[string]string // The function used to convert a field to fields with other definitions (map[definition]converter).
+}
+
+// IsType returns whether the field is a type.
+func (f Field) IsType() bool {
+	return f.Parent == nil
+}
+
+// FullName gets the full name of a field including its parents (i.e domain.Account.User.ID).
+func (f Field) FullName(name string) string {
+	if !f.IsType() {
+		// add names in reverse order
+		if name == "" {
+			name = "." + f.Name
+		} else {
+			name = f.Name + "." + name
+		}
+		f.Parent.FullName(name)
+	}
+	return fmt.Sprintf("%v.%v.%v", f.Package, f.Name, name)
 }
 
 func (f Field) String() string {
@@ -35,20 +76,9 @@ func (f Field) String() string {
 	if direction == "" {
 		direction = "Unpointed"
 	}
-
-	name := f.Name
-	if name == "" {
-		name = "\"\""
+	var parent string
+	if f.Parent != nil {
+		parent = f.Parent.FullName("")
 	}
-
-	convert := f.Convert
-	if convert != "" {
-		convert = " (Convert " + f.Convert + ")"
-	}
-
-	definition := f.Definition
-	if definition == "" {
-		definition = "\"\""
-	}
-	return fmt.Sprintf("%v Field %v of Definition %v%v: Parent %p Field OF %p Fields %v", direction, name, definition, convert, &f.Parent, f.Of, f.Fields)
+	return fmt.Sprintf("%v Field %q of Definition %q: Parent %q Fields[%v]", direction, f.FullName(""), f.Definition, parent, len(f.Fields))
 }
