@@ -2,7 +2,7 @@
 package copygen
 
 import (
-	"strconv"
+	c "strconv"
 
 	"github.com/switchupcb/copygen/examples/main/domain"
 	"github.com/switchupcb/copygen/examples/main/models"
@@ -18,5 +18,5 @@ type Copygen interface {
 // convert: models.User.ID
 // comment: Itoa converts an integer to an ascii value.
 func Itoa(i int) string {
-	return strconv.Itoa(i)
+	return c.Itoa(i)
 }

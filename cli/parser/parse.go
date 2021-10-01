@@ -45,11 +45,7 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("An error occurred parsing the specified .go setup file: %v.\n%v", gen.Setpath, err)
 	}
 
-	// TODO: Add alias imports (currently uses non-alias imports)
-	p.parseImports()
-	for _, imprt := range p.Imports {
-		gen.Imports = append(gen.Imports, imprt)
-	}
+	gen.Imports = p.parseImports()
 	gen.Functions, err = p.parseFunctions()
 	if err != nil {
 		return err

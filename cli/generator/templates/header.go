@@ -27,8 +27,8 @@ func DefaultHeader(gen models.Generator) string {
 
 	// imports
 	header += "import (\n"
-	for _, iprt := range gen.Imports {
-		header += iprt + "\n"
+	for alias, iprt := range gen.Imports {
+		header += alias + " " + iprt + "\n"
 	}
 	header += ")"
 	return header
