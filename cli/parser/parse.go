@@ -15,11 +15,14 @@ import (
 
 // Parser represents a parser that parses Abstract Syntax Tree data into models.
 type Parser struct {
+	// The setup filepath.
+	Setpath string
+
 	// The setup file as an Abstract Syntax Tree.
 	SetupFile *ast.File
 
-	// The setup filepath.
-	Setpath string
+	// The fileset of the parser.
+	Fileset *token.FileSet
 
 	// The imports discovered in the set up file (map[packagevar]importpath).
 	// In the context of the parser, packagevar refers to the the variable used
@@ -36,8 +39,8 @@ func Parse(gen *models.Generator) error {
 	}
 
 	p := Parser{Setpath: absfilepath}
-	fileset := token.NewFileSet()
-	p.SetupFile, err = parser.ParseFile(fileset, absfilepath, nil, parser.AllErrors)
+	p.Fileset = token.NewFileSet()
+	p.SetupFile, err = parser.ParseFile(p.Fileset, absfilepath, nil, parser.AllErrors)
 	if err != nil {
 		return fmt.Errorf("An error occurred parsing the specified .go setup file: %v.\n%v", gen.Setpath, err)
 	}
@@ -51,7 +54,7 @@ func Parse(gen *models.Generator) error {
 	if err != nil {
 		return err
 	}
-	gen.Keep, err = p.parseKeep(fileset, p.SetupFile)
+	gen.Keep, err = p.parseKeep(p.Fileset, p.SetupFile)
 	if err != nil {
 		return err
 	}

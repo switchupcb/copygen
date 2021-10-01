@@ -12,7 +12,7 @@ import (
 func (p *Parser) parseTypes(function *ast.Field, options map[string][]string) ([]models.Type, []models.Type, error) {
 	fn, ok := function.Type.(*ast.FuncType)
 	if !ok {
-		return nil, nil, fmt.Errorf("An error occurred parsing the types of function %v at Line %v", parseMethodForName(function), function.Pos())
+		return nil, nil, fmt.Errorf("An error occurred parsing the types of function %v at Line %d", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	}
 
 	fieldSearcher := FieldSearcher{Options: options}
@@ -28,9 +28,9 @@ func (p *Parser) parseTypes(function *ast.Field, options map[string][]string) ([
 		}
 	}
 	if len(fromTypes) == 0 {
-		return nil, nil, fmt.Errorf("Function %v at Line %v has no types to copy from.", parseMethodForName(function), function.Pos())
+		return nil, nil, fmt.Errorf("Function %v at Line %d has no types to copy from.", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	} else if len(toTypes) == 0 {
-		return nil, nil, fmt.Errorf("Function %v at Line %v has no types to copy to.", parseMethodForName(function), function.Pos())
+		return nil, nil, fmt.Errorf("Function %v at Line %d has no types to copy to.", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	}
 
 	// assign variable names and determine the definition and sub-fields of each type
