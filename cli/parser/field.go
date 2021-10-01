@@ -47,10 +47,8 @@ func (fs *FieldSearcher) SearchForField(setupfile *ast.File, setimport, setpkg, 
 	if fs.FieldSearch.Error != nil {
 		return fs.FieldSearch
 	}
-	if fs.FieldSearch.Searcher.Parent != nil {
-		fs.FieldSearch.Searcher.VariableName = "." + fs.FieldSearch.Searcher.Name
-	} else {
-		// A top-level searcher returns itself.
+	// A top-level searcher returns itself.
+	if fs.FieldSearch.Searcher.Parent == nil {
 		fs.FieldSearch.Result = fs.FieldSearch.Searcher
 	}
 
@@ -124,6 +122,7 @@ func (fs *fieldSearch) setup(imprt, pkg, name, def string) error {
 	} else {
 		fs.Searcher.Import = imprt
 		fs.Searcher.Package = pkg
+		fs.Searcher.VariableName = "." + name
 		fs.Searcher.Name = name
 		fs.Searcher.Definition = def
 	}
@@ -199,9 +198,10 @@ func (fs fieldSearch) astFieldSearch(options map[string][]string, cache map[stri
 		for i := 0; i < x.NumFields(); i++ {
 			xField := x.Field(i)
 			subfield := &models.Field{
-				Parent:     fs.Searcher,
-				Name:       xField.Name(),
-				Definition: xField.Type().String(),
+				Parent:       fs.Searcher,
+				VariableName: "." + xField.Name(),
+				Name:         xField.Name(),
+				Definition:   xField.Type().String(),
 			}
 			if !isBasic(xField.Type()) {
 				newFieldSearcher := FieldSearcher{Options: options, cache: cache}

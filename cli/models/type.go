@@ -17,6 +17,11 @@ func (t Type) isInterface() bool {
 	return t.Field.Definition == "interface"
 }
 
+// ParameterName gets the parameter name of the type.
+func (t Type) ParameterName() string {
+	return t.Field.Pointer + t.Field.Definition
+}
+
 func (t Type) String() string {
 	return fmt.Sprintf("type %v", t.Field.FullName(""))
 }

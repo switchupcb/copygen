@@ -79,13 +79,7 @@ func (f Field) FullName(name string) string {
 // FullVariableName gets the full variable name of a field (i.e tA.User.UserID)
 func (f Field) FullVariableName(name string) string {
 	if !f.IsType() {
-		// add names in reverse order
-		if name == "" {
-			name = f.VariableName
-		} else {
-			name = f.VariableName + name
-		}
-		return f.Parent.FullName(name)
+		return f.Parent.FullVariableName(f.VariableName + name)
 	}
 	return f.VariableName + name
 }

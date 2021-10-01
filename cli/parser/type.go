@@ -78,7 +78,7 @@ func createVariable(parameters map[string]bool, typename string, occurrence int)
 		createVariable(parameters, typename, 0)
 	}
 
-	varName := typename
+	varName := typename[:2]
 	if occurrence > 0 {
 		varName += strconv.Itoa(occurrence + 1)
 	}

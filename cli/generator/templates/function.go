@@ -70,19 +70,13 @@ func generateParameters(function models.Function) string {
 	// Generate To-Type parameters
 	for _, toType := range function.To {
 		parameters += toType.Field.VariableName + " "
-		if toType.Field.Package != "" {
-			parameters += toType.Field.Package + "."
-		}
-		parameters += toType.Field.Name + ", "
+		parameters += toType.ParameterName() + ", "
 	}
 
 	// Generate From-Type parameters
 	for _, fromType := range function.From {
 		parameters += fromType.Field.VariableName + " "
-		if fromType.Field.Package != "" {
-			parameters += fromType.Field.Package + "."
-		}
-		parameters += fromType.Field.Name + ", "
+		parameters += fromType.ParameterName() + ", "
 	}
 
 	if len(parameters) == 0 {
