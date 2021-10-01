@@ -30,6 +30,30 @@ func Match(gen *models.Generator) error {
 			}
 		}
 	}
+
+	// don't return unpointed fields.
+	for _, function := range gen.Functions {
+		for _, toType := range function.To {
+			for _, fromType := range function.From {
+				var found bool
+				toFields := toType.Field.Fields
+				for i := len(toFields) - 1; i >= 0; i-- {
+					fromFields := fromType.Field.Fields
+					for j := len(fromFields) - 1; j >= 0; j-- {
+						// only compare direct relations
+						if !isFieldDirectlyRelated(toFields[i], fromFields[j]) {
+							fromFields = fromFields[:len(fromFields)-1]
+						} else {
+							found = true
+						}
+					}
+					if !found {
+						toFields = toFields[:len(toFields)-1]
+					}
+				}
+			}
+		}
+	}
 	return nil
 }
 
@@ -60,6 +84,8 @@ type fieldMatcher struct {
 // matchFields points respective fields to each other.
 func (fm fieldMatcher) matchFields() error {
 	if fm.toField.Name == fm.fromField.Name && fm.toField.Definition == fm.fromField.Definition {
+		fm.fromField.To = fm.toField
+		fm.toField.From = fm.fromField
 		return nil
 	}
 
