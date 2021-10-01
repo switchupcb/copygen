@@ -132,7 +132,7 @@ func (fs *fieldSearch) setup(imprt, pkg, name, def string) error {
 
 	packages, err := packages.Load(&packages.Config{Logf: nil}, fs.Searcher.Import[1:len(fs.Searcher.Import)-1])
 	if err != nil {
-		return fmt.Errorf("An error occurred retrieving a package from the GOPATH: %q\n%q", fs.Searcher.Import, err)
+		return fmt.Errorf("An error occurred retrieving a package from the GOPATH: %v\n%v", fs.Searcher.Import, err)
 	}
 	var gofiles []string
 	for _, pkg := range packages {
@@ -144,7 +144,7 @@ func (fs *fieldSearch) setup(imprt, pkg, name, def string) error {
 	for _, filepath := range gofiles {
 		file, err := parser.ParseFile(fileset, filepath, nil, parser.AllErrors)
 		if err != nil {
-			return fmt.Errorf("An error occurred parsing a file for the matcher: %q\n%v", filepath, err)
+			return fmt.Errorf("An error occurred parsing a file for the matcher: %v\n%v", filepath, err)
 		}
 		fs.Files = append(fs.Files, file)
 	}
@@ -168,7 +168,7 @@ func (fs *fieldSearch) setup(imprt, pkg, name, def string) error {
 		}
 	}
 	if ts == nil {
-		return fmt.Errorf("The type %v could not be found in the AST for Field in package %q with import %q.\nIs the package up to date?", name, pkg, imprt)
+		return fmt.Errorf("The type %v could not be found in the AST for Field in package %q with import %v.\nIs the package up to date?", name, pkg, imprt)
 	}
 	fs.SearcherTypeSpec = ts
 	return nil

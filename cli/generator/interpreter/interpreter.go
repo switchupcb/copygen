@@ -23,7 +23,7 @@ func interpretFunc(loadpath string, templatepath, symbol string) (*reflect.Value
 	// read the file
 	file, err := os.ReadFile(absfilepath)
 	if err != nil {
-		return nil, fmt.Errorf("The specified template file for the template function %v doesn't exist: %v\nIs the relative or absoute filepath set correctly?", symbol, absfilepath)
+		return nil, fmt.Errorf("The specified template file for the template function %q doesn't exist: %v\nIs the relative or absoute filepath set correctly?", symbol, absfilepath)
 	}
 	source := string(file)
 

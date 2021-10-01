@@ -28,7 +28,7 @@ func (p *Parser) parseFunctions() ([]models.Function, error) {
 			for _, comment := range method.Comment.List {
 				option, value, err := parseComment(comment)
 				if err != nil {
-					return nil, fmt.Errorf("An error occurred while parsing the options of a function.\n%q", err)
+					return nil, fmt.Errorf("An error occurred while parsing the options of a function.\n%v", err)
 				}
 				optionmap[option] = append(optionmap[option], value)
 			}

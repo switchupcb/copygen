@@ -39,7 +39,7 @@ func Parse(gen *models.Generator) error {
 	fileset := token.NewFileSet()
 	p.SetupFile, err = parser.ParseFile(fileset, absfilepath, nil, parser.AllErrors)
 	if err != nil {
-		return fmt.Errorf("An error occurred parsing the specified .go setup file: %q.\n%q", gen.Setpath, err)
+		return fmt.Errorf("An error occurred parsing the specified .go setup file: %v.\n%v", gen.Setpath, err)
 	}
 
 	// TODO: Add alias imports (currently uses non-alias imports)
@@ -47,7 +47,7 @@ func Parse(gen *models.Generator) error {
 	for _, imprt := range p.Imports {
 		gen.Imports = append(gen.Imports, imprt)
 	}
-	gen.Functions, err = p.ParseFunctions()
+	gen.Functions, err = p.parseFunctions()
 	if err != nil {
 		return err
 	}
