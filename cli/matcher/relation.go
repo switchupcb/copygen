@@ -4,10 +4,16 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// isFieldDirectlyRelate etermine whether is a direct relationship between two fields.
-func isFieldDirectlyRelated(toField *models.Field, fromField *models.Field) bool {
-	return fromField.To == toField && toField.From == fromField
-	// return (*toField).From == fromField || (*fromField).To == toField
+// GetRelatedFields returns solely related fields in a list of fields.
+func GetRelatedFields(fields []*models.Field) []*models.Field {
+	for i := len(fields) - 1; i > -1; i-- {
+		if len(fields[i].Fields) != 0 {
+			fields[i].Fields = GetRelatedFields(fields[i].Fields)
+		} else if fields[i].To == nil && fields[i].From == nil {
+			fields = fields[:len(fields)-1]
+		}
+	}
+	return fields
 }
 
 // isFieldRelated determines whether there is a relationship between two fields.

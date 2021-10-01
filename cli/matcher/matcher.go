@@ -33,25 +33,11 @@ func Match(gen *models.Generator) error {
 
 	// don't return unpointed fields.
 	for _, function := range gen.Functions {
+		for _, fromType := range function.From {
+			fromType.Field.Fields = GetRelatedFields(fromType.Field.Fields)
+		}
 		for _, toType := range function.To {
-			for _, fromType := range function.From {
-				var found bool
-				toFields := toType.Field.Fields
-				for i := len(toFields) - 1; i >= 0; i-- {
-					fromFields := fromType.Field.Fields
-					for j := len(fromFields) - 1; j >= 0; j-- {
-						// only compare direct relations
-						if !isFieldDirectlyRelated(toFields[i], fromFields[j]) {
-							fromFields = fromFields[:len(fromFields)-1]
-						} else {
-							found = true
-						}
-					}
-					if !found {
-						toFields = toFields[:len(toFields)-1]
-					}
-				}
-			}
+			toType.Field.Fields = GetRelatedFields(toType.Field.Fields)
 		}
 	}
 	return nil
@@ -61,14 +47,18 @@ func Match(gen *models.Generator) error {
 // Automatch is used when no `map` options apply to a field.
 func (fm *FieldsMatcher) Automatch() error {
 	for i := 0; i < len(fm.toFields); i++ {
+		// each toField is compared to every fromField.
 		for j := 0; j < len(fm.fromFields); j++ {
-			fm := fieldMatcher{
-				toField:   fm.toFields[i],
-				fromField: fm.fromFields[j],
-			}
-			err := fm.matchFields()
-			if err != nil {
-				continue
+			// therefore, don't compare pointed fields.
+			if fm.toFields[i].From == nil && fm.fromFields[j].To == nil {
+				fm := fieldMatcher{
+					toField:   fm.toFields[i],
+					fromField: fm.fromFields[j],
+				}
+				err := fm.matchFields()
+				if err != nil {
+					continue
+				}
 			}
 		}
 	}

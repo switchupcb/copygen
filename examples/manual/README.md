@@ -8,13 +8,13 @@ The manual examples uses manual mapping to match three models.
 `./domain/domain.go`
 
 ```go
-// The domain package contains business logic models.
+// Package domain contains business logic models.
 package domain
 
 // Account represents a user account.
 type Account struct {
 	ID     int
-	UserID string
+	UserID int
 	Name   string
 	Other  string // The other field is not used.
 }
@@ -23,7 +23,7 @@ type Account struct {
 `./models/model.go`
 
 ```go
-// The models package contains data storage models (i.e database).
+// Package models contains data storage models (i.e database).
 package models
 
 // Account represents the data model for account.
@@ -34,9 +34,9 @@ type Account struct {
 	Email    string
 }
 
-// A user represents the data model for a user.
+// A User represents the data model for a user.
 type User struct {
-	ID       int
+	UserID   int
 	Name     int
 	UserData string
 }
