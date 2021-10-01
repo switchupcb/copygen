@@ -60,7 +60,7 @@ func printFieldRelation(toField *Field, fromField *Field) {
 	} else {
 		if len(toField.Fields) != 0 && len(fromField.Fields) != 0 {
 			for i := 0; i < len(toField.Fields); i++ {
-				for j := 0; j < len(fromField.Fields); j++ {
+				for j := 0; j < len(fromField.Fields); i++ { //nolint:staticcheck
 					printFieldRelation(toField.Fields[i], fromField.Fields[j])
 				}
 			}

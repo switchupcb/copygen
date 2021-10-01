@@ -11,7 +11,7 @@ import (
 	"github.com/traefik/yaegi/stdlib"
 )
 
-// interpretFunc loads a template package.function into an interpreter.
+//nolint:unused // interpretFunc loads a template package.function into an interpreter.
 func interpretFunc(loadpath string, templatepath, symbol string) (*reflect.Value, error) {
 	// determine actual filepath
 	absfilepath, err := filepath.Abs(loadpath)

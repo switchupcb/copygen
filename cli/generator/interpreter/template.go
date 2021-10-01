@@ -20,7 +20,7 @@ func Generate(gen *models.Generator) (string, error) {
 	// return interpretFunction(gen)
 }
 
-// interpretFunction represents the interpreted function func that generates function code.
+//nolint:deadcode,unused // interpretFunction represents the interpreted function func that generates function code.
 func interpretFunction(gen *models.Generator) (string, error) {
 	v, err := interpretFunc(gen.Loadpath, gen.Tempath, "templates.Generate")
 	if err != nil {
