@@ -55,11 +55,7 @@ generated:
   output: ./copygen.go
   package: copygen
 
-# Define the optional custom templates used to generate the file.
-# Templates are currently unsupported.
-templates:
-  header: ./templates/header.go
-  function: ./templates/function.go
+# Templates and custom options aren't used for this example.
 ```
 
 **setup.go**
@@ -73,7 +69,7 @@ type Copygen interface {
 	// map models.Acount.Name domain.Account.Name
 	// map models.User.ID domain.Account.UserID
 	// alloc
-	ModelsToDomain(models.Account, models.User) domain.Account
+	ModelsToDomain(models.Account, models.User) *domain.Account
 }
 
 /* Define the fields this converter is applied to using regex. CONVERTERS ARE ONLY APPLIED TO VALID FIELDS. */

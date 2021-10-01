@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/switchupcb/copygen/cli/config"
 	"github.com/switchupcb/copygen/cli/generator"
-	"github.com/switchupcb/copygen/cli/loader"
+	"github.com/switchupcb/copygen/cli/matcher"
+	"github.com/switchupcb/copygen/cli/parser"
 )
 
 // Environment represents the copygen environment.
@@ -55,8 +57,16 @@ func (e *Environment) parseArgs(args []string) error {
 }
 
 func (e *Environment) run() error {
-	gen, err := loader.LoadYML(e.YMLPath)
+	gen, err := config.LoadYML(e.YMLPath)
 	if err != nil {
+		return err
+	}
+
+	if err = parser.Parse(gen); err != nil {
+		return err
+	}
+
+	if err = matcher.Match(gen); err != nil {
 		return err
 	}
 

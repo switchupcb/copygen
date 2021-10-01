@@ -10,5 +10,5 @@ import (
 type Copygen interface {
 	// depth domain.Account.*(?!\.) 1
 	// depth models.User.*(?!\.) 2
-	ModelsToDomain(models.Account, models.User) domain.Account
+	ModelsToDomain(models.Account, models.User) *domain.Account
 }

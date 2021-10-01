@@ -4,13 +4,7 @@ import "fmt"
 
 // Type represents a field that isn't contained.
 type Type struct {
-	Field   Field       // The field information for the type.
-	Options TypeOptions // The type options used for the type.
-}
-
-// TypeOptions represent options for a Type.
-type TypeOptions struct {
-	Alloc bool // Whether a new type will be allocated.
+	Field *Field // The field information for the type.
 }
 
 // isStruct returns whether the type is a struct.
@@ -24,5 +18,5 @@ func (t Type) isInterface() bool {
 }
 
 func (t Type) String() string {
-	return fmt.Sprintf("type %v.%v %v", t.Field.Package, t.Field.Name, t.Field.Definition)
+	return fmt.Sprintf("type %v", t.Field.FullName(""))
 }

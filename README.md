@@ -9,7 +9,7 @@ Copygen is a command-line [code generator](https://github.com/gophersgang/go-cod
 | Topic                           | Categories                                                                                    |
 | :------------------------------ | :-------------------------------------------------------------------------------------------- |
 | [Usage](#Usage)                 | [Types](#types), [Setup](#setup), [Command Line](#command-line), [Output](#output)            |
-| [Customization](#customization) | [Templates](#templates)                                                                       |
+| [Customization](#customization) | [Custom Types](#custom-types), [Templates](#templates)                                        |
 | [Matcher](#matcher)             | [Automatch](#automatch), [Depth](#depth)                                                      |
 | [Optimization](#optimization)   | [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy), [When to Use](#when-to-use-copygen) |
 
@@ -20,8 +20,9 @@ Each example has a **README**.
 | Example                                                                         | Description                                                       |
 | :------------------------------------------------------------------------------ | :---------------------------------------------------------------- |
 | main                                                                            | The default example.                                              |
-| [manual](https://github.com/switchupcb/copygen/tree/main/examples/automatch)    | Uses the manual map feature with alloc.                           |
+| [manual](https://github.com/switchupcb/copygen/tree/main/examples/manual)       | Uses the manual map feature.                                      |
 | [automatch](https://github.com/switchupcb/copygen/tree/main/examples/automatch) | Uses the automatch feature with depth _(doesn't require fields)_. |
+| [new](https://github.com/switchupcb/copygen/tree/main/examples/new)             | Uses a new type to assist with type-conversion.                   |
 | deepcopy _(Roadmap Feature)_                                                    | Uses the deepcopy option.                                         |
 | [error](https://github.com/switchupcb/copygen/tree/main/examples/error)         | Uses templates to return an error (temporarily unsupported).      |
 
@@ -82,11 +83,17 @@ generated:
   package: copygen
 
 # Define the optional custom templates used to generate the file.
-# Templates are currently unsupported.
 templates:
   header: ./templates/header.go
   function: ./templates/function.go
+
+# Define custom options for customization.
+# Templates are passed to the generator options.
+custom:
+  option: The possibilities are endless.
 ```
+
+The main example ignores the template fields.
 
 **setup.go**
 
@@ -96,19 +103,22 @@ Create an interface in the specified setup file with a `type Copygen interface`.
 /* Copygen defines the functions that will be generated. */
 type Copygen interface {
   // custom: see table below for options
-  ModelsToDomain(models.Account, models.User) domain.Account
+  ModelsToDomain(models.Account, models.User) *domain.Account
 }
 ```
 
-You can specify options for your functions using comments.
+Copygen uses no allocation with pointers which means fields are assigned to _objects passed as parameters_. In contrast, using a type with no pointer will return a copy of the new type.
 
-| Option                                           | Use                         | Description                                                                                                                                                                                                                                                    | Example                                                                      |
-| :----------------------------------------------- | :-------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
-| `alloc`                                          | Return a new type object(s) | Copygen uses no allocation by default which means that <br /> fields are assigned to _objects passed as parameters_. <br /> Use `alloc` to return a new copy of your to-types.                                                                                 | `alloc`                                                                      |
-| `map from to`                                    | Manual Field Mapping        | Copygen uses its [automatcher](#automatch) default. Override this using `map` <br /> which uses _regex_ to identify fields that will be mapped to and from eachother.                                                                                          | `map .* package.Type.Field` <br /> `map models.Account.ID domain.Account.ID` |
-| `depth field level`                              | Use a specific field depth. | When fields have fields, Copygen uses the full-field depth by default. <br /> Override this using `depth` which uses a _regex string_ and [depth-level](#depth) integer.                                                                                       | `depth .* 2` <br /> `depth models.Account.* 1`                               |
-| `deepcopy field`                                 | Deepcopy from-fields.       | Copygen shallow copies fields by default.  Use `deepcopy` to override this. <br /> For more information, view [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy).                                                                                        | `deepcopy package.Type.Field` <br /> `deepcopy .*` _(deepcopies all fields)_ |
-| `custom: option` <br /> `custom: option: option` | Specify custom options.     | You may want to use custom options in your [templates](#templates). <br /> Options of your choice are passed to the generator object using `custom`. <br /> Custom options are parsed as trim-spaced strings. <br /> Each `:` adds an additional key to a map. | `custom: ignore` <br /> `custom: swap: false`                                |
+**options**
+
+You can specify options for your functions using comments. Do **NOT** put empty lines between comments that pertain to one function.
+
+| Option              | Use                         | Description                                                                                                                                                                        | Example                                                                      |
+| :------------------ | :-------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| `map from to`       | Manual Field Mapping        | Copygen uses its [automatcher](#automatch) default. <br /> Override this using `map` with _regex_ to identify <br /> fields that will be mapped to and from eachother.             | `map .* package.Type.Field` <br /> `map models.Account.ID domain.Account.ID` |
+| `depth field level` | Use a specific field depth. | Copygen uses the full-field [depth](#depth) by default. <br /> Override this using `depth` with _regex_ <br /> and a [depth-level](#depth) integer.                                | `depth .* 2` <br /> `depth models.Account.* 1`                               |
+| `deepcopy field`    | Deepcopy from-fields.       | Copygen shallow copies fields by default. <br /> Override this using `deepcopy` with _regex_. <br /> For more info, view [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy). | `deepcopy package.Type.Field` <br /> `deepcopy .*` _(all fields)_            |
+| `custom option`     | Specify custom options.     | You may want to use custom [templates](#templates). <br /> `custom` options are passed to a function's options. <br /> Returns `map[string][]string` _(trim-spaced)_.              | `ignore true` <br /> `swap false`                                            |
 
 _[View a reference on Regex.](https://cheatography.com/davechild/cheat-sheets/regular-expressions/)_
 
@@ -174,11 +184,29 @@ func ModelsToDomain(tA *domain.Account, fU models.User, fA models.Account) {
 
 ## Customization
 
-The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main) modifies the .yml to use **custom functions** which `return error`. This is done by modifying the .yml and creating **custom template files**.
+Copygen's method of input and output allows you to generate code not limited to copying fields.
+
+#### Custom Types
+
+Custom types external to your application can be created for use in the `setup.go` file. When a file is generated, all types _(structs, interfaces, funcs)_ are copied **EXCEPT** the `type Copygen interface`.
+
+```go
+type DataTransferObject struct {
+  // ...
+}
+
+type DataTransferObject interface {
+  // ...
+}
+
+func ExternalFunc() {
+  // ...
+}
+```
 
 #### Templates
 
-Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package tenplates` `Header(*models.Generator)` to generate header code and `Function(*models.Function)` to generate code for each function. As a result, these _(package templates with functions)_ are **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Templates are interpreted by [yaegi](https://github.com/traefik/yaegi) which has limitations on module imports _(that are being fixed)_: As a result, **templates are temporarily unsupported.**
+Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package tenplates` `Header(*models.Generator)` to generate header code and `Function(*models.Function)` to generate code for each function. As a result, these _(package templates with functions)_ are **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Templates are interpreted by [yaegi](https://github.com/traefik/yaegi) which has limitations on module imports _(that are being fixed)_: As a result, **templates are temporarily unsupported.** The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main) modifies the .yml to use **custom functions** which `return error`. This is done by modifying the .yml and creating **custom template files**.
 
 ## Matcher
 

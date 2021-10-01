@@ -37,7 +37,7 @@ generated:
   filepath: ./copygen.go
   package: copygen
 
-# Templates aren't used for this example.
+# Templates and custom options aren't used for this example.
 ```
 
 ## Go
@@ -49,7 +49,7 @@ Specify a depth-level of one for all fields of `domain.Account`. Specify a depth
 type Copygen interface {
   // depth domain.Account.*(?!\.) 1
   // depth models.User.*(?!\.) 2
-  ModelsToDomain(models.Account, models.User) domain.Account
+  ModelsToDomain(models.Account, models.User) *domain.Account
 }
 ```
 

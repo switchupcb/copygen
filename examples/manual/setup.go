@@ -13,8 +13,7 @@ type Copygen interface {
 	// map models.Account.ID domain.Account.ID
 	// map models.Acount.Name domain.Account.Name
 	// map models.User.ID domain.Account.UserID
-	// alloc
-	ModelsToDomain(models.Account, models.User) domain.Account
+	ModelsToDomain(models.Account, models.User) *domain.Account
 }
 
 /* Define the fields this converter is applied to using regex. If unspecified, converters are applied to all valid fields. */

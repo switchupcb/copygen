@@ -11,7 +11,7 @@ import (
 // Copygen defines the functions that will be generated.
 type Copygen interface {
 	// custom: see table in the README for options
-	ModelsToDomain(models.Account, models.User) domain.Account
+	ModelsToDomain(models.Account, models.User) *domain.Account
 }
 
 /* Define the fields this converter is applied to using regex. If unspecified, converters are applied to all valid fields. */

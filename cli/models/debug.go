@@ -1,26 +1,23 @@
-package loader
+package models
 
 import (
 	"fmt"
-
-	"github.com/switchupcb/copygen/cli/models"
 )
 
 // PrintFunctionFields prints all of a functions fields to standard output.
-func PrintFunctionFields(function models.Function) {
-	for i := 0; i < len(function.To); i++ {
-		fmt.Println(function.To[i])
-		PrintFieldGraph(function.To[i].Field.Fields, "\t")
-	}
-
+func PrintFunctionFields(function Function) {
 	for i := 0; i < len(function.From); i++ {
 		fmt.Println(function.From[i])
 		PrintFieldGraph(function.From[i].Field.Fields, "\t")
 	}
+	for i := 0; i < len(function.To); i++ {
+		fmt.Println(function.To[i])
+		PrintFieldGraph(function.To[i].Field.Fields, "\t")
+	}
 }
 
 // PrintFieldGraph prints a list of fields with the related fields.
-func PrintFieldGraph(fields []*models.Field, tabs string) {
+func PrintFieldGraph(fields []*Field, tabs string) {
 	for i := 0; i < len(fields); i++ {
 		fmt.Printf("%v%v\n", tabs, fields[i])
 		if len(fields[i].Fields) != 0 {
@@ -30,7 +27,7 @@ func PrintFieldGraph(fields []*models.Field, tabs string) {
 }
 
 // PrintFieldTree prints a tree of fields for a given type to standard output.
-func PrintFieldTree(typename string, fields []*models.Field, tabs string) {
+func PrintFieldTree(typename string, fields []*Field, tabs string) {
 	if tabs == "" {
 		fmt.Println(tabs + "type " + typename)
 	}
@@ -45,7 +42,7 @@ func PrintFieldTree(typename string, fields []*models.Field, tabs string) {
 }
 
 // PrintFieldRelation prints the relationship between to and from fields.
-func PrintFieldRelation(toFields []*models.Field, fromFields []*models.Field) {
+func PrintFieldRelation(toFields []*Field, fromFields []*Field) {
 	for i := 0; i < len(toFields); i++ {
 		for j := 0; j < len(fromFields); j++ {
 			printFieldRelation(toFields[i], fromFields[j])
@@ -54,7 +51,7 @@ func PrintFieldRelation(toFields []*models.Field, fromFields []*models.Field) {
 }
 
 // printFieldRelation prints the relationship between two fields.
-func printFieldRelation(toField *models.Field, fromField *models.Field) {
+func printFieldRelation(toField *Field, fromField *Field) {
 	if (*toField).From == fromField && (*fromField).To == toField {
 		fmt.Printf("To Field %v and From Field %v are related to each other.\n", toField, fromField)
 	} else if (*toField).From == fromField {
@@ -83,7 +80,7 @@ func printFieldRelation(toField *models.Field, fromField *models.Field) {
 }
 
 // CountFields returns the number of fields in a field slice.
-func CountFields(fields []*models.Field) int {
+func CountFields(fields []*Field) int {
 	if len(fields) == 0 {
 		return 0
 	}

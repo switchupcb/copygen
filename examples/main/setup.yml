@@ -6,5 +6,9 @@ generated:
 
 # Define the optional custom templates used to generate the file.
 # templates:
-  # header: ./templates/header.go
-  # function: ./templates/function.go
+#   header: ./templates/header.go
+#   function: ./templates/function.go
+
+# Define custom options for customization.
+# custom:
+#   option: The possibilities are endless.

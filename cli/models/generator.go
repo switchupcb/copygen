@@ -7,8 +7,9 @@ type Generator struct {
 	Outpath   string           // The filepath the generated code is output to.
 	Package   string           // The generated code's package.
 	Template  Template         // The template used to generate code.
-	Imports   []string         // The imports included in the generated file.
+	Imports   []string         // The imports to include in the generated file.
 	Functions []Function       // The functions to generate.
+	Keep      string           // The miscellenaous code that is kept from the setup file.
 	Options   GeneratorOptions // The custom options for the generator.
 }
 

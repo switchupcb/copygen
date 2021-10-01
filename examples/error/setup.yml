@@ -9,3 +9,7 @@ generated:
 templates:
   header: ./templates/header.go
   function: ./templates/function.go
+
+# Define custom options for customization.
+# custom:
+#   option: The possibilities are endless.

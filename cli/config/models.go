@@ -1,10 +1,11 @@
-// Package yml loads setup information from an external file.
-package yml
+// Package config loads configuration data from an external file.
+package config
 
 // YML represents the first level of the YML file.
 type YML struct {
-	Generated Generated `yaml:"generated"`
-	Templates Templates `yaml:"templates"`
+	Generated Generated              `yaml:"generated"`
+	Templates Templates              `yaml:"templates"`
+	Options   map[string]interface{} `yaml:"custom"`
 }
 
 // Generated represents generated properties of the YML file.
