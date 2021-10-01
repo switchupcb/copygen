@@ -34,10 +34,10 @@ func Match(gen *models.Generator) error {
 	// don't return unpointed fields.
 	for _, function := range gen.Functions {
 		for _, fromType := range function.From {
-			fromType.Field.Fields = GetRelatedFields(fromType.Field.Fields)
+			fromType.Field.Fields = RelatedFields(fromType.Field.Fields)
 		}
 		for _, toType := range function.To {
-			toType.Field.Fields = GetRelatedFields(toType.Field.Fields)
+			toType.Field.Fields = RelatedFields(toType.Field.Fields)
 		}
 	}
 	return nil

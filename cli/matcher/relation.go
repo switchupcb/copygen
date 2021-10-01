@@ -4,11 +4,11 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// GetRelatedFields returns solely related fields in a list of fields.
-func GetRelatedFields(fields []*models.Field) []*models.Field {
+// RelatedFields returns solely related fields in a list of fields.
+func RelatedFields(fields []*models.Field) []*models.Field {
 	for i := len(fields) - 1; i > -1; i-- {
 		if len(fields[i].Fields) != 0 {
-			fields[i].Fields = GetRelatedFields(fields[i].Fields)
+			fields[i].Fields = RelatedFields(fields[i].Fields)
 		} else if fields[i].To == nil && fields[i].From == nil {
 			fields = fields[:len(fields)-1]
 		}
