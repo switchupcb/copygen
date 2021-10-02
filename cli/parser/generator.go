@@ -5,7 +5,6 @@ import (
 	"go/ast"
 	"go/printer"
 	"go/token"
-	"strings"
 
 	"github.com/switchupcb/copygen/cli/models"
 )
@@ -41,17 +40,29 @@ func (p *Parser) parseKeep(gen *models.Generator) ([]byte, error) {
 				})
 			}
 		default:
-			// keep comment options (`// comment: ...` -> `// ...`
+			// keep all comments that aren't options (where options are in format `// option: ...`)
 			ast.Inspect(x, func(node ast.Node) bool {
 				switch xcg := node.(type) {
 				case *ast.CommentGroup:
 					for i := 0; i < len(xcg.List); i++ {
-						splitcomment := splitASTComment(xcg.List[i])
-						if len(splitcomment) >= 2 && splitcomment[0] == "comment" {
-							xcg.List[i].Text = "//" + strings.Join(splitcomment[1:], "")
-							return false
-						} else {
-							xcg.List[i].Text = "  " // printer: "" and " " give an out of bounds error
+						splitcomment := splitASTComment(xcg.List[i], ":")
+						var rm bool
+						switch splitcomment[0] {
+						case "convert":
+							rm = true
+						case "depth":
+							rm = true
+						case "deepcopy":
+							rm = true
+						case "map":
+							rm = true
+						}
+						// remove from the top-down.
+						if rm {
+							if i-1 > -1 {
+								xcg.List[i].Text = xcg.List[i-1].Text
+							}
+							xcg.List[i-1].Text = "  " // printer: "" and " " give an out of bounds error
 						}
 					}
 				}
@@ -67,13 +78,4 @@ func (p *Parser) parseKeep(gen *models.Generator) ([]byte, error) {
 		return []byte{}, err
 	}
 	return buf.Bytes(), nil
-}
-
-// splitASTComment splits an *ast.Comment for options parsing without the //.
-func splitASTComment(c *ast.Comment) []string {
-	// Remove the `//` and normalize space.
-	comment := strings.TrimSpace(c.Text[2:])
-
-	// Separate comment into 1 (option) + n parts
-	return strings.Split(comment, ":")
 }

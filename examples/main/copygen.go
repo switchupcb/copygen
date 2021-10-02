@@ -11,6 +11,7 @@ import (
 	"github.com/switchupcb/copygen/examples/main/models"
 )
 
+/* Define the fields this converter is applied to using regex. If unspecified, converters are applied to all valid fields. */
 // Itoa converts an integer to an ascii value.
 func Itoa(i int) string {
 	return c.Itoa(i)

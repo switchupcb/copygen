@@ -127,9 +127,9 @@ _[View a reference on Regex.](https://cheatography.com/davechild/cheat-sheets/re
 
 In certain cases, you may want to specify a how a specific type or field is copied with a function. This can be done by defining a function with a `convert` option.
 ```go
-/* Define the fields this converter is applied to using regex. If unspecified, converters are applied to all valid fields. */
+/* Define the fields this converter is applied to using regex. */
 // convert: models.User.ID
-// comment: Itoa converts an integer to an ascii value.
+// Itoa converts an integer to an ascii value.
 func Itoa(i int) string {
   return c.Itoa(i)
 }
@@ -175,6 +175,7 @@ import (
 	"github.com/switchupcb/copygen/examples/main/models"
 )
 
+/* Define the fields this converter is applied to using regex. If unspecified, converters are applied to all valid fields. */
 // Itoa converts an integer to an ascii value.
 func Itoa(i int) string {
 	return c.Itoa(i)
@@ -214,7 +215,7 @@ func ExternalFunc() {
 
 #### Templates
 
-Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package tenplates` `Header(*models.Generator)` to generate header code and `Function(*models.Function)` to generate code for each function. As a result, these _(package templates with functions)_ are **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Templates are interpreted by [yaegi](https://github.com/traefik/yaegi) which has limitations on module imports _(that are being fixed)_: As a result, **templates are temporarily unsupported.** The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main) modifies the .yml to use **custom functions** which `return error`. This is done by modifying the .yml and creating **custom template files**.
+Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package tenplates` `Header(*models.Generator)` to generate header code and `Function(*models.Function)` to generate code for each function. As a result, these _(package templates with functions)_ are **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/generator.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Templates are interpreted by [yaegi](https://github.com/traefik/yaegi) which has limitations on module imports _(Pull Request Pending)_: As a result, **templates are temporarily unsupported.** The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main) modifies the .yml to use **custom functions** which `return error`. This is done by modifying the .yml and creating **custom template files**.
 
 ## Matcher
 
@@ -268,7 +269,7 @@ Copygen's customizability gives it many potential usecases. However, copygen's m
 
 #### Why would I do that?
 
-In order to keep a program adaptable _(to new features)_, a program may contain two types of models. The first type of model is the **domain model** which is **used throughout your application** to model its business logic. For example, the [domain models of Copygen](https://github.com/switchupcb/copygen/tree/main/cli/models) focus on field relations and manipulation. In contrast, the ideal way to store your data _(such as in a database)_ may not match your domain model. In order to amend this problem, you create a **data model**. The [data models of Copygen](https://github.com/switchupcb/copygen/blob/main/cli/loader/models.go) are located in its loader(s). In many cases, you will need a way to map these models together to exchange information from your data-model to your domain _(and vice-versa)_. It's tedious to repeateadly do this in the application _(through assignment or function definitions)_. Copygen solves this problem.
+In order to keep a program adaptable _(to new features)_, a program may contain two types of models. The first type of model is the **domain model** which is **used throughout your application** to model its business logic. For example, the [domain models of Copygen](https://github.com/switchupcb/copygen/tree/main/cli/models) focus on field relations and manipulation. In contrast, the ideal way to store your data _(such as in a database)_ may not match your domain model. In order to amend this problem, you create a **data model**. The [data models of Copygen](https://github.com/switchupcb/copygen/blob/main/cli/config/models.go) are located in its configuration loader. In many cases, you will need a way to map these models together to exchange information from your data-model to your domain _(and vice-versa)_. It's tedious to repeateadly do this in the application _(through assignment or function definitions)_. Copygen solves this problem.
 
 ## Contributing
 
