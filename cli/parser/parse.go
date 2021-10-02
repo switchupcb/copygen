@@ -2,11 +2,9 @@
 package parser
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
-	"go/printer"
 	"go/token"
 	"path/filepath"
 
@@ -40,7 +38,7 @@ func Parse(gen *models.Generator) error {
 
 	p := Parser{Setpath: absfilepath}
 	p.Fileset = token.NewFileSet()
-	p.SetupFile, err = parser.ParseFile(p.Fileset, absfilepath, nil, parser.AllErrors)
+	p.SetupFile, err = parser.ParseFile(p.Fileset, absfilepath, nil, parser.ParseComments)
 	if err != nil {
 		return fmt.Errorf("An error occurred parsing the specified .go setup file: %v.\n%v", gen.Setpath, err)
 	}
@@ -50,7 +48,7 @@ func Parse(gen *models.Generator) error {
 	if err != nil {
 		return err
 	}
-	gen.Keep, err = p.parseKeep(p.Fileset, p.SetupFile)
+	gen.Keep, err = p.parseKeep(gen)
 	if err != nil {
 		return err
 	}
@@ -73,23 +71,4 @@ func (p *Parser) parseImports() map[string]string {
 		}
 	}
 	return p.Imports
-}
-
-// parseKeep parses the generator's setup file for data that is kept in the generated file.
-// TODO: Implement Keep
-func (p *Parser) parseKeep(fileset *token.FileSet, file *ast.File) (string, error) {
-	var keep []byte
-	buffer := bytes.NewBuffer(keep)
-	ast.FilterFile(file, func(s string) bool {
-		if s == "Copygen" {
-			return false
-		}
-		// Keep all types that are not Copygen.
-		return true
-	})
-
-	if err := printer.Fprint(buffer, fileset, file); err != nil {
-		return "", err
-	}
-	return string(buffer.Bytes()), nil
 }

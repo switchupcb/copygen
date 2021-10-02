@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"go/format"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/switchupcb/copygen/cli/generator/interpreter"
@@ -15,11 +14,7 @@ import (
 func Generate(gen *models.Generator, output bool) error {
 	// generate code
 	var content string
-	header, err := interpreter.Header(*gen)
-	if err != nil {
-		return fmt.Errorf("An error occurred while generating the header.\n%v", err)
-	}
-	content += header + "\n"
+	content += string(gen.Keep) + "\n"
 
 	function, err := interpreter.Function(gen)
 	if err != nil {
@@ -42,7 +37,7 @@ func Generate(gen *models.Generator, output bool) error {
 	if err != nil {
 		return fmt.Errorf("An error occurred while determining the absolute file path of the generated file.\n%v", absfilepath)
 	}
-	absfilepath = path.Join(filepath.Dir(absfilepath), gen.Outpath)
+	absfilepath = filepath.Join(filepath.Dir(absfilepath), gen.Outpath)
 
 	// create file
 	if err := os.WriteFile(absfilepath, fmtcontent, 0222); err != nil {

@@ -10,9 +10,8 @@ type YML struct {
 
 // Generated represents generated properties of the YML file.
 type Generated struct {
-	Setup   string `yaml:"setup"`
-	Output  string `yaml:"output"`
-	Package string `yaml:"package"`
+	Setup  string `yaml:"setup"`
+	Output string `yaml:"output"`
 }
 
 // Templates represent template properties of the YML file.

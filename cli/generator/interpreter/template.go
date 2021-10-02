@@ -7,15 +7,6 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// Header determines the func to generate header code.
-func Header(gen models.Generator) (string, error) {
-	if gen.Template.Headpath == "" {
-		return templates.DefaultHeader(gen), nil
-	}
-	return "", fmt.Errorf("Templates are temporarily unsupported.")
-	return interpretHeader(gen)
-}
-
 // Function determines the func to generate function code.
 func Function(gen *models.Generator) (string, error) {
 	var functions string
@@ -28,19 +19,7 @@ func Function(gen *models.Generator) (string, error) {
 		return functions, nil
 	}
 	return "", fmt.Errorf("Templates are temporarily unsupported.")
-	return interpretFunction(gen)
-}
-
-// interpretHeader represents the interpreted header func that generates the header code.
-func interpretHeader(gen models.Generator) (string, error) {
-	v, err := interpretFunc(gen.Loadpath, gen.Template.Headpath, "templates.Header")
-	if err != nil {
-		return "", err
-	}
-	// fn := v.Interface().(func(models.Generator) string)
-	// header := fn(gen)
-	fmt.Println(v)
-	return "", nil
+	// return interpretFunction(gen)
 }
 
 // interpretFunction represents the interpreted function func that generates function code.

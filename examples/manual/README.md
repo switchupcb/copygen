@@ -52,8 +52,7 @@ Setting up copygen is a 2-step process involving a `YML` and `GO` file.
 # Define where the code will be generated.
 generated:
   setup: ./setup.go
-  output: ./copygen.go
-  package: copygen
+  output: ../copygen.go
 
 # Templates and custom options aren't used for this example.
 ```

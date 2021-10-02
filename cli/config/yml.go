@@ -13,7 +13,7 @@ import (
 func LoadYML(filepath string) (*models.Generator, error) {
 	file, err := os.ReadFile(filepath)
 	if err != nil {
-		return nil, fmt.Errorf("The specified .yml filepath doesn't exist: %v.\n%v", filepath, err)
+		return nil, fmt.Errorf("The specified .yml filepath doesn't exist: %v\n%v", filepath, err)
 	}
 
 	var yml YML
@@ -35,7 +35,6 @@ func ParseYML(yml YML) *models.Generator {
 	gen := models.Generator{
 		Setpath: yml.Generated.Setup,
 		Outpath: yml.Generated.Output,
-		Package: yml.Generated.Package,
 		Template: models.Template{
 			Funcpath: yml.Templates.Function,
 			Headpath: yml.Templates.Header,

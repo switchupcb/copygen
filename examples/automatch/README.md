@@ -34,8 +34,8 @@ type Account // models
 ```yml
 # Define where the code will be generated.
 generated:
-  filepath: ./copygen.go
-  package: copygen
+  setup: ./setup.go
+  output: ../copygen.go
 
 # Templates and custom options aren't used for this example.
 ```

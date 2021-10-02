@@ -5,11 +5,10 @@ type Generator struct {
 	Loadpath  string            // The filepath the loader file is located in.
 	Setpath   string            // The filepath the setup file is located in.
 	Outpath   string            // The filepath the generated code is output to.
-	Package   string            // The generated code's package.
 	Template  Template          // The template used to generate code.
 	Imports   map[string]string // The imports to include in the generated file (map[packagealias]import).
 	Functions []Function        // The functions to generate.
-	Keep      string            // The miscellenaous code that is kept from the setup file.
+	Keep      []byte            // The code that is kept from the setup file (except for the header).
 	Options   GeneratorOptions  // The custom options for the generator.
 }
 
