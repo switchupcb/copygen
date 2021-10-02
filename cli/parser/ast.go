@@ -5,7 +5,42 @@ import (
 	"go/ast"
 	"go/token"
 	"path/filepath"
+	"strings"
 )
+
+// splitASTComment splits an *ast.Comment for options parsing without the //.
+func splitASTComment(c *ast.Comment, separator string) []string {
+	// Remove the `//` and normalize space.
+	comment := strings.TrimSpace(c.Text[2:])
+
+	// Separate comment into 1 (option) + n parts
+	return strings.Split(comment, separator)
+}
+
+// parseASTFieldName parses an *ast.Field (node) for its package, name, definition, and pointer value.
+func parseASTFieldName(field ast.Node) (string, string, string, string) {
+	var pkg, name, def, ptr string
+	ast.Inspect(field, func(node ast.Node) bool {
+		switch x := node.(type) {
+		case *ast.SelectorExpr:
+			// FieldInfo is always in a selector expression.
+			pkg += x.X.(*ast.Ident).Name // 'log' in 'Field log.Logger'
+			name += x.Sel.Name           // 'Logger' in 'Field log.Logger'
+			return false
+		case *ast.StarExpr:
+			ptr += "*"
+			return true
+		default:
+			return true
+		}
+	})
+	if pkg != "" {
+		def = pkg + "." + name
+	} else {
+		def = name
+	}
+	return pkg, name, def, ptr
+}
 
 // astLocateType finds the location of a file containing a type declaration in order to
 // determine its import path, actual (non-aliased) package name, name, and definition.
@@ -67,29 +102,4 @@ func astSelectorSearch(ts *ast.TypeSpec, selector string) *ast.SelectorExpr {
 		}
 	})
 	return astselector
-}
-
-// parseASTFieldName parses an *ast.Field (node) for its package, name, definition, and pointer value.
-func parseASTFieldName(field ast.Node) (string, string, string, string) {
-	var pkg, name, def, ptr string
-	ast.Inspect(field, func(node ast.Node) bool {
-		switch x := node.(type) {
-		case *ast.SelectorExpr:
-			// FieldInfo is always in a selector expression.
-			pkg += x.X.(*ast.Ident).Name // 'log' in 'Field log.Logger'
-			name += x.Sel.Name           // 'Logger' in 'Field log.Logger'
-			return false
-		case *ast.StarExpr:
-			ptr += "*"
-			return true
-		default:
-			return true
-		}
-	})
-	if pkg != "" {
-		def = pkg + "." + name
-	} else {
-		def = name
-	}
-	return pkg, name, def, ptr
 }

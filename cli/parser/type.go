@@ -58,18 +58,18 @@ func (p *Parser) parseFieldList(fieldlist []*ast.Field, fieldSearcher *FieldSear
 }
 
 // parseTypeField parses a function *ast.Field into a field model.
-func (p *Parser) parseTypeField(field *ast.Field, fieldSearcher *FieldSearcher) (*models.Field, error) {
+func (p *Parser) parseTypeField(field *ast.Field, fieldsearcher *FieldSearcher) (*models.Field, error) {
 	pkg, name, definition, ptr := parseASTFieldName(field)
 	if name == "" {
 		return nil, fmt.Errorf("Unexpected field expression %v in the Abstract Syntax Tree.", field)
 	}
-	fieldSearcher.FieldSearch = fieldSearch{}
-	fieldsearch := fieldSearcher.SearchForField(p.SetupFile, p.Imports[pkg], pkg, name)
-	if fieldsearch.Error != nil {
-		return nil, fmt.Errorf("An error occurred searching for the Field %q of Definition %q\n%v", name, definition, fieldsearch.Error)
+
+	mField, err := fieldsearcher.SearchForTypeField(p.SetupFile, p.Imports[pkg], pkg, name)
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred searching for the Field %q of Definition %q\n%v", name, definition, err)
 	}
-	fieldsearch.Result.Pointer = ptr
-	return fieldsearch.Result, nil
+	mField.Pointer = ptr
+	return mField, nil
 }
 
 // createVariable generates a valid variable name for a 'set' of parameters.
