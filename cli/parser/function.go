@@ -3,8 +3,6 @@ package parser
 import (
 	"fmt"
 	"go/ast"
-	"regexp"
-	"strings"
 
 	"github.com/switchupcb/copygen/cli/models"
 )
@@ -23,18 +21,7 @@ func (p *Parser) parseFunctions() ([]models.Function, error) {
 
 	var functions []models.Function
 	for _, method := range copyinterface.Methods.List {
-		optionmap := make(map[string][]string)
-		if method.Comment != nil {
-			for _, comment := range method.Comment.List {
-				option, value, err := parseComment(comment)
-				if err != nil {
-					return nil, fmt.Errorf("An error occurred while parsing the options of a function.\n%v", err)
-				}
-				optionmap[option] = append(optionmap[option], value)
-			}
-		}
-
-		fromTypes, toTypes, err := p.parseTypes(method, optionmap)
+		fromTypes, toTypes, err := p.parseTypes(method)
 		if err != nil {
 			return nil, fmt.Errorf("An error occured while parsing the types of function %q.\n%v", parseMethodForName(method), err)
 		}
@@ -44,40 +31,45 @@ func (p *Parser) parseFunctions() ([]models.Function, error) {
 			To:   toTypes,
 			From: fromTypes,
 		}
-		for option, values := range optionmap {
-			switch option {
-			case "map":
-			case "depth":
-			case "deepcopy":
-			default:
-				// functions only have custom options
-				function.Options.Custom[option] = values
-			}
-		}
+
+		function.Options.Custom = p.assignCustomOption(method)
 		functions = append(functions, function)
 	}
 	return functions, nil
 }
 
-// parseComment parses a comment above a Copygen interface function to provide an option.
-func parseComment(comment *ast.Comment) (string, string, error) {
-	regex := regexp.MustCompile("\\s+")
-	splitcomment := regex.Split(strings.TrimSpace(comment.Text), -1)
-	if len(splitcomment) == 0 {
-		return "", "", fmt.Errorf("There is an unspecified option at %v.\nPlease ensure there aren't empty lines between comments that pertain to a function.", comment.Slash)
-	} else if len(splitcomment) != 2 {
-		return "", "", fmt.Errorf("There is a misconfigured option at %v.\nIs it in format <option>:<whitespaces><value>?", comment.Slash)
-	}
-	return splitcomment[0], splitcomment[1], nil
+// assignCustomOption parses a functions *ast.CommentGroups for custom options to return a Custom map.
+func (p *Parser) assignCustomOption(x ast.Node) map[string][]string {
+	optionmap := make(map[string][]string)
+	ast.Inspect(x, func(node ast.Node) bool {
+		switch xcg := node.(type) {
+		case *ast.CommentGroup:
+			for _, comment := range xcg.List {
+				// functions only have custom options
+				if option, exists := p.Options[comment.Text]; exists && option.Category == "custom" {
+					optionvalue := option.Value[0]
+					if customoptionmap, ok := optionvalue.(map[string]string); ok {
+						for customoption, value := range customoptionmap {
+							optionmap[customoption] = append(optionmap[customoption], value)
+						}
+					} else {
+						fmt.Println("WARNING: Failed to assign custom option.", optionvalue)
+					}
+				}
+			}
+		}
+		return true
+	})
+	return optionmap
 }
 
-// parseMethod parses a method inside of a Copygen interface to provide its name.
+// parseMethodForName parses a method inside of a Copygen interface to provide its name.
 func parseMethodForName(method *ast.Field) string {
 	var funcname string // i.e 'ModelsToDomain' in func ModelsToDomain(models.Account, *models.User) *domain.Account
 
 	// ast Note: "Field.Names contains a single name "type" for elements of interface type lists"
 	for _, name := range method.Names {
-		funcname += name.String() // ModelsToDomain
+		funcname += name.String() // i.e ModelsToDomain
 	}
 	return funcname
 }

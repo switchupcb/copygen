@@ -22,6 +22,9 @@ type Parser struct {
 	// The fileset of the parser.
 	Fileset *token.FileSet
 
+	// The options that pertain to functions and fields (map[funcname]options).
+	Options OptionMap
+
 	// The imports discovered in the set up file (map[packagevar]importpath).
 	// In the context of the parser, packagevar refers to the the variable used
 	// to reference the package (alias) rather the package's actual name.
@@ -43,12 +46,13 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("An error occurred parsing the specified .go setup file: %v.\n%v", gen.Setpath, err)
 	}
 
-	gen.Imports = p.parseImports()
-	gen.Functions, err = p.parseFunctions()
+	p.parseOptions()
+	p.parseImports()
+	gen.Keep, err = p.parseKeep()
 	if err != nil {
 		return err
 	}
-	gen.Keep, err = p.parseKeep(gen)
+	gen.Functions, err = p.parseFunctions()
 	if err != nil {
 		return err
 	}
@@ -56,7 +60,7 @@ func Parse(gen *models.Generator) error {
 }
 
 // parseImports parses the AST for imports in the setup file.
-func (p *Parser) parseImports() map[string]string {
+func (p *Parser) parseImports() {
 	if p.Imports == nil {
 		p.Imports = make(map[string]string) // map[packagevar]importpath
 	}
@@ -70,5 +74,4 @@ func (p *Parser) parseImports() map[string]string {
 			p.Imports[base[:len(base)-1]] = imprt.Path.Value
 		}
 	}
-	return p.Imports
 }

@@ -10,5 +10,5 @@ type Function struct {
 
 // FunctionOptions represent options for a Function.
 type FunctionOptions struct {
-	Custom map[string][]string // The custom options of a function.
+	Custom map[string][]string // The custom options of a function (map[option]values).
 }

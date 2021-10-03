@@ -9,13 +9,13 @@ import (
 )
 
 // parseTypes parses an ast.Field (of type func) for to-types and from-types.
-func (p *Parser) parseTypes(function *ast.Field, options map[string][]string) ([]models.Type, []models.Type, error) {
+func (p *Parser) parseTypes(function *ast.Field) ([]models.Type, []models.Type, error) {
 	fn, ok := function.Type.(*ast.FuncType)
 	if !ok {
 		return nil, nil, fmt.Errorf("An error occurred parsing the types of function %v at Line %d", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	}
 
-	fieldSearcher := FieldSearcher{Options: options}
+	fieldSearcher := FieldSearcher{}
 	fromTypes, err := p.parseFieldList(fn.Params.List, &fieldSearcher) // (incoming) parameters "non-nil"
 	if err != nil {
 		return nil, nil, err
