@@ -37,7 +37,6 @@ func ParseYML(yml YML) *models.Generator {
 		Outpath: yml.Generated.Output,
 		Template: models.Template{
 			Funcpath: yml.Templates.Function,
-			Headpath: yml.Templates.Header,
 		},
 		Options: models.GeneratorOptions{
 			Custom: yml.Options,

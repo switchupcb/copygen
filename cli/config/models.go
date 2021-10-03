@@ -16,6 +16,5 @@ type Generated struct {
 
 // Templates represent template properties of the YML file.
 type Templates struct {
-	Header   string `yaml:"header"`
 	Function string `yaml:"function"`
 }
