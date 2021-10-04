@@ -8,20 +8,20 @@ import (
 func PrintFunctionFields(function Function) {
 	for i := 0; i < len(function.From); i++ {
 		fmt.Println(function.From[i])
-		PrintFieldGraph(function.From[i].Field.Fields, "\t")
+		PrintFieldGraph(function.From[i].Field, "\t")
 	}
 	for i := 0; i < len(function.To); i++ {
 		fmt.Println(function.To[i])
-		PrintFieldGraph(function.To[i].Field.Fields, "\t")
+		PrintFieldGraph(function.To[i].Field, "\t")
 	}
 }
 
 // PrintFieldGraph prints a list of fields with the related fields.
-func PrintFieldGraph(fields []*Field, tabs string) {
-	for i := 0; i < len(fields); i++ {
-		fmt.Printf("%v%v\n", tabs, fields[i])
-		if len(fields[i].Fields) != 0 {
-			PrintFieldGraph(fields[i].Fields, tabs+"\t")
+func PrintFieldGraph(field *Field, tabs string) {
+	fmt.Printf("%v%v\n", tabs, field)
+	for i := 0; i < len(field.Fields); i++ {
+		if len(field.Fields) != 0 {
+			PrintFieldGraph(field.Fields[i], tabs+"\t")
 		}
 	}
 }

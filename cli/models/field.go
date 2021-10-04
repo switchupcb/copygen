@@ -1,7 +1,9 @@
 // Package models defines the domain models that model field relations and manipulation.
 package models
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Field represents a field to be copied to/from.
 // A field's struct properties are set in the parser unless its stated otherwise.
@@ -90,6 +92,17 @@ func (f Field) FullVariableName(name string) string {
 		return f.Parent.FullVariableName(f.VariableName + name)
 	}
 	return f.VariableName + name
+}
+
+// AllFields gets all the fields in the scope of a field (including itself).
+func (f *Field) AllFields(fields []*Field) []*Field {
+	fields = append(fields, f)
+	if len(f.Fields) != 0 {
+		for i := 0; i < len(f.Fields); i++ {
+			fields = f.Fields[i].AllFields(fields)
+		}
+	}
+	return fields
 }
 
 func (f Field) String() string {

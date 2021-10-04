@@ -42,27 +42,81 @@ func parseASTFieldName(field ast.Node) (string, string, string, string) {
 	return pkg, name, def, ptr
 }
 
-// astLocateType finds the location of a file containing a type declaration in order to
-// determine its import path, actual (non-aliased) package name, name, and definition.
-func astLocateType(file *ast.File, imprt, name string) (string, string, string, string, error) {
+// astLocateImport finds the actual import of a given package in a .go file.
+// The import is used to load packages prior to a field search.
+func astLocateImport(file *ast.File, fileImport, pkg, name string) (string, error) {
+	// A type with no referenced package is declared in the same file.
+	if pkg == "" {
+		return fileImport, nil
+	}
+
+	// check the current file
+	base := filepath.Base(fileImport)
+	if pkg == base[:len(base)-1] {
+		return fileImport, nil
+	}
+
+	for _, importSpec := range file.Imports {
+		importPath := importSpec.Path.Value
+
+		// check aliased imports (i.e `c "strconv"`)
+		if importSpec.Name != nil && pkg == importSpec.Name.Name {
+			return importPath, nil
+		}
+
+		// check stdlib imports (i.e `"log"`, `"strconv"`)
+		if pkg == importPath[1:len(importPath)-1] {
+			return importPath, nil
+		}
+
+		// check file imports (i.e `"github.com/switchupcb/copygen/models`)
+		base := filepath.Base(importPath)
+		if pkg == base[:len(base)-1] {
+			return importPath, nil
+		}
+	}
+	return "", fmt.Errorf("Could not locate type %q in file import %v.", pkg+" "+name, fileImport)
+}
+
+// astLocateType uses the location of a file containing a type declaration in order to
+// determine the type's actual import path, package, typename, and definition.
+func astLocateType(file *ast.File, sel *ast.SelectorExpr) (string, string, string, string, error) {
+	typefieldPkg := sel.X.(*ast.Ident).Name // 'log' in 'Field log.Logger'
+	typefieldName := sel.Sel.Name           // 'Logger' in 'Field log.Logger'
+	definition := typefieldPkg
+	if definition != "" {
+		definition += "."
+	}
+	definition = typefieldName
+
 	// traverse through the file's imports to determine the types actual package name.
 	for _, importSpec := range file.Imports {
 		importPath := importSpec.Path.Value
-		if importPath == imprt {
-			base := filepath.Base(importPath)
-			// [:removes the last `"` from the package name]
-			actualpkg := base[:len(base)-1]
 
-			var definition string
-			if actualpkg != "" {
-				definition = actualpkg + "." + name
-			} else {
-				definition = name
+		// check imports that have variables names
+		if importSpec.Name != nil {
+			// if an import variable matches the package name (i.e 'log' in 'log.Logger')
+			if typefieldPkg == importSpec.Name.Name {
+				return importPath, typefieldPkg, typefieldName, definition, nil
 			}
-			return importPath, actualpkg, name, definition, nil
+		} else {
+			if typefieldPkg == importPath[1:len(importPath)-1] {
+				return importPath, typefieldPkg, typefieldName, definition, nil
+			}
 		}
 	}
-	return "", "", "", "", fmt.Errorf("Could not locate type %q with import %v.", name, imprt)
+	// 	if importPath == imprt {
+	// 		base := filepath.Base(importPath)
+	// 		// [:removes the last `"` from the package name]
+	// 		actualpkg := base[:len(base)-1]
+	// 		var definition string
+	// 		if actualpkg != "" {
+	// 			definition = actualpkg + "." + name
+	// 		} else {
+	// 			definition = name
+	// 		}
+	// 		return importPath, actualpkg, name, definition, nil
+	return "", "", "", "", fmt.Errorf("Could not locate type %q in import %v.", typefieldName, typefieldPkg)
 }
 
 // astTypeSearch searches through an ast.File for ast.Types.

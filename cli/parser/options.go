@@ -86,12 +86,12 @@ func parseConvert(option string) (*Option, error) {
 		return nil, fmt.Errorf("There is a misconfigured convert option: %q.\nIs it in format <option>:<whitespaces><regex><whitespaces><regex>?", option)
 	}
 
-	funcRe, err := regexp.Compile(splitoption[0])
+	funcRe, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
 		return nil, fmt.Errorf("An error occurred compiling the regex for the first field in the convert option: %q.\n%v", option, err)
 	}
 
-	fieldRe, err := regexp.Compile(splitoption[1])
+	fieldRe, err := regexp.Compile("^" + splitoption[1] + "$")
 	if err != nil {
 		return nil, fmt.Errorf("An error occurred compiling the regex for the second field in the convert option: %q.\n%v", option, err)
 	}
@@ -105,7 +105,7 @@ func parseConvert(option string) (*Option, error) {
 
 // parseDeepcopy parses a deepcopy option.
 func parseDeepcopy(option string) (*Option, error) {
-	re, err := regexp.Compile(option)
+	re, err := regexp.Compile("^" + option + "$")
 	if err != nil {
 		return nil, fmt.Errorf("An error occurred compiling the regex for a deepcopy option: %q\n%v", option, err)
 	}
@@ -125,7 +125,7 @@ func parseDepth(option string) (*Option, error) {
 		return nil, fmt.Errorf("There is a misconfigured depth option: %q.\nIs it in format <option>:<whitespaces><regex><whitespaces><int>?", option)
 	}
 
-	re, err := regexp.Compile(splitoption[0])
+	re, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
 		return nil, fmt.Errorf("An error occurred compiling the regex for a depth option: %q.\n%v", option, err)
 	}
@@ -151,12 +151,12 @@ func parseMap(option string) (*Option, error) {
 		return nil, fmt.Errorf("There is a misconfigured map option: %q.\nIs it in format <option>:<whitespaces><regex><whitespaces><regex>?", option)
 	}
 
-	fromRe, err := regexp.Compile(splitoption[0])
+	fromRe, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
 		return nil, fmt.Errorf("An error occurred compiling the regex for the first field in the map option: %q.\n%v", option, err)
 	}
 
-	toRe, err := regexp.Compile(splitoption[1])
+	toRe, err := regexp.Compile("^" + splitoption[1] + "$")
 	if err != nil {
 		return nil, fmt.Errorf("An error occurred compiling the regex for the second field in the map option: %q.\n%v", option, err)
 	}

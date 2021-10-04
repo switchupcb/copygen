@@ -10,7 +10,7 @@ import (
 
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	// custom: see table in the README for options
+	// custom see table in the README for options
 	ModelsToDomain(models.Account, models.User) *domain.Account
 }
 

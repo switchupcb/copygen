@@ -33,17 +33,23 @@ func (fs *FieldSearcher) SearchForTypeField(setupfile *ast.File, setimport, setp
 	// In order to solve this, we must locate the types ACTUAL properties from its declaration in antoher file.
 	//
 	// find the actual file location of the field's type declaration using the setup file.
-	actualimport, actualpkg, actualname, definition, err := astLocateType(setupfile, setimport, setname)
+	actualimport, err := astLocateImport(setupfile, setimport, setpkg, setname)
 	if err != nil {
 		return nil, err
 	}
 
 	// set up and execute the field searcher using data from the actual import file.
+	def := setpkg
+	if def != "" {
+		def += "."
+	}
+	def += setname
+
 	// when fs.Field == nil; a TypeField is instantiated
 	fs.Field = nil
-	fs.SearchInfo = FieldSearchInfo{}
-	if err := fs.execute(actualimport, actualpkg, actualname, definition); err != nil {
-		return nil, fmt.Errorf("An error occurred while searching for the Field %q with import: %v.\n%v", setpkg+"."+setname, setimport, err)
+	fs.SearchInfo = FieldSearchInfo{Depth: 0, MaxDepth: 0}
+	if err := fs.execute(actualimport, setpkg, setname, def); err != nil {
+		return nil, fmt.Errorf("An error occurred while searching for the Field %q of package %q with import: %v.\n%v", setname, setpkg, setimport, err)
 
 	}
 	return fs.Field, nil
@@ -97,6 +103,26 @@ func (fs *FieldSearcher) execute(imprt, pkg, name, def string) error {
 		return nil
 	}
 
+	// setup the field
+	// if the field is nil, it's a TypeField
+	if fs.Field == nil {
+		fs.Field = &models.Field{
+			Import:     imprt,
+			Package:    pkg,
+			Name:       name,
+			Definition: def,
+		}
+	} else {
+		fs.Field.Import = imprt
+		fs.Field.Package = pkg
+		fs.Field.Name = name
+		fs.Field.Definition = def
+		fs.Field.VariableName = "." + name
+	}
+	setFieldOptions(fs.Field, fs.Options)
+	fs.SearchInfo.MaxDepth += fs.Field.Options.Depth
+
+	// load the package the field is located in
 	packages, err := packages.Load(&packages.Config{Logf: nil}, imprt[1:len(imprt)-1])
 	if err != nil {
 		return fmt.Errorf("An error occurred retrieving a package from the GOPATH: %v\n%v", imprt, err)
@@ -124,46 +150,35 @@ func (fs *FieldSearcher) execute(imprt, pkg, name, def string) error {
 		return fmt.Errorf("An error occurred determining the types of a package.\n%v", err)
 	}
 
-	// determine the TypeSpec for this search
-	// find the actual file location of the field's type declaration using the setup file
+	// determine the TypeSpec for this search using the actual typename (i.e `DomainUser` in `User DomainUser`)
+	var typename string
+	splitdef := strings.Split(def, ".")
+	if len(splitdef) == 1 {
+		typename = def
+	} else {
+		typename = splitdef[1]
+	}
 	var ts *ast.TypeSpec
 	for _, file := range fs.SearchInfo.Files {
-		ts, _ = astTypeSearch(file, name)
+		ts, _ = astTypeSearch(file, typename)
 		if ts != nil {
 			fs.SearchInfo.DecFile = file
 			break
 		}
 	}
 	if ts == nil {
-		return fmt.Errorf("The type %v could not be found in the AST for Field in package %q with import %v.\nIs the package up to date?", name, pkg, imprt)
+		return fmt.Errorf("The type declaration for the Field %q with import %v could not be found in the AST.\nIs the package up to date?", fs.Field.FullName(""), imprt)
 	}
 	fs.SearchInfo.SearcherTypeSpec = ts
 
-	// setup the field
-	// if the field is nil, it's a TypeField
-	if fs.Field == nil {
-		fs.Field = &models.Field{
-			Import:     imprt,
-			Package:    pkg,
-			Name:       name,
-			Definition: def,
-		}
-	} else {
-		fs.Field.Import = imprt
-		fs.Field.Package = pkg
-		fs.Field.Name = name
-		fs.Field.Definition = def
-		fs.Field.VariableName = "." + name
-	}
-
 	// find the fields of the main field if the max depth-level has not been reached.
-	subfields, err := fs.astFieldSearch()
+	var subfields []*models.Field
+	subfields, err = fs.astFieldSearch()
 	if err != nil {
-		return fmt.Errorf("The type %v could not be loaded from the specified module: %v\n%v", fs.Field, fs.Field.Import, err)
+		return err
 	}
 
 	fs.Field.Fields = subfields
-	setFieldOptions(fs.Field, fs.Options)
 	fs.cache[fs.Field.Import+fs.Field.Package+fs.Field.Name] = fs.Field
 	return nil
 }
@@ -177,36 +192,37 @@ func (fs *FieldSearcher) astFieldSearch() ([]*models.Field, error) {
 		for i := 0; i < x.NumFields(); i++ {
 			xField := x.Field(i)
 
-			/* if fs.Depth < fs.MaxDepth  */
-			if !isBasic(xField.Type()) {
-				// a newfieldsearcher contains the same options, cache, but new field search info
-				newFieldSearcher := FieldSearcher{cache: fs.cache}
-
-				// find the actual custom type field info.
-				actualimport, actualpkg, actualname, definition, err := astLocateType(fs.SearchInfo.DecFile, fs.Field.Import, xField.Name())
+			// create a new typefield if a subfield is a custom type
+			if (fs.SearchInfo.MaxDepth == 0 || fs.SearchInfo.Depth < fs.SearchInfo.MaxDepth) && !isBasic(xField.Type()) {
+				// find the actual custom type field info
+				splitdefinition := strings.Split(xField.Type().String(), ".")
+				defPkg := splitdefinition[0] // i.e `log` in `log.Logger`
+				if defPkg == "" {
+					defPkg = fs.Field.Package
+				}
+				actualimport, err := astLocateImport(fs.SearchInfo.DecFile, fs.Field.Import, defPkg, xField.Name())
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("An error occurred searching for subfield %q of type %q\n%v", fs.Field.FullName(""), xField.Type().String(), err)
 				}
 
-				subfield := &models.Field{
-					Parent:       fs.Field,
-					Import:       actualimport,
-					Package:      actualpkg,
-					Name:         actualname,
-					VariableName: "." + actualname,
-					Definition:   definition,
+				// a newFieldSearcher contains the same options and cache, but new field search info
+				newFieldSearcher := FieldSearcher{
+					SearchInfo: FieldSearchInfo{
+						Depth:    fs.SearchInfo.Depth + 1,
+						MaxDepth: fs.SearchInfo.MaxDepth,
+					},
+					Options: fs.Options,
+					cache:   fs.cache,
 				}
 
-				// Set the new Field Searcher's Field to the subfield.
-				// This ensures a new TypeField is NOT created.
-				newFieldSearcher.Field = subfield
+				// Ensure a new TypeField is NOT created.
+				newFieldSearcher.Field = &models.Field{Parent: fs.Field, Definition: xField.Type().String()}
 
 				// Search for the subfields of the subfield
-				fs.SearchInfo.Depth++
-				if err := newFieldSearcher.execute(subfield.Import, subfield.Package, subfield.Name, subfield.Definition); err != nil {
+				if err := newFieldSearcher.execute(actualimport, defPkg, xField.Name(), xField.Type().String()); err != nil {
 					return nil, err
 				}
-				subfields = append(subfields, subfield)
+				subfields = append(subfields, newFieldSearcher.Field)
 			} else {
 				subfield := &models.Field{
 					Parent:       fs.Field,
@@ -214,6 +230,7 @@ func (fs *FieldSearcher) astFieldSearch() ([]*models.Field, error) {
 					Name:         xField.Name(),
 					Definition:   xField.Type().String(),
 				}
+				setFieldOptions(subfield, fs.Options)
 				subfields = append(subfields, subfield)
 			}
 		}
@@ -230,11 +247,11 @@ func (fs *FieldSearcher) astFieldSearch() ([]*models.Field, error) {
 				Definition:   xMethod.Type().String(),
 				Parent:       fs.Field,
 			}
+			setFieldOptions(subfield, fs.Options)
 			subfields = append(subfields, subfield)
 		}
 	default:
 		// if no fields are present, this is a basic type.
-		return subfields, nil
 	}
 	return subfields, nil
 }
@@ -288,12 +305,6 @@ func setFieldOptions(field *models.Field, options []Option) {
 	setDeepcopyOption(field, options)
 	setDepthOption(field, options)
 	// setMapOption()
-	if len(field.Fields) != 0 {
-		for i := 0; i < len(field.Fields); i++ {
-			setFieldOptions(field.Fields[i], options)
-			fmt.Println(field.Options.Convert)
-		}
-	}
 }
 
 // setConvertOption sets a field's convert option.
@@ -326,6 +337,10 @@ func setDepthOption(field *models.Field, options []Option) {
 	for i := len(options) - 1; i > -1; i-- {
 		if options[i].Category == "depth" && options[i].Regex[0].MatchString(field.FullName("")) {
 			if value, ok := options[i].Value.(int); ok {
+				// Automatch all is on by default; if a user specifies 0 depth-level, guarantee it.
+				if value == 0 {
+					value = -1
+				}
 				field.Options.Depth = value
 				break
 			}

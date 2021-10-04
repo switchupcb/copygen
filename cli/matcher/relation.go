@@ -5,16 +5,16 @@ import (
 )
 
 // RelatedFields returns solely related fields in a list of fields.
-func RelatedFields(fields []*models.Field) []*models.Field {
+func RelatedFields(fields []*models.Field, related []*models.Field) []*models.Field {
 	for i := len(fields) - 1; i > -1; i-- {
 		if len(fields[i].Fields) != 0 {
-			fields[i].Fields = RelatedFields(fields[i].Fields)
-		} else if fields[i].To == nil && fields[i].From == nil {
-			fields[i] = fields[len(fields)-1]
-			fields = fields[:len(fields)-1]
+			related = append(related, RelatedFields(fields[i].Fields, related)...)
+		}
+		if fields[i].To != nil || fields[i].From != nil {
+			related = append(related, fields[i])
 		}
 	}
-	return fields
+	return related
 }
 
 // isFieldRelated determines whether there is a relationship between two fields.

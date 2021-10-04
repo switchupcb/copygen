@@ -2,13 +2,13 @@
 package copygen
 
 import (
-	"github.com/switchupcb/copygen/examples/main/domain"
-	"github.com/switchupcb/copygen/examples/main/models"
+	"github.com/switchupcb/copygen/examples/automatch/domain"
+	"github.com/switchupcb/copygen/examples/automatch/models"
 )
 
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	// depth domain.Account.*(?!\.) 1
-	// depth models.User.*(?!\.) 2
+	// depth: domain.Account 2
+	// depth: models.User 1
 	ModelsToDomain(models.Account, models.User) *domain.Account
 }

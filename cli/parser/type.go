@@ -58,14 +58,14 @@ func (p *Parser) parseFieldList(fieldlist []*ast.Field, fieldsearcher *FieldSear
 
 // parseTypeField parses a function *ast.Field into a field model.
 func (p *Parser) parseTypeField(field *ast.Field, fieldsearcher *FieldSearcher) (*models.Field, error) {
-	pkg, name, definition, ptr := parseASTFieldName(field)
+	pkg, name, _, ptr := parseASTFieldName(field)
 	if name == "" {
 		return nil, fmt.Errorf("Unexpected field expression %v in the Abstract Syntax Tree.", field)
 	}
 
 	mField, err := fieldsearcher.SearchForTypeField(p.SetupFile, p.Imports[pkg], pkg, name)
 	if err != nil {
-		return nil, fmt.Errorf("An error occurred searching for the Field %q of Definition %q\n%v", name, definition, err)
+		return nil, err
 	}
 	mField.Pointer = ptr
 	return mField, nil

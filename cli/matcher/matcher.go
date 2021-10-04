@@ -2,8 +2,6 @@
 package matcher
 
 import (
-	"fmt"
-
 	"github.com/switchupcb/copygen/cli/models"
 )
 
@@ -16,13 +14,19 @@ type FieldsMatcher struct {
 	fromFields []*models.Field
 }
 
+// fieldMatcher represents a matcher of two fields.
+type fieldMatcher struct {
+	toField   *models.Field
+	fromField *models.Field
+}
+
 // Match matches the fields of a parsed generator.
 func Match(gen *models.Generator) error {
 	for _, function := range gen.Functions {
 		for _, toType := range function.To {
 			for _, fromType := range function.From {
-				// The main types are not pointed to any fields (i.e domain.Account).
-				fm := FieldsMatcher{toType.Field.Fields, fromType.Field.Fields}
+				// The top-level types are not pointed to any fields (i.e domain.Account).
+				fm := FieldsMatcher{toFields: toType.Field.AllFields(nil), fromFields: fromType.Field.AllFields(nil)}
 				err := fm.Automatch()
 				if err != nil {
 					return err
@@ -34,10 +38,10 @@ func Match(gen *models.Generator) error {
 	// don't return unpointed fields.
 	for _, function := range gen.Functions {
 		for _, fromType := range function.From {
-			fromType.Field.Fields = RelatedFields(fromType.Field.Fields)
+			fromType.Field.Fields = RelatedFields(fromType.Field.Fields, nil)
 		}
 		for _, toType := range function.To {
-			toType.Field.Fields = RelatedFields(toType.Field.Fields)
+			toType.Field.Fields = RelatedFields(toType.Field.Fields, nil)
 		}
 	}
 	return nil
@@ -51,97 +55,16 @@ func (fm *FieldsMatcher) Automatch() error {
 		for j := 0; j < len(fm.fromFields); j++ {
 			// therefore, don't compare pointed fields.
 			if fm.toFields[i].From == nil && fm.fromFields[j].To == nil {
-				fm := fieldMatcher{
-					toField:   fm.toFields[i],
-					fromField: fm.fromFields[j],
-				}
-				err := fm.matchFields()
-				if err != nil {
-					continue
+				// don't compare top-level fields that have subfields
+				// this allows type such as `type T int` but not `type User struct` to be matched.
+				if (fm.toFields[i].Parent != nil || len(fm.toFields[i].Fields) == 0) && (fm.fromFields[j].Parent != nil || len(fm.fromFields[j].Fields) == 0) {
+					if fm.toFields[i].Name == fm.fromFields[j].Name && (fm.toFields[i].Definition == fm.toFields[i].Definition || fm.fromFields[j].Options.Convert != "") {
+						fm.fromFields[j].To = fm.toFields[i]
+						fm.toFields[i].From = fm.fromFields[j]
+					}
 				}
 			}
 		}
 	}
 	return nil
 }
-
-// fieldMatcher represents a matcher of two fields.
-type fieldMatcher struct {
-	toField   *models.Field
-	fromField *models.Field
-}
-
-// matchFields points respective fields to each other.
-func (fm fieldMatcher) matchFields() error {
-	if fm.toField.Name == fm.fromField.Name && (fm.toField.Definition == fm.fromField.Definition || fm.fromField.Options.Convert != "") {
-		fm.fromField.To = fm.toField
-		fm.toField.From = fm.fromField
-		return nil
-	}
-
-	// reminder: AST search only find fields at the depth-level specified.
-	// if a field has the same name, but wrong definition (i.e models.User vs. domain.User)
-	// there is a chance for it contain a match at the next depth-level.
-	//
-	// when both fields have nested fields, there an be a direct match between any level.
-	if len(fm.toField.Fields) != 0 && len(fm.fromField.Fields) != 0 {
-		for i := 0; i < len(fm.toField.Fields); i++ {
-			fm.toField = fm.toField.Fields[i]
-			for j := 0; j < len(fm.fromField.Fields); j++ {
-				fm.fromField = fm.fromField.Fields[j]
-				return fm.matchFields()
-			}
-		}
-	}
-
-	// when a toField has fields but a fromField doesn't, there can be a direct match
-	// from the fields of the toField to the fromField (see automatch example: User.UserID -> UserID).
-	if len(fm.toField.Fields) != 0 {
-		for i := 0; i < len(fm.toField.Fields); i++ {
-			fm.toField = fm.toField.Fields[i]
-			return fm.matchFields()
-		}
-	} else if len(fm.fromField.Fields) != 0 {
-		for i := 0; i < len(fm.fromField.Fields); i++ {
-			fm.fromField = fm.fromField.Fields[i]
-			return fm.matchFields()
-		}
-	}
-	return fmt.Errorf("The fields %v and %v could not be matched.", fm.toField, fm.fromField)
-}
-
-// TODO: MANUAL MATCH
-// // Map represents a manual match between fields.
-// func Map(from *From, toType *models.Type, fromType *models.Type) ([]*models.Field, []*models.Field) {
-// 	var toFields, fromFields []*models.Field
-// 	for fieldname, field := range (*from).Fields {
-// 		toField := models.Field{
-// 			Parent:  *toType,
-// 			Name:    field.To,
-// 			Convert: field.Convert,
-// 			Options: models.FieldOptions{
-// 				Deepcopy: field.Deepcopy,
-// 				Custom:   field.Options,
-// 			},
-// 		}
-
-// 		fromField := models.Field{
-// 			Parent:  *fromType,
-// 			Name:    fieldname,
-// 			Convert: field.Convert,
-// 			Options: models.FieldOptions{
-// 				Deepcopy: field.Deepcopy,
-// 				Custom:   field.Options,
-// 			},
-// 		}
-
-// 		// point the fields
-// 		toField.From = &fromField
-// 		fromField.To = &toField
-
-// 		// keep track of the pointer for field.To and field.From comparison if required
-// 		toFields = append(toFields, &toField)
-// 		fromFields = append(fromFields, &fromField)
-// 	}
-// 	return toFields, fromFields
-// }

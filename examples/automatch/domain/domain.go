@@ -11,6 +11,6 @@ type Account struct {
 
 // DomainUser represents a user in relation to the business logic.
 type DomainUser struct {
-	UserID int
-	Name   string
+	UserID   int
+	Username string
 }
