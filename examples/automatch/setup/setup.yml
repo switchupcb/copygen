@@ -2,10 +2,7 @@
 generated:
   setup: ./setup.go
   output: ../copygen.go
-
-# Define the optional custom templates used to generate the file.
-# templates:
-#   function: ./templates/function.go
+  # template: .Define the optional custom templates used to generate the file.
 
 # Define custom options for customization.
 # custom:

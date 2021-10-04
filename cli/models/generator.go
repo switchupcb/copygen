@@ -5,7 +5,7 @@ type Generator struct {
 	Loadpath  string           // The filepath the loader file is located in.
 	Setpath   string           // The filepath the setup file is located in.
 	Outpath   string           // The filepath the generated code is output to.
-	Template  Template         // The template used to generate code.
+	Tempath   string           // The filepath for thetemplate used to generate code.
 	Functions []Function       // The functions to generate.
 	Keep      []byte           // The code that is kept from the setup file.
 	Options   GeneratorOptions // The custom options for the generator.
@@ -14,9 +14,4 @@ type Generator struct {
 // GeneratorOptions represent options for a Generator.
 type GeneratorOptions struct {
 	Custom map[string]interface{} // The custom options of a generator.
-}
-
-// Template represets the template used to generate code.
-type Template struct {
-	Funcpath string // The filepath to the template that generates function code.
 }

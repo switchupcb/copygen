@@ -7,24 +7,22 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// Function determines the func to generate function code.
-func Function(gen *models.Generator) (string, error) {
-	var functions string
+// Generate determines the func to generate function code.
+func Generate(gen *models.Generator) (string, error) {
+	var content string
 
 	// determine the method to analyze each function.
-	if gen.Template.Funcpath == "" {
-		for _, function := range gen.Functions {
-			functions += templates.DefaultFunction(function) + "\n"
-		}
-		return functions, nil
+	if gen.Tempath == "" {
+		content += templates.Generate(*gen) + "\n"
+		return content, nil
 	}
-	return "", fmt.Errorf("Templates are temporarily unsupported.")
+	return content, fmt.Errorf("Templates are temporarily unsupported.")
 	// return interpretFunction(gen)
 }
 
 // interpretFunction represents the interpreted function func that generates function code.
 func interpretFunction(gen *models.Generator) (string, error) {
-	v, err := interpretFunc(gen.Loadpath, gen.Template.Funcpath, "templates.Function")
+	v, err := interpretFunc(gen.Loadpath, gen.Tempath, "templates.Generate")
 	if err != nil {
 		return "", err
 	}

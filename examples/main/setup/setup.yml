@@ -3,10 +3,9 @@ generated:
   setup: ./setup.go
   output: ../copygen.go
 
-# Define the optional custom templates used to generate the file.
-# templates:
-#   function: ./templates/function.go
+  # Define the optional custom templates used to generate the file.
+  # template: ./generate.go
 
-# Define custom options for customization.
+# Define custom options (which are passed to generator options) for customization.
 # custom:
 #   option: The possibilities are endless.

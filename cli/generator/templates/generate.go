@@ -7,16 +7,17 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// Function provides the generated code for each function.
-// GENERATOR FUNCTION
-// EDITABLE.
-// DO NOT REMOVE.
-func Function(function models.Function) string {
-	return DefaultFunction(function)
+func Generate(gen models.Generator) string {
+	var content string
+	content += string(gen.Keep) + "\n"
+	for _, function := range gen.Functions {
+		content += Function(function) + "\n"
+	}
+	return content
 }
 
-// DefaultFunction provides generated code for a function using the default method.
-func DefaultFunction(function models.Function) string {
+// Function provides generated code for a function.
+func Function(function models.Function) string {
 	// comment
 	fn := generateComment(function) + "\n"
 

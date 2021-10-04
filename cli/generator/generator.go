@@ -16,11 +16,10 @@ func Generate(gen *models.Generator, output bool) error {
 	var content string
 	content += string(gen.Keep) + "\n"
 
-	function, err := interpreter.Function(gen)
+	content, err := interpreter.Generate(gen)
 	if err != nil {
-		return fmt.Errorf("An error occurred while generating a function.\n%v", err)
+		return fmt.Errorf("An error occurred while generating code.\n%v", err)
 	}
-	content += function + "\n"
 	if output {
 		fmt.Println(content)
 	}
