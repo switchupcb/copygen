@@ -73,7 +73,7 @@ type fieldMatcher struct {
 
 // matchFields points respective fields to each other.
 func (fm fieldMatcher) matchFields() error {
-	if fm.toField.Name == fm.fromField.Name && fm.toField.Definition == fm.fromField.Definition {
+	if fm.toField.Name == fm.fromField.Name && (fm.toField.Definition == fm.fromField.Definition || fm.fromField.Options.Convert != "") {
 		fm.fromField.To = fm.toField
 		fm.toField.From = fm.fromField
 		return nil

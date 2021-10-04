@@ -9,20 +9,19 @@ import (
 )
 
 // parseTypes parses an ast.Field (of type func) for to-types and from-types.
-func (p *Parser) parseTypes(function *ast.Field) ([]models.Type, []models.Type, error) {
+func (p *Parser) parseTypes(function *ast.Field, fieldsearcher *FieldSearcher) ([]models.Type, []models.Type, error) {
 	fn, ok := function.Type.(*ast.FuncType)
 	if !ok {
 		return nil, nil, fmt.Errorf("An error occurred parsing the types of function %v at Line %d", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	}
 
-	fieldSearcher := FieldSearcher{}
-	fromTypes, err := p.parseFieldList(fn.Params.List, &fieldSearcher) // (incoming) parameters "non-nil"
+	fromTypes, err := p.parseFieldList(fn.Params.List, fieldsearcher) // (incoming) parameters "non-nil"
 	if err != nil {
 		return nil, nil, err
 	}
 	var toTypes []models.Type
 	if fn.Results != nil {
-		toTypes, err = p.parseFieldList(fn.Results.List, &fieldSearcher) // (outgoing) results "or nil"
+		toTypes, err = p.parseFieldList(fn.Results.List, fieldsearcher) // (outgoing) results "or nil"
 		if err != nil {
 			return nil, nil, err
 		}
@@ -45,10 +44,10 @@ func (p *Parser) parseTypes(function *ast.Field) ([]models.Type, []models.Type, 
 }
 
 // parseFieldList parses an Abstract Syntax Tree field list for a type's fields.
-func (p *Parser) parseFieldList(fieldlist []*ast.Field, fieldSearcher *FieldSearcher) ([]models.Type, error) {
+func (p *Parser) parseFieldList(fieldlist []*ast.Field, fieldsearcher *FieldSearcher) ([]models.Type, error) {
 	var types []models.Type
 	for _, astfield := range fieldlist {
-		field, err := p.parseTypeField(astfield, fieldSearcher)
+		field, err := p.parseTypeField(astfield, fieldsearcher)
 		if err != nil {
 			return nil, err
 		}

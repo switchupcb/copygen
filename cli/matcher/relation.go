@@ -10,6 +10,7 @@ func RelatedFields(fields []*models.Field) []*models.Field {
 		if len(fields[i].Fields) != 0 {
 			fields[i].Fields = RelatedFields(fields[i].Fields)
 		} else if fields[i].To == nil && fields[i].From == nil {
+			fields[i] = fields[len(fields)-1]
 			fields = fields[:len(fields)-1]
 		}
 	}

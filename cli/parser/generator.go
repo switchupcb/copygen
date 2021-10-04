@@ -42,15 +42,15 @@ func (p *Parser) parseKeep() ([]byte, error) {
 				removeNodeComments(x)
 			}
 
-		// assign convert option values.
+		// set convert option values.
 		case *ast.FuncDecl:
 			ast.Inspect(x, func(node ast.Node) bool {
 				switch xcg := node.(type) {
 				case *ast.CommentGroup:
 					for _, comment := range xcg.List {
-						splitoption := splitASTComment(comment, ":")
-						if splitoption[0] == "convert" {
-							p.Options[comment.Text].Value[0] = x.Name.Name
+						if option, exists := p.Options[comment.Text]; exists && p.Options[comment.Text].Category == "convert" {
+							option.Value = x.Name.Name
+							p.Options[comment.Text] = option
 						}
 					}
 				}

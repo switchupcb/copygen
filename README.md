@@ -41,7 +41,7 @@ package domain
 // Account represents a user account.
 type Account struct {
 	ID     int
-	UserID int
+	UserID string
 	Name   string
 	Other  string // The other field is not used.
 }
@@ -112,11 +112,11 @@ Copygen uses no allocation with pointers which means fields are assigned to _obj
 
 **options**
 
-You can specify options for your functions using comments. Do **NOT** put empty lines between comments that pertain to one function.
+You can specify options for your functions using comments. Do **NOT** put empty lines between comments that pertain to one function. Options are evaluated in order of declaration.
 
 | Option              | Use                         | Description                                                                                                                                                                        | Example                                                                      |
 | :------------------ | :-------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
-| `map from to`       | Manual Field Mapping        | Copygen uses its [automatcher](#automatch) default. <br /> Override this using `map` with _regex_ to identify fields that will be mapped to and from eachother.                    | `map .* package.Type.Field` <br /> `map models.Account.ID domain.Account.ID` |
+| `map from to`       | Manual Field Mapping        | Copygen uses its [automatcher](#automatch) by default. <br /> Override this using `map` with _regex_ to identify fields that will be mapped to and from eachother.                 | `map .* package.Type.Field` <br /> `map models.Account.ID domain.Account.ID` |
 | `depth field level` | Use a specific field depth. | Copygen uses the full-field [depth](#depth) by default. <br /> Override this using `depth` with _regex_ and a [depth-level](#depth) integer.                                       | `depth .* 2` <br /> `depth models.Account.* 1`                               |
 | `deepcopy field`    | Deepcopy from-fields.       | Copygen shallow copies fields by default. <br /> Override this using `deepcopy` with _regex_. <br /> For more info, view [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy). | `deepcopy package.Type.Field` <br /> `deepcopy .*` _(all fields)_            |
 | `custom option`     | Specify custom options.     | You may want to use custom [templates](#templates). <br /> `custom` options are passed to a function's options. <br /> Returns `map[string][]string` _(trim-spaced)_.              | `ignore true` <br /> `swap false`                                            |
@@ -127,11 +127,11 @@ _[View a reference on Regex.](https://cheatography.com/davechild/cheat-sheets/re
 
 In certain cases, you may want to specify a how a specific type or field is copied with a function. This can be done by defining a function with a `convert` option.
 ```go
-/* Define the fields this converter is applied to using regex. */
-// convert: models.User.ID
+/* Define the function and field this converter is applied to using regex. */
+// convert: .* models.User.UserID
 // Itoa converts an integer to an ascii value.
 func Itoa(i int) string {
-  return c.Itoa(i)
+	return c.Itoa(i)
 }
 ```
 
@@ -175,7 +175,6 @@ import (
 	"github.com/switchupcb/copygen/examples/main/models"
 )
 
-/* Define the fields this converter is applied to using regex. If unspecified, converters are applied to all valid fields. */
 // Itoa converts an integer to an ascii value.
 func Itoa(i int) string {
 	return c.Itoa(i)
@@ -185,7 +184,7 @@ func Itoa(i int) string {
 func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
 	// Account fields
 	tA.ID = fA.ID
-	tA.UserID = fU.UserID
+	tA.UserID = Itoa(fU.UserID)
 	tA.Name = fA.Name
 
 }
@@ -215,7 +214,9 @@ func ExternalFunc() {
 
 #### Templates
 
-Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package tenplates` `Header(*models.Generator)` to generate header code and `Function(*models.Function)` to generate code for each function. As a result, these _(package templates with functions)_ are **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/generator.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Templates are interpreted by [yaegi](https://github.com/traefik/yaegi) which has limitations on module imports _(Pull Request Pending)_: As a result, **templates are temporarily unsupported.** The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main) modifies the .yml to use **custom functions** which `return error`. This is done by modifying the .yml and creating **custom template files**.
+Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package templates Function(*models.Function)` to generate code for each function. As a result, this funtion is **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/generator.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Generator options are parsed from the YML configuration file. Function options refer to `custom` options. Any other option represents a field option.
+
+Templates are interpreted by [yaegi](https://github.com/traefik/yaegi) which has limitations on module imports _(Pull Request Pending)_: As a result, **templates are temporarily unsupported.** The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main) modifies the .yml to use **custom functions** which `return error`. This is done by modifying the .yml and creating **custom template files**.
 
 ## Matcher
 

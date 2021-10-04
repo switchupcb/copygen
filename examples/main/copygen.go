@@ -11,7 +11,6 @@ import (
 	"github.com/switchupcb/copygen/examples/main/models"
 )
 
-/* Define the fields this converter is applied to using regex. If unspecified, converters are applied to all valid fields. */
 // Itoa converts an integer to an ascii value.
 func Itoa(i int) string {
 	return c.Itoa(i)
@@ -21,7 +20,7 @@ func Itoa(i int) string {
 func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
 	// Account fields
 	tA.ID = fA.ID
-	tA.UserID = fU.UserID
+	tA.UserID = Itoa(fU.UserID)
 	tA.Name = fA.Name
 
 }

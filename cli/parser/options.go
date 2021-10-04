@@ -19,8 +19,8 @@ type Option struct {
 	// The compiled regex the option uses for its arguments (map[position]regex).
 	Regex map[int]*regexp.Regexp
 
-	// The values to assign to a type (function or field) if the option applies (map[position]value).
-	Value map[int]interface{}
+	// The values to assign to a type (function or field) if the option applies.
+	Value interface{}
 }
 
 // parseOptions parses the AST for options in the setup file.
@@ -41,27 +41,17 @@ func (p *Parser) parseOptions() error {
 				option := strings.TrimSpace(strings.Join(splitcomments[1:], ":"))
 				switch category {
 				case "convert":
-					re, err := regexp.Compile(option)
+					opt, err := parseConvert(option)
 					if err != nil {
-						return fmt.Errorf("An error occurred compiling the regex for a convert option: %q\n%v", option, err)
+						return err
 					}
-
-					// funcname assigned in parseKeep()
-					p.Options[text] = Option{
-						Category: "convert",
-						Regex:    map[int]*regexp.Regexp{0: re},
-						Value:    make(map[int]interface{}, 1),
-					}
+					p.Options[text] = *opt
 				case "deepcopy":
-					re, err := regexp.Compile(option)
+					opt, err := parseDeepcopy(option)
 					if err != nil {
-						return fmt.Errorf("An error occurred compiling the regex for a deepcopy option: %q\n%v", option, err)
+						return err
 					}
-					p.Options[text] = Option{
-						Category: "deepcopy",
-						Regex:    map[int]*regexp.Regexp{0: re},
-						Value:    map[int]interface{}{0: true},
-					}
+					p.Options[text] = *opt
 				case "depth":
 					opt, err := parseDepth(option)
 					if err != nil {
@@ -78,13 +68,52 @@ func (p *Parser) parseOptions() error {
 					p.Options[text] = Option{
 						Category: "custom",
 						Regex:    nil,
-						Value:    map[int]interface{}{0: map[string]string{category: option}},
+						Value:    map[string]string{category: option},
 					}
 				}
 			}
 		}
 	}
 	return nil
+}
+
+// parseConvert parses a convert option.
+func parseConvert(option string) (*Option, error) {
+	splitoption := strings.Split(option, " ")
+	if len(splitoption) == 0 {
+		return nil, fmt.Errorf("There is an unspecified convert option at an unknown line.")
+	} else if len(splitoption) == 1 || len(splitoption) > 2 {
+		return nil, fmt.Errorf("There is a misconfigured convert option: %q.\nIs it in format <option>:<whitespaces><regex><whitespaces><regex>?", option)
+	}
+
+	funcRe, err := regexp.Compile(splitoption[0])
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred compiling the regex for the first field in the convert option: %q.\n%v", option, err)
+	}
+
+	fieldRe, err := regexp.Compile(splitoption[1])
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred compiling the regex for the second field in the convert option: %q.\n%v", option, err)
+	}
+
+	return &Option{
+		Category: "convert",
+		Regex:    map[int]*regexp.Regexp{0: funcRe, 1: fieldRe},
+		// Value: assigned in Keep: parseKeep()
+	}, nil
+}
+
+// parseDeepcopy parses a deepcopy option.
+func parseDeepcopy(option string) (*Option, error) {
+	re, err := regexp.Compile(option)
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred compiling the regex for a deepcopy option: %q\n%v", option, err)
+	}
+	return &Option{
+		Category: "deepcopy",
+		Regex:    map[int]*regexp.Regexp{0: re},
+		Value:    true,
+	}, nil
 }
 
 // parseDepth parses a depth option.
@@ -109,7 +138,7 @@ func parseDepth(option string) (*Option, error) {
 	return &Option{
 		Category: "depth",
 		Regex:    map[int]*regexp.Regexp{0: re},
-		Value:    map[int]interface{}{0: depth},
+		Value:    depth,
 	}, nil
 }
 
@@ -132,9 +161,10 @@ func parseMap(option string) (*Option, error) {
 		return nil, fmt.Errorf("An error occurred compiling the regex for the second field in the map option: %q.\n%v", option, err)
 	}
 
+	// map options are compared in the matcher
 	return &Option{
 		Category: "map",
 		Regex:    map[int]*regexp.Regexp{0: fromRe},
-		Value:    map[int]interface{}{0: toRe}, // compared in the matcher
+		Value:    toRe,
 	}, nil
 }

@@ -57,9 +57,8 @@ type FieldSearcher struct {
 	// The current search information for the field searcher.
 	SearchInfo FieldSearchInfo
 
-	// The options applied to fields during a search.
-	// map[option][]values
-	Options map[string][]string
+	// The options that pertain to a field (and its subfields).
+	Options []Option
 
 	// A key value cache used to reduce the amount of AST operations.
 	cache map[string]*models.Field
@@ -156,10 +155,6 @@ func (fs *FieldSearcher) execute(imprt, pkg, name, def string) error {
 		fs.Field.Definition = def
 		fs.Field.VariableName = "." + name
 	}
-	// TODO: insert field options
-	// inject from search the options by regex matching convert, depth, deepcopy
-	// test depth
-	// activate map
 
 	// find the fields of the main field if the max depth-level has not been reached.
 	subfields, err := fs.astFieldSearch()
@@ -168,6 +163,7 @@ func (fs *FieldSearcher) execute(imprt, pkg, name, def string) error {
 	}
 
 	fs.Field.Fields = subfields
+	setFieldOptions(fs.Field, fs.Options)
 	fs.cache[fs.Field.Import+fs.Field.Package+fs.Field.Name] = fs.Field
 	return nil
 }
@@ -184,7 +180,7 @@ func (fs *FieldSearcher) astFieldSearch() ([]*models.Field, error) {
 			/* if fs.Depth < fs.MaxDepth  */
 			if !isBasic(xField.Type()) {
 				// a newfieldsearcher contains the same options, cache, but new field search info
-				newFieldSearcher := FieldSearcher{Options: fs.Options, cache: fs.cache}
+				newFieldSearcher := FieldSearcher{cache: fs.cache}
 
 				// find the actual custom type field info.
 				actualimport, actualpkg, actualname, definition, err := astLocateType(fs.SearchInfo.DecFile, fs.Field.Import, xField.Name())
@@ -286,7 +282,53 @@ func isBasic(t types.Type) bool {
 	}
 }
 
-// // parseFieldOptions sets the options of a field.
-// func parseFieldOptions(options map[string][]string) {
-// 	return ""
-// }
+// setFieldOptions sets a field's (and its subfields) options.
+func setFieldOptions(field *models.Field, options []Option) {
+	setConvertOption(field, options)
+	setDeepcopyOption(field, options)
+	setDepthOption(field, options)
+	// setMapOption()
+	if len(field.Fields) != 0 {
+		for i := 0; i < len(field.Fields); i++ {
+			setFieldOptions(field.Fields[i], options)
+			fmt.Println(field.Options.Convert)
+		}
+	}
+}
+
+// setConvertOption sets a field's convert option.
+func setConvertOption(field *models.Field, options []Option) {
+	// A convert option can only be set once, so use the last one
+	for i := len(options) - 1; i > -1; i-- {
+		if options[i].Category == "convert" && options[i].Regex[1].MatchString(field.FullName("")) {
+			if value, ok := options[i].Value.(string); ok {
+				field.Options.Convert = value
+				break
+			}
+		}
+	}
+}
+
+// setDeepcopyOption sets a field's deepcopy option.
+func setDeepcopyOption(field *models.Field, options []Option) {
+	// A deepcopy option can only be set once, so use the last one
+	for i := len(options) - 1; i > -1; i-- {
+		if options[i].Category == "deepcopy" && options[i].Regex[0].MatchString(field.FullName("")) {
+			field.Options.Deepcopy = true
+			break
+		}
+	}
+}
+
+// setDepthOption sets a field's depth option.
+func setDepthOption(field *models.Field, options []Option) {
+	// A depth option can only be set once, so use the last one
+	for i := len(options) - 1; i > -1; i-- {
+		if options[i].Category == "depth" && options[i].Regex[0].MatchString(field.FullName("")) {
+			if value, ok := options[i].Value.(int); ok {
+				field.Options.Depth = value
+				break
+			}
+		}
+	}
+}

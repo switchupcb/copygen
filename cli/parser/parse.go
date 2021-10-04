@@ -22,7 +22,7 @@ type Parser struct {
 	// The fileset of the parser.
 	Fileset *token.FileSet
 
-	// The options that pertain to functions and fields (map[funcname]options).
+	// The parser options contain options located in the entire setup file.
 	Options OptionMap
 
 	// The imports discovered in the set up file (map[packagevar]importpath).
@@ -46,8 +46,11 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("An error occurred parsing the specified .go setup file: %v.\n%v", gen.Setpath, err)
 	}
 
-	p.parseOptions()
 	p.parseImports()
+	err = p.parseOptions()
+	if err != nil {
+		return err
+	}
 	gen.Keep, err = p.parseKeep()
 	if err != nil {
 		return err

@@ -47,9 +47,14 @@ type Field struct {
 
 // FieldOptions represent options for a Field.
 type FieldOptions struct {
-	Depth    int    // The level at which sub-fields are discovered.
-	Deepcopy bool   // Whether the field should be deepcopied.
-	Convert  string // The function the field is converted with (as a parameter).
+	// The function the field is converted with (as a parameter).
+	Convert string
+
+	// Whether the field should be deepcopied.
+	Deepcopy bool
+
+	// The level at which sub-fields are discovered.
+	Depth int
 }
 
 // IsType returns whether the field is a type.
@@ -73,7 +78,10 @@ func (f Field) FullName(name string) string {
 		}
 		return f.Parent.FullName(name)
 	}
-	return fmt.Sprintf("%v%v.%v.%v", f.Pointer, f.Package, f.Name, name)
+	if name != "" {
+		name = "." + name
+	}
+	return fmt.Sprintf("%v%v.%v%v", f.Pointer, f.Package, f.Name, name)
 }
 
 // FullVariableName gets the full variable name of a field (i.e tA.User.UserID)
