@@ -106,7 +106,7 @@ type Copygen interface {
 }
 ```
 
-Copygen uses no allocation with pointers which means fields are assigned to _objects passed as parameters_. In contrast, using a type with no pointer will return a copy of the new type.
+Copygen uses no allocation with pointers which means fields are assigned to _objects passed as parameters_.
 
 **options**
 
