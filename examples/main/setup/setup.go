@@ -15,7 +15,7 @@ type Copygen interface {
 }
 
 /* Define the function and field this converter is applied to using regex. */
-// convert: .* models.User.UserID
+// convert .* models.User.UserID
 // Itoa converts an integer to an ascii value.
 func Itoa(i int) string {
 	return c.Itoa(i)

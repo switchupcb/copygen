@@ -8,7 +8,7 @@ import (
 
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	// depth: domain.Account 2
-	// depth: models.User 1
+	// depth domain.Account 2
+	// depth models.User 1
 	ModelsToDomain(models.Account, models.User) *domain.Account
 }

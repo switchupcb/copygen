@@ -23,63 +23,9 @@ type Option struct {
 	Value interface{}
 }
 
-// parseOptions parses the AST for options in the setup file.
-func (p *Parser) parseOptions() error {
-	if p.Options == nil {
-		p.Options = make(OptionMap)
-	}
-
-	for _, commentgroup := range p.SetupFile.Comments {
-		for _, comment := range commentgroup.List {
-			text := comment.Text
-			splitcomments := strings.Split(text[2:], ":")
-
-			// map[comment]map[optionname]map[]
-			// determine if the comment is an option.
-			if len(splitcomments) >= 2 {
-				category := strings.TrimSpace(splitcomments[0])
-				option := strings.TrimSpace(strings.Join(splitcomments[1:], ":"))
-				switch category {
-				case "convert":
-					opt, err := parseConvert(option)
-					if err != nil {
-						return err
-					}
-					p.Options[text] = *opt
-				case "deepcopy":
-					opt, err := parseDeepcopy(option)
-					if err != nil {
-						return err
-					}
-					p.Options[text] = *opt
-				case "depth":
-					opt, err := parseDepth(option)
-					if err != nil {
-						return err
-					}
-					p.Options[text] = *opt
-				case "map":
-					opt, err := parseMap(option)
-					if err != nil {
-						return err
-					}
-					p.Options[text] = *opt
-				default:
-					p.Options[text] = Option{
-						Category: "custom",
-						Regex:    nil,
-						Value:    map[string]string{category: option},
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
-
 // parseConvert parses a convert option.
-func parseConvert(option string) (*Option, error) {
-	splitoption := strings.Split(option, " ")
+func parseConvert(option, value string) (*Option, error) {
+	splitoption := strings.Fields(option)
 	if len(splitoption) == 0 {
 		return nil, fmt.Errorf("There is an unspecified convert option at an unknown line.")
 	} else if len(splitoption) == 1 || len(splitoption) > 2 {
@@ -99,7 +45,7 @@ func parseConvert(option string) (*Option, error) {
 	return &Option{
 		Category: "convert",
 		Regex:    map[int]*regexp.Regexp{0: funcRe, 1: fieldRe},
-		// Value: assigned in Keep: parseKeep()
+		Value:    value,
 	}, nil
 }
 
@@ -118,7 +64,7 @@ func parseDeepcopy(option string) (*Option, error) {
 
 // parseDepth parses a depth option.
 func parseDepth(option string) (*Option, error) {
-	splitoption := strings.Split(option, " ")
+	splitoption := strings.Fields(option)
 	if len(splitoption) == 0 {
 		return nil, fmt.Errorf("There is an unspecified depth option at an unknown line.")
 	} else if len(splitoption) == 1 || len(splitoption) > 2 {
@@ -144,7 +90,7 @@ func parseDepth(option string) (*Option, error) {
 
 // parseMap parses a map option.
 func parseMap(option string) (*Option, error) {
-	splitoption := strings.Split(option, " ")
+	splitoption := strings.Fields(option)
 	if len(splitoption) == 0 {
 		return nil, fmt.Errorf("There is an unspecified map option at an unknown line.")
 	} else if len(splitoption) == 1 || len(splitoption) > 2 {

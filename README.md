@@ -125,8 +125,8 @@ _[View a reference on Regex.](https://cheatography.com/davechild/cheat-sheets/re
 
 In certain cases, you may want to specify a how a specific type or field is copied with a function. This can be done by defining a function with a `convert` option.
 ```go
-/* Define the function and field this converter is applied to using regex. You must use `:` unlike other options. */
-// convert: .* models.User.UserID
+/* Define the function and field this converter is applied to using regex. */
+// convert .* models.User.UserID
 // Itoa converts an integer to an ascii value.
 func Itoa(i int) string {
 	return c.Itoa(i)

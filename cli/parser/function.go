@@ -9,18 +9,8 @@ import (
 
 // parseFunctions parses the AST for functions in the setup file.
 func (p *Parser) parseFunctions() ([]models.Function, error) {
-	typecopygen, err := astTypeSearch(p.SetupFile, "Copygen")
-	if err != nil {
-		return nil, fmt.Errorf("The \"type Copygen interface\" could not be found in the setup file.")
-	}
-
-	copyinterface, ok := typecopygen.Type.(*ast.InterfaceType)
-	if !ok {
-		return nil, fmt.Errorf("The \"type Copygen\" was found but its not an interface. Please redefine it.")
-	}
-
 	var functions []models.Function
-	for _, method := range copyinterface.Methods.List {
+	for _, method := range p.Copygen.Methods.List {
 		options := p.setOptionMap(method)
 		fieldsearcher := FieldSearcher{Options: options}
 		fromTypes, toTypes, err := p.parseTypes(method, &fieldsearcher)
@@ -40,17 +30,6 @@ func (p *Parser) parseFunctions() ([]models.Function, error) {
 		functions = append(functions, function)
 	}
 	return functions, nil
-}
-
-// parseMethodForName parses a method inside of a Copygen interface to provide its name.
-func parseMethodForName(method *ast.Field) string {
-	var funcname string // i.e 'ModelsToDomain' in func ModelsToDomain(models.Account, *models.User) *domain.Account
-
-	// ast Note: "Field.Names contains a single name "type" for elements of interface type lists"
-	for _, name := range method.Names {
-		funcname += name.String() // i.e ModelsToDomain
-	}
-	return funcname
 }
 
 // setOptionMap filters an Option map for options that only pertain to the fields of a function.
@@ -98,4 +77,15 @@ func (p *Parser) assignCustomOption(options []Option) map[string][]string {
 		}
 	}
 	return optionmap
+}
+
+// parseMethodForName parses a method inside of a Copygen interface to provide its name.
+func parseMethodForName(method *ast.Field) string {
+	var funcname string // i.e 'ModelsToDomain' in func ModelsToDomain(models.Account, *models.User) *domain.Account
+
+	// ast Note: "Field.Names contains a single name "type" for elements of interface type lists"
+	for _, name := range method.Names {
+		funcname += name.String() // i.e ModelsToDomain
+	}
+	return funcname
 }

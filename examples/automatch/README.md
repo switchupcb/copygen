@@ -47,8 +47,8 @@ Specify a depth-level of one for all fields of `domain.Account`. Specify a depth
 ```go
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	// depth: domain.Account 2
-	// depth: models.User 1
+	// depth domain.Account 2
+	// depth models.User 1
 	ModelsToDomain(models.Account, models.User) *domain.Account
 }
 ```

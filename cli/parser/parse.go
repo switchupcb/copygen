@@ -22,6 +22,9 @@ type Parser struct {
 	// The fileset of the parser.
 	Fileset *token.FileSet
 
+	// The ast.Node of the `type Copygen Interface`.
+	Copygen *ast.InterfaceType
+
 	// The parser options contain options located in the entire setup file.
 	Options OptionMap
 
@@ -46,14 +49,12 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("An error occurred parsing the specified .go setup file: %v.\n%v", gen.Setpath, err)
 	}
 
-	p.parseImports()
-	err = p.parseOptions()
-	if err != nil {
-		return err
-	}
+	p.Options = make(OptionMap)
 	gen.Keep, err = p.parseKeep()
 	if err != nil {
 		return err
+	} else if p.Copygen == nil {
+		return fmt.Errorf("The \"type Copygen interface\" could not be found in the setup file.")
 	}
 	gen.Functions, err = p.parseFunctions()
 	if err != nil {
