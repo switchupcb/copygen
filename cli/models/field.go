@@ -63,17 +63,17 @@ type FieldOptions struct {
 }
 
 // IsType returns whether the field is a type.
-func (f Field) IsType() bool {
+func (f *Field) IsType() bool {
 	return f.Parent == nil
 }
 
 // IsPointer returns the type is a pointer of a type definition.
-func (f Field) IsPointer() bool {
-	return len(f.Pointer) != 0
+func (f *Field) IsPointer() bool {
+	return f.Pointer == ""
 }
 
 // FullName gets the full name of a field including its parents (i.e domain.Account.User.ID).
-func (f Field) FullName(name string) string {
+func (f *Field) FullName(name string) string {
 	if !f.IsType() {
 		// add names in reverse order
 		if name == "" {
@@ -89,8 +89,8 @@ func (f Field) FullName(name string) string {
 	return fmt.Sprintf("%v%v.%v%v", f.Pointer, f.Package, f.Name, name)
 }
 
-// FullVariableName gets the full variable name of a field (i.e tA.User.UserID)
-func (f Field) FullVariableName(name string) string {
+// FullVariableName gets the full variable name of a field (i.e tA.User.UserID).
+func (f *Field) FullVariableName(name string) string {
 	if !f.IsType() {
 		return f.Parent.FullVariableName(f.VariableName + name)
 	}
@@ -108,7 +108,7 @@ func (f *Field) AllFields(fields []*Field) []*Field {
 	return fields
 }
 
-func (f Field) String() string {
+func (f *Field) String() string {
 	var direction string
 	if f.From != nil {
 		direction = "To"

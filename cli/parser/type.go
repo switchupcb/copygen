@@ -8,28 +8,35 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
+type parsedTypes struct {
+	fromTypes []models.Type
+	toTypes   []models.Type
+}
+
 // parseTypes parses an ast.Field (of type func) for to-types and from-types.
-func (p *Parser) parseTypes(function *ast.Field, fieldsearcher *FieldSearcher) ([]models.Type, []models.Type, error) {
+func (p *Parser) parseTypes(function *ast.Field, fieldsearcher *FieldSearcher) (parsedTypes, error) {
+	var result parsedTypes
+
 	fn, ok := function.Type.(*ast.FuncType)
 	if !ok {
-		return nil, nil, fmt.Errorf("An error occurred parsing the types of function %v at Line %d", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
+		return result, fmt.Errorf("an error occurred parsing the types of function %v at Line %d", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	}
 
 	fromTypes, err := p.parseFieldList(fn.Params.List, fieldsearcher) // (incoming) parameters "non-nil"
 	if err != nil {
-		return nil, nil, err
+		return result, err
 	}
 	var toTypes []models.Type
 	if fn.Results != nil {
 		toTypes, err = p.parseFieldList(fn.Results.List, fieldsearcher) // (outgoing) results "or nil"
 		if err != nil {
-			return nil, nil, err
+			return result, err
 		}
 	}
 	if len(fromTypes) == 0 {
-		return nil, nil, fmt.Errorf("Function %v at Line %d has no types to copy from.", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
+		return result, fmt.Errorf("function %v at Line %d has no types to copy from", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	} else if len(toTypes) == 0 {
-		return nil, nil, fmt.Errorf("Function %v at Line %d has no types to copy to.", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
+		return result, fmt.Errorf("function %v at Line %d has no types to copy to", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	}
 
 	// assign variable names and determine the definition and sub-fields of each type
@@ -40,12 +47,17 @@ func (p *Parser) parseTypes(function *ast.Field, fieldsearcher *FieldSearcher) (
 	for i := 0; i < len(toTypes); i++ {
 		toTypes[i].Field.VariableName = createVariable(paramMap, "t"+toTypes[i].Field.Name, 0)
 	}
-	return fromTypes, toTypes, nil
+
+	result.fromTypes = fromTypes
+	result.toTypes = toTypes
+
+	return result, nil
 }
 
 // parseFieldList parses an Abstract Syntax Tree field list for a type's fields.
 func (p *Parser) parseFieldList(fieldlist []*ast.Field, fieldsearcher *FieldSearcher) ([]models.Type, error) {
-	var types []models.Type
+	types := make([]models.Type, 0, len(fieldlist))
+
 	for _, astfield := range fieldlist {
 		field, err := p.parseTypeField(astfield, fieldsearcher)
 		if err != nil {
@@ -58,16 +70,17 @@ func (p *Parser) parseFieldList(fieldlist []*ast.Field, fieldsearcher *FieldSear
 
 // parseTypeField parses a function *ast.Field into a field model.
 func (p *Parser) parseTypeField(field *ast.Field, fieldsearcher *FieldSearcher) (*models.Field, error) {
-	pkg, name, _, ptr := parseASTFieldName(field)
-	if name == "" {
-		return nil, fmt.Errorf("Unexpected field expression %v in the Abstract Syntax Tree.", field)
+	parsed := parseASTFieldName(field)
+	if parsed.name == "" {
+		return nil, fmt.Errorf("unexpected field expression %v in the Abstract Syntax Tree", field)
 	}
 
-	mField, err := fieldsearcher.SearchForTypeField(p.SetupFile, p.Imports[pkg], pkg, name)
+	mField, err := fieldsearcher.SearchForTypeField(p.SetupFile, p.Imports[parsed.pkg], parsed.pkg, parsed.name)
 	if err != nil {
 		return nil, err
 	}
-	mField.Pointer = ptr
+	mField.Pointer = parsed.ptr
+
 	return mField, nil
 }
 

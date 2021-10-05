@@ -1,0 +1,40 @@
+run:
+  timeout: 5m
+  tests: false
+
+linters:
+  enable-all: true
+  disable:
+    - cyclop
+    - errorlint
+    - exhaustivestruct
+    - forbidigo
+    - funlen
+    - goerr113
+    - gomnd
+    - gocognit
+    - lll
+    - maligned
+    - nlreturn
+    - tagliatelle
+    - wrapcheck
+    - wsl
+
+  fast: false
+linters-settings:
+  gocritic:
+    enabled-tags:
+      - style
+      - experimental
+      - performance
+      - diagnostic
+      - opinionated
+
+  govet:
+    enable-all: true
+    disable:
+      - shadow
+      - fieldalignment
+
+  funlen:
+    lines: 80

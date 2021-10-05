@@ -8,20 +8,21 @@ import (
 )
 
 // parseFunctions parses the AST for functions in the setup file.
-func (p *Parser) parseFunctions(Copygen *ast.InterfaceType) ([]models.Function, error) {
-	var functions []models.Function
-	for _, method := range Copygen.Methods.List {
+func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, error) {
+	functions := make([]models.Function, 0, len(copygen.Methods.List))
+
+	for _, method := range copygen.Methods.List {
 		options, manual := p.setOptionMap(method)
 		fieldsearcher := FieldSearcher{Options: options}
-		fromTypes, toTypes, err := p.parseTypes(method, &fieldsearcher)
+		parsed, err := p.parseTypes(method, &fieldsearcher)
 		if err != nil {
-			return nil, fmt.Errorf("An error occurred while parsing the types of function %q.\n%v", parseMethodForName(method), err)
+			return nil, fmt.Errorf("an error occurred while parsing the types of function %q.\n%v", parseMethodForName(method), err)
 		}
 
 		function := models.Function{
 			Name: parseMethodForName(method),
-			To:   toTypes,
-			From: fromTypes,
+			To:   parsed.toTypes,
+			From: parsed.fromTypes,
 			Options: models.FunctionOptions{
 				Custom: p.assignCustomOption(options),
 				Manual: manual,
@@ -39,12 +40,11 @@ func (p *Parser) setOptionMap(x ast.Node) ([]Option, bool) {
 	var options []Option
 	var manual bool
 	ast.Inspect(x, func(node ast.Node) bool {
-		switch xcg := node.(type) {
-		case *ast.CommentGroup:
+		if xcg, ok := node.(*ast.CommentGroup); ok {
 			for _, comment := range xcg.List {
 				if _, exists := p.Options[comment.Text]; exists {
 					options = append(options, p.Options[comment.Text])
-					if p.Options[comment.Text].Category == "map" {
+					if p.Options[comment.Text].Category == categoryMap {
 						manual = true
 					}
 				}
@@ -55,7 +55,7 @@ func (p *Parser) setOptionMap(x ast.Node) ([]Option, bool) {
 
 	// add all convert options; which aren't in the scope of any functions but may apply
 	for _, option := range p.Options {
-		if option.Category == "convert" {
+		if option.Category == categoryConvert {
 			options = append(options, option)
 		}
 	}

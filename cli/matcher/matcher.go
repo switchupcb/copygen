@@ -18,17 +18,19 @@ func Match(gen *models.Generator) error {
 				for i := 0; i < len(toFields); i++ {
 					for j := 0; j < len(fromFields); j++ {
 						// therefore, don't compare pointed fields.
-						if toFields[i].From == nil && fromFields[j].To == nil {
-							// don't compare top-level fields that have subfields
-							// this allows type such as `type T int` but not `type User struct` to be matched.
-							if (toFields[i].Parent != nil || len(toFields[i].Fields) == 0) && (fromFields[j].Parent != nil || len(fromFields[j].Fields) == 0) {
-								if function.Options.Manual {
-									if fromFields[j].Options.Map != "" {
-										manualmatch(toFields[i], fromFields[j])
-									}
-								} else {
-									automatch(toFields[i], fromFields[j])
+						if toFields[i].From != nil || fromFields[j].To != nil {
+							continue
+						}
+
+						// don't compare top-level fields that have subfields
+						// this allows type such as `type T int` but not `type User struct` to be matched.
+						if (toFields[i].Parent != nil || len(toFields[i].Fields) == 0) && (fromFields[j].Parent != nil || len(fromFields[j].Fields) == 0) {
+							if function.Options.Manual {
+								if fromFields[j].Options.Map != "" {
+									manualmatch(toFields[i], fromFields[j])
 								}
+							} else {
+								automatch(toFields[i], fromFields[j])
 							}
 						}
 					}
@@ -51,7 +53,7 @@ func Match(gen *models.Generator) error {
 
 // automatch automatically matches the fields of a fromType to a toType by name.
 // automatch is used when no `map` options apply to a field.
-func automatch(toField *models.Field, fromField *models.Field) {
+func automatch(toField, fromField *models.Field) {
 	if toField.Name == fromField.Name && (toField.Definition == fromField.Definition || fromField.Options.Convert != "") {
 		fromField.To = toField
 		toField.From = fromField
@@ -60,7 +62,7 @@ func automatch(toField *models.Field, fromField *models.Field) {
 
 // manualmatch uses a manual matcher to map a from-field to a to-field.
 // manualmatch is used when a map option is specified.
-func manualmatch(toField *models.Field, fromField *models.Field) {
+func manualmatch(toField, fromField *models.Field) {
 	if toField.FullName("") == fromField.Options.Map {
 		fromField.To = toField
 		toField.From = fromField

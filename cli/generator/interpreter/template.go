@@ -13,21 +13,19 @@ func Generate(gen *models.Generator) (string, error) {
 
 	// determine the method to analyze each function.
 	if gen.Tempath == "" {
-		content += templates.Generate(*gen) + "\n"
+		content += templates.Generate(gen) + "\n"
 		return content, nil
 	}
-	return content, fmt.Errorf("Templates are temporarily unsupported.")
-	// return interpretFunction(gen)
+	return content, fmt.Errorf("templates are temporarily unsupported")
 }
 
 //nolint:deadcode,unused // interpretFunction represents the interpreted function func that generates function code.
-func interpretFunction(gen *models.Generator) (string, error) {
+func interpretFunction(gen *models.Generator) error {
 	v, err := interpretFunc(gen.Loadpath, gen.Tempath, "templates.Generate")
 	if err != nil {
-		return "", err
+		return err
 	}
-	// fn := v.Interface().(func(models.Generator) string)
-	// header := fn(gen)
+
 	fmt.Println(v)
-	return "", nil
+	return nil
 }

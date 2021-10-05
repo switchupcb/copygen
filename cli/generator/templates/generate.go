@@ -7,7 +7,7 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-func Generate(gen models.Generator) string {
+func Generate(gen *models.Generator) string {
 	content := string(gen.Keep) + "\n"
 	for _, function := range gen.Functions {
 		content += Function(function) + "\n"
@@ -40,7 +40,7 @@ func generateComment(function models.Function) string {
 	for _, toType := range function.To {
 		toComment += toType.Field.Name + ", "
 	}
-	if len(toComment) != 0 {
+	if toComment != "" {
 		// remove last ", "
 		toComment = toComment[:len(toComment)-2]
 	}
@@ -49,7 +49,7 @@ func generateComment(function models.Function) string {
 	for _, fromType := range function.From {
 		fromComment += fromType.Field.Name + ", "
 	}
-	if len(fromComment) != 0 {
+	if fromComment != "" {
 		// remove last ", "
 		fromComment = fromComment[:len(fromComment)-2]
 	}
@@ -79,7 +79,7 @@ func generateParameters(function models.Function) string {
 		parameters += fromType.ParameterName() + ", "
 	}
 
-	if len(parameters) == 0 {
+	if parameters == "" {
 		return parameters
 	}
 
