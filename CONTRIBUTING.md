@@ -10,11 +10,7 @@ Pull requests must work with all examples _(confirmed through [integration tests
 
 ## Domain
 
- The domain of copygen lies in field manipulation. The program uses provided types to determine the fields we must assign. In this context, a "Type" refers to _the types used in a function (as parameters)_ rather than a type used to define variables. As the `matcher/ast` provides all required field information, you can improve copygen by modifying the generator.
-
- ### Improving the Generator
-
-The generator interprets the provided template file at runtime to generate code. The generator can be improved by adding custom deepcopy functions for slice, map, array, etc that the user can use (via options).
+ The domain of Copygen lies in field manipulation. The program uses provided types to determine the fields we must assign. In this context, a "Type" refers to _the types used in a function (as parameters or results)_ rather than a type used to define variables. As the `parser` and `matcher` provides all required field information, you can improve Copygen by modifying the generator.
 
 ## Project Structure
 
@@ -22,29 +18,66 @@ The repository consists of a detailed [README](https://github.com/switchupcb/cop
 
 ### Command Line Interface
 
-The command-line interface _(cli)_ consists of 4 packages. 
+The command-line interface _(cli)_ consists of 5 packages. 
 
-| Package   | Description                                                                                      |
-| :-------- | :----------------------------------------------------------------------------------------------- |
-| cli       | Contains the primary logic used to parse arguments and run the copygen command-line application. |
-| models    | Contains models based on the application's functionality _(logic)_.                              |
-| loader    | Contains external loaders used to configure the code that is generated.                          |
-| generator | Contains the generator logic used to generate code _(and interpret templates)_.                  |
+| Package   | Description                                                                                        |
+| :-------- | :------------------------------------------------------------------------------------------------- |
+| cli       | Contains the primary logic used to parse arguments and run the `copygen` command-line application. |
+| models    | Contains models based on the application's functionality _(business logic)_.                       |
+| config    | Contains external loaders used to configure the file settings and command line options.            |
+| parser    | Uses Abstract Syntax Tree (AST) analysis to parse a data file for fields.                          |
+| matcher   | Contains application logic to match fields to eachoher _(manually and automatically)_.             |
+| generator | Contains the generator logic used to generate code _(and interpret templates)_.                    |
+
+The command line interface package allows you see the flow of the program.
+```go
+/* Comments not present in actual project. */
+// The configuration file is loaded (.yml)
+gen, err := config.LoadYML(e.YMLPath)
+if err != nil {
+   return err
+}
+
+// The data file is parsed (.go)
+if err = parser.Parse(gen); err != nil {
+		return err
+}
+
+// The matcher is run on the parsed data (which are application models).
+if err = matcher.Match(gen); err != nil {
+   return err
+}
+
+// The generator is used to generate code.
+if err = generator.Generate(gen, e.Output); err != nil {
+   return err
+}
+return nil
+```
+
+#### Parser
+
+A setup file's Abstract Syntax Tree is traversed once. This is done in three steps:
+1. **Options:** Regex complilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique option-comments once. The location of a `convert` option cannot be assumed: Therefore, we must traverse the entire Abstract Syntax Tree in order to correctly assign options. As a result, the `type Copygen Interface` is stored for post-traversal analysis.
+2. **Keep:** The code that is kept after generation is stored — or moreso kept — in the AST. We do not want to keep option-comments nor the Copygen interface in the AST. However, they must still be present during the `type Copygen Interface` analysis _(which requires the option-comments)_. As a result, comments are stored in the parser for post-analysis removal.
+3. **type Copygen Interface:** The `type Copygen interface` is parsed to setup the function and fields used in the program. 
+   
+#### Tests
+
+The Command Line Interface and Generator (with templates) either work or don't. The config uses a tested library. The matcher serves it purpose (matching fields to other fields) and is only effected by external options. For this reason, the majority of the edge cases this program encounters will be located in the `parser`. In contrast, the parser is the most likely to change (as it is based on the UI). 
 
 ### Specification
 
-#### To vs. From
+#### From vs. To
 
-To and From is used to denote the direction of a type or field. A to-field is assigned **from** a from-field. Vice-versa, _all_ from-fields are assigned **to** to-fields: Therefore, **"To" always comes before "From"**.
+From and To is used to denote the direction of a type or field. A from-field is assigned **to** a to-field. In contrast, a from-field applies to all to-fields _(unless specified otherwise)_. As a result, **"From" comes before "To" when parsing** while **"To" comes before "From" in comparison**.
 
 #### Variable Names
 
-**Common Variable Names**
-
 | Variable | Description                                                                          |
 | :------- | :----------------------------------------------------------------------------------- |
-| to.*     | Variables preceded by to indicate to-functionality.                                  |
 | from.*   | Variables preceded by from indicate to-functionality.                                |
+| to.*     | Variables preceded by to indicate to-functionality.                                  |
 | loadpath | `loadpath` represents the (relative) path of the loader (current working directory). |
 
 #### Comments
@@ -53,7 +86,7 @@ Comments follow [Effective Go](https://golang.org/doc/effective_go#commentary) a
 
 #### Why Pointers
 
-Contrary to the README, pointers aren't used — on Fields in the matcher — as a performance optimization. Using pointers with Fields makes it less likely for a mistake to occur during the comparison of them. For example, using a for-copy loop on a `[]models.Field`:
+Contrary to the README, pointers aren't used — on Fields — as a performance optimization. Using pointers with Fields makes it less likely for a mistake to occur during the comparison of them. For example, using a for-copy loop on a `[]models.Field`:
 
 ```go
 // A copy of field is created with a separate pointer.
@@ -69,6 +102,10 @@ for _, field := range fields {
 
 The same reasoning applies to `for i := 0; i < count; i++` loops.
 
+#### CI/CD
+
+Copygen uses [golangci-lint](https://github.com/golangci/golangci-lint) in order to statically analyze code. You can install golangci-lint with `go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1` and run it using `golangci-lint run`. If you recieve a `diff` error, you must add a `diff` tool in your PATH. There is one located in the `Git` bin.
+
 # Roadmap
 
 Focus on these features:
@@ -78,41 +115,75 @@ Focus on these features:
 
 ## Debug
 
-The `debug.go` provides helper functions during debugging.
+The `debug.go` provides helper functions during debugging. To view an Abstract Syntax Tree, use a [GoAst Viewer](https://yuroyoro.github.io/goast-viewer/index.html).
 
 #### PrintFunctionFields
 
+**Parser**
+
 ```
-TO type domain.Account
-   To Field Name of Definition string: Parent 0xc000234200 Field OF 0x0 Fields []        
-   To Field UserID of Definition int: Parent 0xc000234400 Field OF 0xc0002be500 Fields []
-   To Field ID of Definition int: Parent 0xc000234500 Field OF 0x0 Fields []
-   To Field Name of Definition string: Parent 0xc000234600 Field OF 0x0 Fields []        
-   To Field Email of Definition string: Parent 0xc000234700 Field OF 0x0 Fields []
-FROM type models.User
-   From Field Name of Definition string: Parent 0xc000234800 Field OF 0x0 Fields []
-   From Field UserID of Definition int: Parent 0xc000234900 Field OF 0x0 Fields []
-FROM type models.Account
-   From Field ID of Definition int: Parent 0xc000234a00 Field OF 0x0 Fields []
-   From Field Name of Definition string: Parent 0xc000234b00 Field OF 0x0 Fields []
-   From Field Email of Definition string: Parent 0xc000234c00 Field OF 0x0 Fields []
+type models.Account.
+      Unpointed Field "models.Account.ID" of Definition "int": Parent "models.Account." Fields[0]
+      Unpointed Field "models.Account.Name" of Definition "string": Parent "models.Account." Fields[0]
+      Unpointed Field "models.Account.Password" of Definition "string": Parent "models.Account." Fields[0]
+      Unpointed Field "models.Account.Email" of Definition "string": Parent "models.Account." Fields[0]
+type models.User.
+        Unpointed Field "models.User.ID" of Definition "int": Parent "models.User." Fields[0]
+        Unpointed Field "models.User.Name" of Definition "int": Parent "models.User." Fields[0]
+        Unpointed Field "models.User.UserData" of Definition "string": Parent "models.User." Fields[0]
+type *domain.Account.
+        Unpointed Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0]
+        Unpointed Field "*domain.Account.UserID" of Definition "string": Parent "*domain.Account." Fields[0]
+        Unpointed Field "*domain.Account.Name" of Definition "string": Parent "*domain.Account." Fields[0]
+        Unpointed Field "*domain.Account.Other" of Definition "string": Parent "*domain.Account." Fields[0]
+```
+
+**Matcher**
+
+```
+type models.Account.
+        From Field "models.Account.ID" of Definition "int": Parent "models.Account." Fields[0]
+        From Field "models.Account.Name" of Definition "string": Parent "models.Account." Fields[0]
+type models.User.
+        From Field "models.User.UserID" of Definition "int": Parent "models.User." Fields[0]
+type *domain.Account.
+        To Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0]
+        To Field "*domain.Account.UserID" of Definition "int": Parent "*domain.Account." Fields[0]
+        To Field "*domain.Account.Name" of Definition "string": Parent "*domain.Account." Fields[0]
 ```
 
 #### PrintFieldGraph
+
+**Parser**
+
 ```
-To Field Name of Definition string: Parent 0xc0003a3700 Field OF 0x0 Fields []
-To Field UserID of Definition int: Parent 0xc0003a3800 Field OF 0xc00006a900 Fields []
-From Field Name of Definition string: Parent 0xc0003a3900 Field OF 0x0 Fields []
-From Field UserID of Definition int: Parent 0xc0003a3a00 Field OF 0x0 Fields []
-To Field ID of Definition int: Parent 0xc00036e300 Field OF 0x0 Fields []
-To Field Name of Definition string: Parent 0xc00036e400 Field OF 0x0 Fields []
-To Field Email of Definition string: Parent 0xc000446200 Field OF 0x0 Fields []
-From Field ID of Definition int: Parent 0xc000446300 Field OF 0x0 Fields []
-From Field Name of Definition string: Parent 0xc000446400 Field OF 0x0 Fields []
-From Field Email of Definition string: Parent 0xc000446500 Field OF 0x0 Fields []
+Unpointed Field "models.Account.ID" of Definition "int": Parent "models.Account." Fields[0]
+Unpointed Field "models.Account.Name" of Definition "string": Parent "models.Account." Fields[0]
+Unpointed Field "models.Account.Password" of Definition "string": Parent "models.Account." Fields[0]
+Unpointed Field "models.Account.Email" of Definition "string": Parent "models.Account." Fields[0]
+Unpointed Field "models.User.ID" of Definition "int": Parent "models.User." Fields[0]
+Unpointed Field "models.User.Name" of Definition "int": Parent "models.User." Fields[0]
+Unpointed Field "models.User.UserData" of Definition "string": Parent "models.User." Fields[0]
+Unpointed Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0]
+Unpointed Field "*domain.Account.UserID" of Definition "string": Parent "*domain.Account." Fields[0]
+Unpointed Field "*domain.Account.Name" of Definition "string": Parent "*domain.Account." Fields[0]
+Unpointed Field "*domain.Account.Other" of Definition "string": Parent "*domain.Account." Fields[0]
+```
+
+**Matcher**
+
+```
+From Field "models.Account.ID" of Definition "int": Parent "models.Account." Fields[0]
+From Field "models.Account.Name" of Definition "string": Parent "models.Account." Fields[0]
+From Field "models.User.UserID" of Definition "int": Parent "models.User." Fields[0]
+To Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0]
+To Field "*domain.Account.UserID" of Definition "string": Parent "*domain.Account." Fields[0]
+To Field "*domain.Account.Name" of Definition "string": Parent "*domain.Account." Fields[0]
 ```
 
 #### PrintFieldTree
+
+**Parser** 
 
 ```go
 type Account // domain
@@ -142,26 +213,50 @@ type Account // models
     Email    string
 ```
 
+**Matcher**
+
+```go
+// depth-level 0 tree
+type Account
+    ID      int
+    Name    string
+type User
+    UserID  int
+type Account
+    ID      int
+    UserID  int
+    Name    string
+```
+
 #### PrintFieldRelation
 
+**Matcher (Unpointed)**
+
 ```
-To Field int ID (domain.Account) and From Field int ID (models.Account) are related to each other.
-To Field int ID (domain.Account) is not related to From Field string Name (models.Account).
-To Field int ID (domain.Account) is not related to From Field string Email (models.Account).
-To Field string Name (domain.Account) is not related to From Field int ID (models.Account).
-To Field string Name (domain.Account) and From Field string Name (models.Account) are related to each other.
-To Field string Name (domain.Account) is not related to From Field string Email (models.Account).
-To Field string Email (domain.Account) is not related to From Field int ID (models.Account).
-To Field string Email (domain.Account) is not related to From Field string Name (models.Account).
-To Field string Email (domain.Account) and From Field string Email (models.Account) are related to each other.
-To Field string Name (domain.Account) and From Field string Name (models.User) are related to each other.
-To Field string Name (domain.Account) is not related to From Field int UserID (models.User).
-To Field int UserID (domain.Account) is not related to From Field string Name (models.User).
-To Field int UserID (domain.Account) and From Field int UserID (models.User) are related to each other.
+To Field To Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0] and From Field From Field "models.Account.ID" of Definition "int": Parent "models.Account." Fields[0] are related to each other.
+To Field To Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0] is not related to From Field From Field "models.Account.Name" of Definition "string": Parent "models.Account." Fields[0].
+To Field To Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0] is not related to From Field Unpointed Field "models.Account.Password" of Definition "string": Parent "models.Account." Fields[0].
+To Field To Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0] is not related to From Field Unpointed Field "models.Account.Email" of Definition "string": Parent "models.Account." Fields[0].
+To Field Unpointed Field "*domain.Account.UserID" of Definition "int": Parent "*domain.Account." Fields[0] is not related to From Field From Field "models.Account.ID" of Definition "int": Parent "models.Account." Fields[0].
+...
+```
+
+**Matcher (Pointed)**
+
+```
+To Field To Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0] and From Field From Field "models.Account.ID" of Definition "int": Parent "models.Account." Fields[0] are related to each other.
+To Field To Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0] is not related to From Field From Field "models.Account.Name" of Definition "string": Parent "models.Account." Fields[0].
+To Field To Field "*domain.Account.UserID" of Definition "int": Parent "*domain.Account." Fields[0] is not related to From Field From Field "models.Account.ID" of Definition "int": Parent "models.Account." Fields[0].
+To Field To Field "*domain.Account.UserID" of Definition "int": Parent "*domain.Account." Fields[0] is not related to From Field From Field "models.Account.Name" of Definition "string": Parent "models.Account." Fields[0].
+To Field To Field "*domain.Account.Name" of Definition "string": Parent "*domain.Account." Fields[0] is not related to From Field From Field "models.Account.ID" of Definition "int": Parent "models.Account." Fields[0].
+To Field To Field "*domain.Account.Name" of Definition "string": Parent "*domain.Account." Fields[0] and From Field From Field "models.Account.Name" of Definition "string": Parent "models.Account." Fields[0] are related to each other.
+To Field To Field "*domain.Account.ID" of Definition "int": Parent "*domain.Account." Fields[0] is not related to From Field From Field "models.User.UserID" of Definition "int": Parent "models.User." Fields[0].
+To Field To Field "*domain.Account.UserID" of Definition "int": Parent "*domain.Account." Fields[0] and From Field From Field "models.User.UserID" of Definition "int": Parent "models.User." Fields[0] are related to each other.
+To Field To Field "*domain.Account.Name" of Definition "string": Parent "*domain.Account." Fields[0] is not related to From Field From Field "models.User.UserID" of Definition "int": Parent "models.User." Fields[0].
 ```
 
 #### CountFields
 
 ```
-12
+6
 ```
