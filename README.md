@@ -22,11 +22,8 @@ Each example has a **README**.
 | main                                                                            | The default example.                                         |
 | [manual](https://github.com/switchupcb/copygen/tree/main/examples/manual)       | Uses the manual map feature.                                 |
 | [automatch](https://github.com/switchupcb/copygen/tree/main/examples/automatch) | Uses the automatch feature with depth.                       |
-| [new](https://github.com/switchupcb/copygen/tree/main/examples/new)             | Uses a new type to assist with type-conversion.              |
 | deepcopy _(Roadmap Feature)_                                                    | Uses the deepcopy option.                                    |
 | [error](https://github.com/switchupcb/copygen/tree/main/examples/error)         | Uses templates to return an error (temporarily unsupported). |
-
-**NOTE: The following guide is set for v0.2 ([view v0.1](https://github.com/switchupcb/copygen/tree/v0.1.0))**
 
 This [example](https://github.com/switchupcb/copygen/blob/main/examples/main) uses three type-structs to generate the `ModelsToDomain()` function.
 
@@ -143,7 +140,7 @@ go install github.com/switchupcb/copygen@latest
 
 Install a specific version by specifying a tag version.
 ```
-go install github.com/switchupcb/copygen@v0.0.0
+go install github.com/switchupcb/copygen@v0.2.0
 ```
 
 Run the executable with given options.
@@ -201,18 +198,18 @@ type DataTransferObject struct {
   // ...
 }
 
-type DTO interface {
+type Model interface {
   // ...
 }
 
-func ExternalFunc() {
+func New() {
   // ...
 }
 ```
 
 #### Templates
 
-Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package templates Function(*models.Function)` to generate code for each function. As a result, this funtion is **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/generator.go) and [models.Function](https://github.com/switchupcb/copygen/blob/main/cli/models/function.go) for context on the parameters passed to each function. Generator options are parsed from the YML configuration file. Function options refer to `custom` options. Any other option represents a field option.
+Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package templates Generate(*models.Generator)` to generate code. As a result, this funtion is **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/generator.go) for context on the parameters passed to each function. Generator options are parsed from the YML configuration file. Function options refer to `custom` options. Any other option represents a field option.
 
 Templates are interpreted by [yaegi](https://github.com/traefik/yaegi) which has limitations on module imports _(Pull Request Pending)_: As a result, **templates are temporarily unsupported.** The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main) modifies the .yml to use **custom functions** which `return error`. This is done by modifying the .yml and creating **custom template files**.
 
