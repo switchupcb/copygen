@@ -56,6 +56,7 @@ func Parse(gen *models.Generator) error {
 
 	// Traverse the Abstract Syntax Tree.
 	p.Options = make(OptionMap)
+	p.parseImports()
 	err = p.Traverse(gen)
 	if err != nil {
 		return err

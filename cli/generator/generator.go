@@ -13,9 +13,6 @@ import (
 // Generate creates the file with generated code (with gofmt).
 func Generate(gen *models.Generator, output bool) error {
 	// generate code
-	var content string
-	content += string(gen.Keep) + "\n"
-
 	content, err := interpreter.Generate(gen)
 	if err != nil {
 		return fmt.Errorf("An error occurred while generating code.\n%v", err)

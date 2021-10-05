@@ -35,7 +35,9 @@ func interpretFunc(loadpath string, templatepath, symbol string) (*reflect.Value
 
 	// create the interpreter
 	i := interp.New(interp.Options{GoPath: os.Getenv("GOPATH") /*, GoCache: goCache, GoToolDir: build.ToolDir*/})
-	i.Use(stdlib.Symbols)
+	if err := i.Use(stdlib.Symbols); err != nil {
+		return nil, fmt.Errorf("An error occurred loading the template libraries.\n%v", err)
+	}
 	if _, err := i.Eval(source); err != nil {
 		return nil, fmt.Errorf("An error occurred loading the template file: %v\n%v", absfilepath, err)
 	}

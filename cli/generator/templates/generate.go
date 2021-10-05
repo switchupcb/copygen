@@ -8,8 +8,7 @@ import (
 )
 
 func Generate(gen models.Generator) string {
-	var content string
-	content += string(gen.Keep) + "\n"
+	content := string(gen.Keep) + "\n"
 	for _, function := range gen.Functions {
 		content += Function(function) + "\n"
 	}

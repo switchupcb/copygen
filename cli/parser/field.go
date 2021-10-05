@@ -84,10 +84,6 @@ type FieldSearchInfo struct {
 	// The types info for the search.
 	Info types.Info
 
-	// Whether the results contain a basic field.
-	// There can only ever be one basic field in a search (since a basic type doesn't contain other fields).
-	isBasic bool
-
 	// The current depth-level of the fieldSearch.
 	Depth int
 
@@ -254,33 +250,6 @@ func (fs *FieldSearcher) astFieldSearch() ([]*models.Field, error) {
 		// if no fields are present, this is a basic type.
 	}
 	return subfields, nil
-}
-
-// astSubFieldSearch searches through an AST using limited information to determine
-// an import, package, name, and definition and pointer (if applicable) in a setup file.
-func astSubFieldSearch(file *ast.File, parentImport, parentPkg, typeName, definition string) (string, string, string, string, string, error) {
-	var imprt, pkg, name, def, ptr string
-	splitDefinition := strings.Split(definition, ".")
-	if len(splitDefinition) >= 2 {
-		definitionPkg := splitDefinition[0]  // 'log' in 'Field log.Logger'
-		definitionName := splitDefinition[1] // 'Logger' in 'Field log.Logger'
-
-		// use the selector on a custom type from a different package to determine its field.
-		if definitionPkg != parentPkg {
-			// find the type in the AST
-			ts, err := astTypeSearch(file, name)
-			if err == nil {
-				return "", "", "", "", "", fmt.Errorf("The type %v.%v could not be found in the AST. Is the package up to date?", pkg, name)
-			}
-			sel := astSelectorSearch(ts, definitionPkg+"."+definitionName)
-			pkg, name, def, ptr = parseASTFieldName(sel)
-		} else {
-			imprt = parentImport
-			pkg = parentPkg
-		}
-		def = definitionPkg + "." + definitionName
-	}
-	return imprt, pkg, name, def, ptr, nil
 }
 
 // isBasic determines whether a type is a basic (non-custom) type.

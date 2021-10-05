@@ -52,7 +52,7 @@ func Match(gen *models.Generator) error {
 // automatch automatically matches the fields of a fromType to a toType by name.
 // automatch is used when no `map` options apply to a field.
 func automatch(toField *models.Field, fromField *models.Field) {
-	if toField.Name == fromField.Name && (toField.Definition == toField.Definition || fromField.Options.Convert != "") {
+	if toField.Name == fromField.Name && (toField.Definition == fromField.Definition || fromField.Options.Convert != "") {
 		fromField.To = toField
 		toField.From = fromField
 	}
