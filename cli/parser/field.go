@@ -57,17 +57,17 @@ func (fs *FieldSearcher) SearchForTypeField(setupfile *ast.File, setimport, setp
 
 // FieldSearcher represents a searcher that uses Abstract Syntax Tree analysis to find fields of a type.
 type FieldSearcher struct {
-	// The field that initiates the search.
-	Field *models.Field
-
-	// The current search information for the field searcher.
-	SearchInfo FieldSearchInfo
-
 	// The options that pertain to a field (and its subfields).
 	Options []Option
 
 	// A key value cache used to reduce the amount of AST operations.
 	cache map[string]*models.Field
+
+	// The field that initiates the search.
+	Field *models.Field
+
+	// The current search information for the field searcher.
+	SearchInfo FieldSearchInfo
 }
 
 // FieldSearchInfo represents the info for a field search.

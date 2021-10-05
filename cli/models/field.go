@@ -32,9 +32,6 @@ type Field struct {
 	// The type or field that contains this field.
 	Parent *Field
 
-	// The fields of this field.
-	Fields []*Field
-
 	// The field that this field will be copied from (or nil).
 	// Set in the matcher.
 	From *Field
@@ -42,6 +39,9 @@ type Field struct {
 	// The field that this field will be copied to (or nil).
 	// Set in the matcher.
 	To *Field
+
+	// The fields of this field.
+	Fields []*Field
 
 	// The custom options of a field.
 	Options FieldOptions
@@ -52,14 +52,14 @@ type FieldOptions struct {
 	// The function the field is converted with (as a parameter).
 	Convert string
 
-	// Whether the field should be deepcopied.
-	Deepcopy bool
+	// The field to map this field to, if any.
+	Map string
 
 	// The level at which sub-fields are discovered.
 	Depth int
 
-	// The field to map this field to, if any.
-	Map string
+	// Whether the field should be deepcopied.
+	Deepcopy bool
 }
 
 // IsType returns whether the field is a type.

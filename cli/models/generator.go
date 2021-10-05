@@ -6,8 +6,8 @@ type Generator struct {
 	Setpath   string           // The filepath the setup file is located in.
 	Outpath   string           // The filepath the generated code is output to.
 	Tempath   string           // The filepath for thetemplate used to generate code.
-	Functions []Function       // The functions to generate.
 	Keep      []byte           // The code that is kept from the setup file.
+	Functions []Function       // The functions to generate.
 	Options   GeneratorOptions // The custom options for the generator.
 }
 

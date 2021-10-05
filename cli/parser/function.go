@@ -15,7 +15,7 @@ func (p *Parser) parseFunctions(Copygen *ast.InterfaceType) ([]models.Function, 
 		fieldsearcher := FieldSearcher{Options: options}
 		fromTypes, toTypes, err := p.parseTypes(method, &fieldsearcher)
 		if err != nil {
-			return nil, fmt.Errorf("An error occured while parsing the types of function %q.\n%v", parseMethodForName(method), err)
+			return nil, fmt.Errorf("An error occurred while parsing the types of function %q.\n%v", parseMethodForName(method), err)
 		}
 
 		function := models.Function{

@@ -3,8 +3,8 @@ package config
 
 // YML represents the first level of the YML file.
 type YML struct {
-	Generated Generated              `yaml:"generated"`
 	Options   map[string]interface{} `yaml:"custom"`
+	Generated Generated              `yaml:"generated"`
 }
 
 // Generated represents generated properties of the YML file.

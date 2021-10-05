@@ -15,28 +15,28 @@ import (
 
 // Parser represents a parser that parses Abstract Syntax Tree data into models.
 type Parser struct {
-	// The setup filepath.
-	Setpath string
+	// The fileset of the parser.
+	Fileset *token.FileSet
 
 	// The setup file as an Abstract Syntax Tree.
 	SetupFile *ast.File
 
-	// The fileset of the parser.
-	Fileset *token.FileSet
-
-	// The ast.Node of the `type Copygen Interface`.
-	Copygen *ast.InterfaceType
-
 	// The option-comments parsed in the OptionMap.
 	Comments []*ast.Comment
 
-	// The parser options contain options located in the entire setup file.
-	Options OptionMap
+	// The ast.Node of the `type Copygen Interface`.
+	Copygen *ast.InterfaceType
 
 	// The imports discovered in the set up file (map[packagevar]importpath).
 	// In the context of the parser, packagevar refers to the the variable used
 	// to reference the package (alias) rather the package's actual name.
 	Imports map[string]string
+
+	// The parser options contain options located in the entire setup file.
+	Options OptionMap
+
+	// The setup filepath.
+	Setpath string
 }
 
 // Parse parses a generator's setup file.
