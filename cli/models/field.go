@@ -57,6 +57,9 @@ type FieldOptions struct {
 
 	// The level at which sub-fields are discovered.
 	Depth int
+
+	// The field to map this field to, if any.
+	Map string
 }
 
 // IsType returns whether the field is a type.

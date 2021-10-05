@@ -304,12 +304,12 @@ func setFieldOptions(field *models.Field, options []Option) {
 	setConvertOption(field, options)
 	setDeepcopyOption(field, options)
 	setDepthOption(field, options)
-	// setMapOption()
+	setMapOption(field, options)
 }
 
 // setConvertOption sets a field's convert option.
 func setConvertOption(field *models.Field, options []Option) {
-	// A convert option can only be set once, so use the last one
+	// A convert option can only be set to a field once, so use the last one
 	for i := len(options) - 1; i > -1; i-- {
 		if options[i].Category == "convert" && options[i].Regex[1].MatchString(field.FullName("")) {
 			if value, ok := options[i].Value.(string); ok {
@@ -322,7 +322,7 @@ func setConvertOption(field *models.Field, options []Option) {
 
 // setDeepcopyOption sets a field's deepcopy option.
 func setDeepcopyOption(field *models.Field, options []Option) {
-	// A deepcopy option can only be set once, so use the last one
+	// A deepcopy option can only be set to a field once, so use the last one
 	for i := len(options) - 1; i > -1; i-- {
 		if options[i].Category == "deepcopy" && options[i].Regex[0].MatchString(field.FullName("")) {
 			field.Options.Deepcopy = true
@@ -333,7 +333,7 @@ func setDeepcopyOption(field *models.Field, options []Option) {
 
 // setDepthOption sets a field's depth option.
 func setDepthOption(field *models.Field, options []Option) {
-	// A depth option can only be set once, so use the last one
+	// A depth option can only be set to a field once, so use the last one
 	for i := len(options) - 1; i > -1; i-- {
 		if options[i].Category == "depth" && options[i].Regex[0].MatchString(field.FullName("")) {
 			if value, ok := options[i].Value.(int); ok {
@@ -342,6 +342,19 @@ func setDepthOption(field *models.Field, options []Option) {
 					value = -1
 				}
 				field.Options.Depth = value
+				break
+			}
+		}
+	}
+}
+
+// setMapOption sets a field's deepcopy option.
+func setMapOption(field *models.Field, options []Option) {
+	// A map option can only be set to a field once, so use the last one
+	for i := len(options) - 1; i > -1; i-- {
+		if options[i].Category == "map" && options[i].Regex[0].MatchString(field.FullName("")) {
+			if value, ok := options[i].Value.(string); ok {
+				field.Options.Map = value
 				break
 			}
 		}

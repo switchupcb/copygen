@@ -8,10 +8,10 @@ import (
 )
 
 // parseFunctions parses the AST for functions in the setup file.
-func (p *Parser) parseFunctions() ([]models.Function, error) {
+func (p *Parser) parseFunctions(Copygen *ast.InterfaceType) ([]models.Function, error) {
 	var functions []models.Function
-	for _, method := range p.Copygen.Methods.List {
-		options := p.setOptionMap(method)
+	for _, method := range Copygen.Methods.List {
+		options, manual := p.setOptionMap(method)
 		fieldsearcher := FieldSearcher{Options: options}
 		fromTypes, toTypes, err := p.parseTypes(method, &fieldsearcher)
 		if err != nil {
@@ -24,6 +24,7 @@ func (p *Parser) parseFunctions() ([]models.Function, error) {
 			From: fromTypes,
 			Options: models.FunctionOptions{
 				Custom: p.assignCustomOption(options),
+				Manual: manual,
 			},
 		}
 
@@ -33,14 +34,19 @@ func (p *Parser) parseFunctions() ([]models.Function, error) {
 }
 
 // setOptionMap filters an Option map for options that only pertain to the fields of a function.
-func (p *Parser) setOptionMap(x ast.Node) []Option {
+// To reduce overhead, it also returns whether the function uses a manual matcher.
+func (p *Parser) setOptionMap(x ast.Node) ([]Option, bool) {
 	var options []Option
+	var manual bool
 	ast.Inspect(x, func(node ast.Node) bool {
 		switch xcg := node.(type) {
 		case *ast.CommentGroup:
 			for _, comment := range xcg.List {
 				if _, exists := p.Options[comment.Text]; exists {
 					options = append(options, p.Options[comment.Text])
+					if p.Options[comment.Text].Category == "map" {
+						manual = true
+					}
 				}
 			}
 		}
@@ -53,7 +59,7 @@ func (p *Parser) setOptionMap(x ast.Node) []Option {
 			options = append(options, option)
 		}
 	}
-	return options
+	return options, manual
 }
 
 // assignCustomOption parses a functions *ast.CommentGroups for custom options to return a Custom map.

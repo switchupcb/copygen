@@ -99,18 +99,13 @@ func parseMap(option string) (*Option, error) {
 
 	fromRe, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("An error occurred compiling the regex for the first field in the map option: %q.\n%v", option, err)
-	}
-
-	toRe, err := regexp.Compile("^" + splitoption[1] + "$")
-	if err != nil {
-		return nil, fmt.Errorf("An error occurred compiling the regex for the second field in the map option: %q.\n%v", option, err)
+		return nil, fmt.Errorf("An error occurred compiling the regex for the from field in the map option: %q.\n%v", option, err)
 	}
 
 	// map options are compared in the matcher
 	return &Option{
 		Category: "map",
 		Regex:    map[int]*regexp.Regexp{0: fromRe},
-		Value:    toRe,
+		Value:    splitoption[1],
 	}, nil
 }
