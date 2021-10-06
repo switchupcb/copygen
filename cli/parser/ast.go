@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-type parsedAstFieldName struct {
+type parsedASTFieldName struct {
 	pkg  string
 	name string
 	def  string
@@ -15,8 +15,8 @@ type parsedAstFieldName struct {
 }
 
 // parseASTFieldName parses an *ast.Field (node) for its package, name, definition, and pointer value.
-func parseASTFieldName(field ast.Node) parsedAstFieldName {
-	var result parsedAstFieldName
+func parseASTFieldName(field ast.Node) parsedASTFieldName {
+	var result parsedASTFieldName
 
 	ast.Inspect(field, func(node ast.Node) bool {
 		switch x := node.(type) {

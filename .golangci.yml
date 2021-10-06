@@ -5,6 +5,8 @@ run:
 linters:
   enable-all: true
   disable:
+    - deadcode # The repository has no Application Life Cycle Management. Run manually prior to a release.
+    - unused   # The repository has no Application Life Cycle Management. Run manually prior to a release.
     - cyclop
     - errorlint
     - exhaustivestruct
@@ -19,6 +21,9 @@ linters:
     - tagliatelle
     - wrapcheck
     - wsl
+    - golint     # deprecated
+    - scopelint  # deprecated
+    - interfacer # deprecated
 
   fast: false
 linters-settings:
@@ -34,7 +39,7 @@ linters-settings:
     enable-all: true
     disable:
       - shadow
-      - fieldalignment
+      # - fieldalignment
 
   funlen:
     lines: 80

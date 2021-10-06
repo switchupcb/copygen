@@ -5,7 +5,7 @@ import (
 )
 
 // PrintFunctionFields prints all of a functions fields to standard output.
-func PrintFunctionFields(function Function) {
+func PrintFunctionFields(function *Function) {
 	for i := 0; i < len(function.From); i++ {
 		PrintFieldGraph(function.From[i].Field, "\t")
 	}
@@ -62,7 +62,7 @@ func printFieldRelation(toField, fromField *Field) {
 		switch {
 		case len(toField.Fields) != 0 && len(fromField.Fields) != 0:
 			for i := 0; i < len(toField.Fields); i++ {
-				for j := 0; j < len(fromField.Fields); i++ { //nolint:staticcheck // ignore
+				for j := 0; j < len(fromField.Fields); j++ {
 					printFieldRelation(toField.Fields[i], fromField.Fields[j])
 				}
 			}

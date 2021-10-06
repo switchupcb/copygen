@@ -19,7 +19,7 @@ func Generate(gen *models.Generator) (string, error) {
 	return content, fmt.Errorf("templates are temporarily unsupported")
 }
 
-//nolint:deadcode,unused // interpretFunction represents the interpreted function func that generates function code.
+// interpretFunction represents the interpreted function func that generates function code.
 func interpretFunction(gen *models.Generator) error {
 	v, err := interpretFunc(gen.Loadpath, gen.Tempath, "templates.Generate")
 	if err != nil {

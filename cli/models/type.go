@@ -7,12 +7,12 @@ type Type struct {
 	Field *Field // The field information for the type.
 }
 
-//nolint:unused // isStruct returns whether the type is a struct.
+// isStruct returns whether the type is a struct.
 func (t Type) isStruct() bool {
 	return t.Field.Definition == "struct"
 }
 
-//nolint:unused // isInterface returns whether the type is an interface.
+// isInterface returns whether the type is an interface.
 func (t Type) isInterface() bool {
 	return t.Field.Definition == "interface"
 }
