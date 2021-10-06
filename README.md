@@ -1,6 +1,5 @@
 # Copygen
 
-[![golangci lint](https://img.shields.io/github/workflow/status/switchupcb/copygen/linter?label=linter&logo=github&style=for-the-badge)](https://github.com/switchupcb/copygen/actions/workflows/linter.yml)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=for-the-badge&logo=appveyor&logo=appveyor)](https://pkg.go.dev/github.com/switchupcb/copygen)
 [![Go Report Card](https://goreportcard.com/badge/github.com/switchupcb/copygen?style=for-the-badge)](https://goreportcard.com/report/github.com/switchupcb/copygen)
 [![MIT License](https://img.shields.io/github/license/switchupcb/copygen.svg?style=for-the-badge)](https://github.com/switchupcb/copygen/blob/main/LICENSE)

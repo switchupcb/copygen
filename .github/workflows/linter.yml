@@ -4,13 +4,13 @@ on:
   push:
 
 jobs:
-  golint:
+  Static-Code-Analysis:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository code
         uses: actions/checkout@v2
-      - name: Lint
+      - name: Perform static code analysis via golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.42
