@@ -1,0 +1,16 @@
+name: "linter"
+
+on:
+  push:
+
+jobs:
+  Static-Code-Analysis:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v2
+      - name: Perform static code analysis via golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.42

@@ -7,16 +7,20 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-func Generate(gen models.Generator) string {
+// Generate provides generated code.
+// GENERATOR FUNCTION.
+// EDITABLE.
+// DO NOT REMOVE.
+func Generate(gen *models.Generator) string {
 	content := string(gen.Keep) + "\n"
-	for _, function := range gen.Functions {
-		content += Function(function) + "\n"
+	for i := range gen.Functions {
+		content += Function(&gen.Functions[i]) + "\n"
 	}
 	return content
 }
 
 // Function provides generated code for a function.
-func Function(function models.Function) string {
+func Function(function *models.Function) string {
 	// comment
 	fn := generateComment(function) + "\n"
 
@@ -35,12 +39,12 @@ func Function(function models.Function) string {
 }
 
 // generateComment generates a function comment.
-func generateComment(function models.Function) string {
+func generateComment(function *models.Function) string {
 	var toComment string
 	for _, toType := range function.To {
 		toComment += toType.Field.Name + ", "
 	}
-	if len(toComment) != 0 {
+	if toComment != "" {
 		// remove last ", "
 		toComment = toComment[:len(toComment)-2]
 	}
@@ -49,7 +53,7 @@ func generateComment(function models.Function) string {
 	for _, fromType := range function.From {
 		fromComment += fromType.Field.Name + ", "
 	}
-	if len(fromComment) != 0 {
+	if fromComment != "" {
 		// remove last ", "
 		fromComment = fromComment[:len(fromComment)-2]
 	}
@@ -58,13 +62,13 @@ func generateComment(function models.Function) string {
 }
 
 // generateSignature generates a function's signature.
-func generateSignature(function models.Function) string {
+func generateSignature(function *models.Function) string {
 	sig := "func " + function.Name + "(" + generateParameters(function) + ") {"
 	return sig
 }
 
 // generateParameters generates the parameters of a function.
-func generateParameters(function models.Function) string {
+func generateParameters(function *models.Function) string {
 	var parameters string
 
 	// Generate To-Type parameters
@@ -79,7 +83,7 @@ func generateParameters(function models.Function) string {
 		parameters += fromType.ParameterName() + ", "
 	}
 
-	if len(parameters) == 0 {
+	if parameters == "" {
 		return parameters
 	}
 
@@ -88,7 +92,7 @@ func generateParameters(function models.Function) string {
 }
 
 // generateBody generates the body of a function.
-func generateBody(function models.Function) string {
+func generateBody(function *models.Function) string {
 	var body string
 
 	// Assign fields to ToType(s)
@@ -111,6 +115,6 @@ func generateBody(function models.Function) string {
 }
 
 // generateReturn generates a return statement for the function.
-func generateReturn(function models.Function) string {
+func generateReturn(function *models.Function) string {
 	return ""
 }

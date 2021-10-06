@@ -43,7 +43,7 @@ func (p *Parser) Traverse(gen *models.Generator) error {
 
 	// Analyze the `type Copygen Interface` for function and field data.
 	if p.Copygen == nil {
-		return fmt.Errorf("The \"type Copygen interface\" could not be found in the setup file.")
+		return fmt.Errorf("the \"type Copygen interface\" could not be found in the setup file")
 	}
 	var err error
 	gen.Functions, err = p.parseFunctions(p.Copygen)
@@ -76,54 +76,59 @@ func (p *Parser) assignOptions(x ast.Node) ([]*ast.Comment, error) {
 	var comments []*ast.Comment
 	var assignerr error
 	ast.Inspect(x, func(node ast.Node) bool {
-		switch xcg := node.(type) {
-		case *ast.CommentGroup:
-			for i := 0; i < len(xcg.List); i++ {
-				// do not use the Doc above the node as an option
-				if xcg.List[i].Slash > x.Pos() {
-					text := xcg.List[i].Text
-					splitcomments := strings.Fields(text[2:])
+		xcg, ok := node.(*ast.CommentGroup)
+		if !ok {
+			return true
+		}
 
-					// map[comment]map[optionname]map[]
-					// determine if the comment is an option.
-					if len(splitcomments) >= 1 {
-						category := splitcomments[0]
-						option := strings.Join(splitcomments[1:], " ")
-						switch category {
-						case "deepcopy":
-							opt, err := parseDeepcopy(option)
-							if err != nil {
-								assignerr = err
-								return false
-							}
-							p.Options[text] = *opt
-						case "depth":
-							opt, err := parseDepth(option)
-							if err != nil {
-								assignerr = err
-								return false
-							}
-							p.Options[text] = *opt
-						case "map":
-							opt, err := parseMap(option)
-							if err != nil {
-								assignerr = err
-								return false
-							}
-							p.Options[text] = *opt
-						default:
-							p.Options[text] = Option{
-								Category: "custom",
-								Regex:    nil,
-								Value:    map[string]string{category: option},
-							}
-						}
+		for i := 0; i < len(xcg.List); i++ {
+			if xcg.List[i].Slash < x.Pos() {
+				comments = append(comments, xcg.List[i])
+				continue
+			}
+			// do not use the Doc above the node as an option
+			text := xcg.List[i].Text
+			splitcomments := strings.Fields(text[2:])
+
+			// map[comment]map[optionname]map[]
+			// determine if the comment is an option.
+			if len(splitcomments) >= 1 {
+				category := splitcomments[0]
+				option := strings.Join(splitcomments[1:], " ")
+				switch category {
+				case categoryDeepCopy:
+					opt, err := parseDeepcopy(option)
+					if err != nil {
+						assignerr = err
+						return false
+					}
+					p.Options[text] = *opt
+				case categoryDepth:
+					opt, err := parseDepth(option)
+					if err != nil {
+						assignerr = err
+						return false
+					}
+					p.Options[text] = *opt
+				case categoryMap:
+					opt, err := parseMap(option)
+					if err != nil {
+						assignerr = err
+						return false
+					}
+					p.Options[text] = *opt
+				default:
+					p.Options[text] = Option{
+						Category: categoryCustom,
+						Regex:    nil,
+						Value:    map[string]string{category: option},
 					}
 				}
-				// all type Copygen interface comments will be removed.
-				comments = append(comments, xcg.List[i])
 			}
+			// all type Copygen interface comments will be removed.
+			comments = append(comments, xcg.List[i])
 		}
+
 		return true
 	})
 	return comments, assignerr
@@ -132,33 +137,38 @@ func (p *Parser) assignOptions(x ast.Node) ([]*ast.Comment, error) {
 // assignConvertOptions initializes convert options.
 // Used in the context of functions other than the type Copygen interface.
 func (p *Parser) assignConvertOptions(x *ast.FuncDecl) ([]*ast.Comment, error) {
-	var comments []*ast.Comment
-	var assignerr error
-	ast.Inspect(x, func(node ast.Node) bool {
-		switch xcg := node.(type) {
-		case *ast.CommentGroup:
-			for i := 0; i < len(xcg.List); i++ {
-				text := xcg.List[i].Text
-				splitcomments := strings.Fields(text[2:])
+	var (
+		comments  []*ast.Comment
+		assignerr error
+	)
 
-				// map[comment]map[optionname]map[]
-				// determine if the comment is a convert option.
-				if len(splitcomments) == 3 {
-					category := splitcomments[0]
-					option := strings.Join(splitcomments[1:], " ")
-					switch category {
-					case "convert":
-						opt, err := parseConvert(option, x.Name.Name)
-						if err != nil {
-							assignerr = err
-							return false
-						}
-						p.Options[text] = *opt
-						comments = append(comments, xcg.List[i])
+	ast.Inspect(x, func(node ast.Node) bool {
+		xcg, ok := node.(*ast.CommentGroup)
+		if !ok {
+			return true
+		}
+
+		for i := 0; i < len(xcg.List); i++ {
+			text := xcg.List[i].Text
+			splitcomments := strings.Fields(text[2:])
+
+			// map[comment]map[optionname]map[]
+			// determine if the comment is a convert option.
+			if len(splitcomments) == 3 {
+				category := splitcomments[0]
+				option := strings.Join(splitcomments[1:], " ")
+				if category == categoryConvert {
+					opt, err := parseConvert(option, x.Name.Name)
+					if err != nil {
+						assignerr = err
+						return false
 					}
+					p.Options[text] = *opt
+					comments = append(comments, xcg.List[i])
 				}
 			}
 		}
+
 		return true
 	})
 	return comments, assignerr

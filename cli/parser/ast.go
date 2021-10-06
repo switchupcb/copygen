@@ -7,29 +7,37 @@ import (
 	"path/filepath"
 )
 
+type parsedASTFieldName struct {
+	pkg  string
+	name string
+	def  string
+	ptr  string
+}
+
 // parseASTFieldName parses an *ast.Field (node) for its package, name, definition, and pointer value.
-func parseASTFieldName(field ast.Node) (string, string, string, string) {
-	var pkg, name, def, ptr string
+func parseASTFieldName(field ast.Node) parsedASTFieldName {
+	var result parsedASTFieldName
+
 	ast.Inspect(field, func(node ast.Node) bool {
 		switch x := node.(type) {
 		case *ast.SelectorExpr:
 			// FieldInfo is always in a selector expression.
-			pkg += x.X.(*ast.Ident).Name // 'log' in 'Field log.Logger'
-			name += x.Sel.Name           // 'Logger' in 'Field log.Logger'
+			result.pkg += x.X.(*ast.Ident).Name // 'log' in 'Field log.Logger'
+			result.name += x.Sel.Name           // 'Logger' in 'Field log.Logger'
 			return false
 		case *ast.StarExpr:
-			ptr += "*"
+			result.ptr += "*"
 			return true
 		default:
 			return true
 		}
 	})
-	if pkg != "" {
-		def = pkg + "." + name
+	if result.pkg != "" {
+		result.def = fmt.Sprintf("%s.%s", result.pkg, result.name)
 	} else {
-		def = name
+		result.def = result.name
 	}
-	return pkg, name, def, ptr
+	return result
 }
 
 // astLocateImport finds the actual import of a given package in a .go file.
@@ -65,23 +73,26 @@ func astLocateImport(file *ast.File, fileImport, pkg, name string) (string, erro
 			return importPath, nil
 		}
 	}
-	return "", fmt.Errorf("Could not locate type %q in file import %v.", pkg+" "+name, fileImport)
+	return "", fmt.Errorf("could not locate type %q in file import %v", pkg+" "+name, fileImport)
 }
 
 // astTypeSearch searches through an ast.File for ast.Types.
 func astTypeSearch(file *ast.File, typename string) (*ast.TypeSpec, error) {
 	for _, decl := range file.Decls {
-		if gendecl, ok := decl.(*ast.GenDecl); ok {
-			if gendecl.Tok == token.TYPE {
-				for _, spec := range gendecl.Specs {
-					if ts, ok := spec.(*ast.TypeSpec); ok {
-						if typename == ts.Name.Name {
-							return ts, nil
-						}
+		gendecl, ok := decl.(*ast.GenDecl)
+		if !ok {
+			continue
+		}
+
+		if gendecl.Tok == token.TYPE {
+			for _, spec := range gendecl.Specs {
+				if ts, ok := spec.(*ast.TypeSpec); ok {
+					if typename == ts.Name.Name {
+						return ts, nil
 					}
 				}
 			}
 		}
 	}
-	return nil, fmt.Errorf("The type %q could not be found in the Abstract Syntax Tree.", typename)
+	return nil, fmt.Errorf("the type %q could not be found in the Abstract Syntax Tree", typename)
 }

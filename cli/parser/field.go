@@ -13,47 +13,13 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// SearchForTypeField searches for an *ast.Field which is parsed into a (type) field model.
-//
-// The field search process involves a FieldSearcher that sets up and executes a field search in order to load field data.
-// In the context of the program, a top-level field with no parents is a TypeField.
-// The original setup file (i.e setup.go) is used to locate a field's actual import and package.
-// Then, the files that compose this package are searched for the declaration of the field containing its data and sub-fields.
-func (fs *FieldSearcher) SearchForTypeField(setupfile *ast.File, setimport, setpkg, setname string) (*models.Field, error) {
-	if fs.cache == nil {
-		fs.cache = make(map[string]*models.Field)
-	}
-
-	// There is a difference between the parameterized properties (which are parsed from a "setup file")
-	// and the actual file properties (which are parsed from the file containing the field's type declaration).
-	//
-	// SearchForField is passed a file, modularized import path, aliased package, and (type) name from a setup file.
-	// This means that imports with aliased packages (i.e c "github.com/switchupb/copygen/examples/main/converter")
-	// will be parsed from the Copygen interface function. However, a module import != importpath && alias != package.
-	// In order to solve this, we must locate the types ACTUAL properties from its declaration in antoher file.
-	//
-	// find the actual file location of the field's type declaration using the setup file.
-	actualimport, err := astLocateImport(setupfile, setimport, setpkg, setname)
-	if err != nil {
-		return nil, err
-	}
-
-	// set up and execute the field searcher using data from the actual import file.
-	def := setpkg
-	if def != "" {
-		def += "."
-	}
-	def += setname
-
-	// when fs.Field == nil; a TypeField is instantiated
-	fs.Field = nil
-	fs.SearchInfo = FieldSearchInfo{Depth: 0, MaxDepth: 0}
-	if err := fs.execute(actualimport, setpkg, setname, def); err != nil {
-		return nil, fmt.Errorf("An error occurred while searching for the Field %q of package %q with import: %v.\n%v", setname, setpkg, setimport, err)
-
-	}
-	return fs.Field, nil
-}
+const (
+	categoryConvert  = "convert"
+	categoryCustom   = "custom"
+	categoryDeepCopy = "deepcopy"
+	categoryDepth    = "depth"
+	categoryMap      = "map"
+)
 
 // FieldSearcher represents a searcher that uses Abstract Syntax Tree analysis to find fields of a type.
 type FieldSearcher struct {
@@ -91,6 +57,47 @@ type FieldSearchInfo struct {
 	MaxDepth int
 }
 
+// SearchForTypeField searches for an *ast.Field which is parsed into a (type) field model.
+//
+// The field search process involves a FieldSearcher that sets up and executes a field search in order to load field data.
+// In the context of the program, a top-level field with no parents is a TypeField.
+// The original setup file (i.e setup.go) is used to locate a field's actual import and package.
+// Then, the files that compose this package are searched for the declaration of the field containing its data and sub-fields.
+func (fs *FieldSearcher) SearchForTypeField(setupfile *ast.File, setimport, setpkg, setname string) (*models.Field, error) {
+	if fs.cache == nil {
+		fs.cache = make(map[string]*models.Field)
+	}
+
+	// There is a difference between the parameterized properties (which are parsed from a "setup file")
+	// and the actual file properties (which are parsed from the file containing the field's type declaration).
+	//
+	// SearchForField is passed a file, modularized import path, aliased package, and (type) name from a setup file.
+	// This means that imports with aliased packages (i.e c "github.com/switchupb/copygen/examples/main/converter")
+	// will be parsed from the Copygen interface function. However, a module import != importpath && alias != package.
+	// In order to solve this, we must locate the types ACTUAL properties from its declaration in antoher file.
+	//
+	// find the actual file location of the field's type declaration using the setup file.
+	actualimport, err := astLocateImport(setupfile, setimport, setpkg, setname)
+	if err != nil {
+		return nil, err
+	}
+
+	// set up and execute the field searcher using data from the actual import file.
+	def := setpkg
+	if def != "" {
+		def += "."
+	}
+	def += setname
+
+	// when fs.Field == nil; a TypeField is instantiated
+	fs.Field = nil
+	fs.SearchInfo = FieldSearchInfo{Depth: 0, MaxDepth: 0}
+	if err := fs.execute(actualimport, setpkg, setname, def); err != nil {
+		return nil, fmt.Errorf("an error occurred while searching for the Field %q of package %q with import: %v.\n%v", setname, setpkg, setimport, err)
+	}
+	return fs.Field, nil
+}
+
 // execute runs a field search by checking the types of an *ast.Fileset (with *ast.Files), loading types.Info and an *ast.TypeSpec
 // then searching for a field and it's subfields.
 func (fs *FieldSearcher) execute(imprt, pkg, name, def string) error {
@@ -119,12 +126,12 @@ func (fs *FieldSearcher) execute(imprt, pkg, name, def string) error {
 	fs.SearchInfo.MaxDepth += fs.Field.Options.Depth
 
 	// load the package the field is located in
-	packages, err := packages.Load(&packages.Config{Logf: nil}, imprt[1:len(imprt)-1])
+	pckgs, err := packages.Load(&packages.Config{Logf: nil}, imprt[1:len(imprt)-1])
 	if err != nil {
-		return fmt.Errorf("An error occurred retrieving a package from the GOPATH: %v\n%v", imprt, err)
+		return fmt.Errorf("an error occurred retrieving a package from the GOPATH: %v\n%v", imprt, err)
 	}
 	var gofiles []string
-	for _, pkg := range packages {
+	for _, pkg := range pckgs {
 		gofiles = append(gofiles, pkg.GoFiles...)
 	}
 
@@ -133,7 +140,7 @@ func (fs *FieldSearcher) execute(imprt, pkg, name, def string) error {
 	for _, filepath := range gofiles {
 		file, err := parser.ParseFile(fileset, filepath, nil, parser.AllErrors)
 		if err != nil {
-			return fmt.Errorf("An error occurred parsing a file for the matcher: %v\n%v", filepath, err)
+			return fmt.Errorf("an error occurred parsing a file for the matcher: %v\n%v", filepath, err)
 		}
 		fs.SearchInfo.Files = append(fs.SearchInfo.Files, file)
 	}
@@ -143,7 +150,7 @@ func (fs *FieldSearcher) execute(imprt, pkg, name, def string) error {
 	fs.SearchInfo.Info = types.Info{Types: make(map[ast.Expr]types.TypeAndValue)}
 	_, err = (conf.Check(pkg, fileset, fs.SearchInfo.Files, &fs.SearchInfo.Info))
 	if err != nil {
-		return fmt.Errorf("An error occurred determining the types of a package.\n%v", err)
+		return fmt.Errorf("an error occurred determining the types of a package.\n%v", err)
 	}
 
 	// determine the TypeSpec for this search using the actual typename (i.e `DomainUser` in `User DomainUser`)
@@ -163,7 +170,7 @@ func (fs *FieldSearcher) execute(imprt, pkg, name, def string) error {
 		}
 	}
 	if ts == nil {
-		return fmt.Errorf("The type declaration for the Field %q with import %v could not be found in the AST.\nIs the package up to date?", fs.Field.FullName(""), imprt)
+		return fmt.Errorf("the type declaration for the Field %q with import %v could not be found in the AST.\nIs the package up to date?", fs.Field.FullName(""), imprt)
 	}
 	fs.SearchInfo.SearcherTypeSpec = ts
 
@@ -198,7 +205,7 @@ func (fs *FieldSearcher) astFieldSearch() ([]*models.Field, error) {
 				}
 				actualimport, err := astLocateImport(fs.SearchInfo.DecFile, fs.Field.Import, defPkg, xField.Name())
 				if err != nil {
-					return nil, fmt.Errorf("An error occurred searching for subfield %q of type %q\n%v", fs.Field.FullName(""), xField.Type().String(), err)
+					return nil, fmt.Errorf("an error occurred searching for subfield %q of type %q\n%v", fs.Field.FullName(""), xField.Type().String(), err)
 				}
 
 				// a newFieldSearcher contains the same options and cache, but new field search info
@@ -280,7 +287,7 @@ func setFieldOptions(field *models.Field, options []Option) {
 func setConvertOption(field *models.Field, options []Option) {
 	// A convert option can only be set to a field once, so use the last one
 	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == "convert" && options[i].Regex[1].MatchString(field.FullName("")) {
+		if options[i].Category == categoryConvert && options[i].Regex[1].MatchString(field.FullName("")) {
 			if value, ok := options[i].Value.(string); ok {
 				field.Options.Convert = value
 				break
@@ -293,7 +300,7 @@ func setConvertOption(field *models.Field, options []Option) {
 func setDeepcopyOption(field *models.Field, options []Option) {
 	// A deepcopy option can only be set to a field once, so use the last one
 	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == "deepcopy" && options[i].Regex[0].MatchString(field.FullName("")) {
+		if options[i].Category == categoryDeepCopy && options[i].Regex[0].MatchString(field.FullName("")) {
 			field.Options.Deepcopy = true
 			break
 		}
@@ -304,7 +311,7 @@ func setDeepcopyOption(field *models.Field, options []Option) {
 func setDepthOption(field *models.Field, options []Option) {
 	// A depth option can only be set to a field once, so use the last one
 	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == "depth" && options[i].Regex[0].MatchString(field.FullName("")) {
+		if options[i].Category == categoryDepth && options[i].Regex[0].MatchString(field.FullName("")) {
 			if value, ok := options[i].Value.(int); ok {
 				// Automatch all is on by default; if a user specifies 0 depth-level, guarantee it.
 				if value == 0 {
@@ -321,7 +328,7 @@ func setDepthOption(field *models.Field, options []Option) {
 func setMapOption(field *models.Field, options []Option) {
 	// A map option can only be set to a field once, so use the last one
 	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == "map" && options[i].Regex[0].MatchString(field.FullName("")) {
+		if options[i].Category == categoryMap && options[i].Regex[0].MatchString(field.FullName("")) {
 			if value, ok := options[i].Value.(string); ok {
 				field.Options.Map = value
 				break

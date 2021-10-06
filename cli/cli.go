@@ -34,7 +34,7 @@ func CLI(args []string) int {
 }
 
 // parseArgs parses the provided command line arguments.
-func (e *Environment) parseArgs(args []string) error {
+func (e *Environment) parseArgs(_ []string) error {
 	// define the command line arguments.
 	ymlPtr := flag.String("yml", "", "The path to the .yml flag used for code generation (from the current working directory).")
 	output := flag.Bool("o", false, "Use -o to print generated code to the screen.")
@@ -44,11 +44,13 @@ func (e *Environment) parseArgs(args []string) error {
 
 	// yml
 	ymlLen := len(*ymlPtr)
-	if ymlLen == 0 {
-		return fmt.Errorf("You must specify a .yml configuration file using -yml.")
-	} else if ymlLen < 4 || ".yml" != (*ymlPtr)[ymlLen-4:] {
-		return fmt.Errorf("The specified file (-yml) is not a .yml file.")
+	switch {
+	case ymlLen == 0:
+		return fmt.Errorf("you must specify a .yml configuration file using -yml")
+	case (*ymlPtr)[ymlLen-4:] != ".yml":
+		return fmt.Errorf("the specified file (-yml) is not a .yml file")
 	}
+
 	e.YMLPath = *ymlPtr
 
 	// output
@@ -63,15 +65,15 @@ func (e *Environment) run() error {
 	}
 
 	if err = parser.Parse(gen); err != nil {
-		return err
+		return fmt.Errorf("parser: %w", err)
 	}
 
 	if err = matcher.Match(gen); err != nil {
-		return err
+		return fmt.Errorf("matcher: %w", err)
 	}
 
 	if err = generator.Generate(gen, e.Output); err != nil {
-		return err
+		return fmt.Errorf("generator: %w", err)
 	}
 	return nil
 }

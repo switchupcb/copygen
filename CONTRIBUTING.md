@@ -111,7 +111,6 @@ Copygen uses [golangci-lint](https://github.com/golangci/golangci-lint) in order
 Focus on these features:
    - Generator: deepcopy + example
    - Integration Tests (`examples`)
-   - Workflows for Pull Requests (Static Code Analysis)
 
 ## Debug
 

@@ -5,7 +5,7 @@ import (
 )
 
 // RelatedFields returns solely related fields in a list of fields.
-func RelatedFields(fields []*models.Field, related []*models.Field) []*models.Field {
+func RelatedFields(fields, related []*models.Field) []*models.Field {
 	for i := len(fields) - 1; i > -1; i-- {
 		if len(fields[i].Fields) != 0 {
 			related = append(related, RelatedFields(fields[i].Fields, related)...)

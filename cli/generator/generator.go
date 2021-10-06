@@ -15,7 +15,7 @@ func Generate(gen *models.Generator, output bool) error {
 	// generate code
 	content, err := interpreter.Generate(gen)
 	if err != nil {
-		return fmt.Errorf("An error occurred while generating code.\n%v", err)
+		return fmt.Errorf("an error occurred while generating code\n%v", err)
 	}
 	if output {
 		fmt.Println(content)
@@ -25,19 +25,19 @@ func Generate(gen *models.Generator, output bool) error {
 	data := []byte(content)
 	fmtcontent, err := format.Source(data)
 	if err != nil {
-		return fmt.Errorf("An error occurred while formatting the generated code.\n%v\nUse -o to view output.", err)
+		return fmt.Errorf("an error occurred while formatting the generated code.\n%v\nUse -o to view output", err)
 	}
 
 	// determine actual filepath
 	absfilepath, err := filepath.Abs(gen.Loadpath)
 	if err != nil {
-		return fmt.Errorf("An error occurred while determining the absolute file path of the generated file.\n%v", absfilepath)
+		return fmt.Errorf("an error occurred while determining the absolute file path of the generated file\n%v", absfilepath)
 	}
 	absfilepath = filepath.Join(filepath.Dir(absfilepath), gen.Outpath)
 
 	// create file
-	if err := os.WriteFile(absfilepath, fmtcontent, 0222); err != nil {
-		return fmt.Errorf("An error occurred creating the file.\n%v", err)
+	if err := os.WriteFile(absfilepath, fmtcontent, 0222); err != nil { //nolint:gofumpt // ignore
+		return fmt.Errorf("an error occurred creating the file.\n%v", err)
 	}
 	return nil
 }

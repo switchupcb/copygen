@@ -5,7 +5,7 @@ import (
 )
 
 // PrintFunctionFields prints all of a functions fields to standard output.
-func PrintFunctionFields(function Function) {
+func PrintFunctionFields(function *Function) {
 	for i := 0; i < len(function.From); i++ {
 		PrintFieldGraph(function.From[i].Field, "\t")
 	}
@@ -41,7 +41,7 @@ func PrintFieldTree(typename string, fields []*Field, tabs string) {
 }
 
 // PrintFieldRelation prints the relationship between to and from fields.
-func PrintFieldRelation(toFields []*Field, fromFields []*Field) {
+func PrintFieldRelation(toFields, fromFields []*Field) {
 	for i := 0; i < len(toFields); i++ {
 		for j := 0; j < len(fromFields); j++ {
 			printFieldRelation(toFields[i], fromFields[j])
@@ -50,29 +50,31 @@ func PrintFieldRelation(toFields []*Field, fromFields []*Field) {
 }
 
 // printFieldRelation prints the relationship between two fields.
-func printFieldRelation(toField *Field, fromField *Field) {
-	if (*toField).From == fromField && (*fromField).To == toField {
+func printFieldRelation(toField, fromField *Field) {
+	switch {
+	case toField.From == fromField && fromField.To == toField:
 		fmt.Printf("To Field %v and From Field %v are related to each other.\n", toField, fromField)
-	} else if (*toField).From == fromField {
+	case toField.From == fromField:
 		fmt.Printf("To Field %v is related to From Field %v.\n", toField, fromField)
-	} else if (*fromField).To == toField {
+	case fromField.To == toField:
 		fmt.Printf("From Field %v is related to To Field %v.\n", toField, fromField)
-	} else {
-		if len(toField.Fields) != 0 && len(fromField.Fields) != 0 {
+	default:
+		switch {
+		case len(toField.Fields) != 0 && len(fromField.Fields) != 0:
 			for i := 0; i < len(toField.Fields); i++ {
 				for j := 0; j < len(fromField.Fields); j++ {
 					printFieldRelation(toField.Fields[i], fromField.Fields[j])
 				}
 			}
-		} else if len(toField.Fields) != 0 {
+		case len(toField.Fields) != 0:
 			for i := 0; i < len(toField.Fields); i++ {
 				printFieldRelation(toField.Fields[i], fromField)
 			}
-		} else if len(fromField.Fields) != 0 {
+		case len(fromField.Fields) != 0:
 			for i := 0; i < len(fromField.Fields); i++ {
 				printFieldRelation(toField, fromField.Fields[i])
 			}
-		} else {
+		default:
 			fmt.Printf("To Field %v is not related to From Field %v.\n", toField, fromField)
 		}
 	}
