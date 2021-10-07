@@ -65,15 +65,15 @@ func (e *Environment) run() error {
 	}
 
 	if err = parser.Parse(gen); err != nil {
-		return fmt.Errorf("parser: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 
 	if err = matcher.Match(gen); err != nil {
-		return fmt.Errorf("matcher: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 
 	if err = generator.Generate(gen, e.Output); err != nil {
-		return fmt.Errorf("generator: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 	return nil
 }
