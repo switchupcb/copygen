@@ -23,6 +23,14 @@ type Option struct {
 	Category string
 }
 
+const (
+	categoryConvert  = "convert"
+	categoryCustom   = "custom"
+	categoryDeepCopy = "deepcopy"
+	categoryDepth    = "depth"
+	categoryMap      = "map"
+)
+
 // parseConvert parses a convert option.
 func parseConvert(option, value string) (*Option, error) {
 	splitoption := strings.Fields(option)

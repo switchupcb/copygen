@@ -13,8 +13,7 @@ func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, 
 
 	for _, method := range copygen.Methods.List {
 		options, manual := p.setOptionMap(method)
-		fieldsearcher := FieldSearcher{Options: options}
-		parsed, err := p.parseTypes(method, &fieldsearcher)
+		parsed, err := p.parseTypes(method, options)
 		if err != nil {
 			return nil, fmt.Errorf("an error occurred while parsing the types of function %q.\n%v", parseMethodForName(method), err)
 		}

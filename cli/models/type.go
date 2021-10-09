@@ -19,7 +19,10 @@ func (t Type) isInterface() bool {
 
 // ParameterName gets the parameter name of the type.
 func (t Type) ParameterName() string {
-	return t.Field.Pointer + t.Field.Definition
+	if t.Field.Package == "" {
+		return t.Field.Pointer + t.Field.Definition
+	}
+	return t.Field.Pointer + t.Field.Package + "." + t.Field.Definition
 }
 
 func (t Type) String() string {

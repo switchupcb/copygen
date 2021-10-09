@@ -11,17 +11,13 @@ import (
 	"path/filepath"
 
 	"github.com/switchupcb/copygen/cli/models"
+	"golang.org/x/tools/go/packages"
 )
 
 // Parser represents a parser that parses Abstract Syntax Tree data into models.
 type Parser struct {
 	// The parser options contain options located in the entire setup file.
 	Options OptionMap
-
-	// The imports discovered in the set up file (map[packagevar]importpath).
-	// In the context of the parser, packagevar refers to the the variable used
-	// to reference the package (alias) rather the package's actual name.
-	Imports map[string]string
 
 	// The fileset of the parser.
 	Fileset *token.FileSet
@@ -37,6 +33,15 @@ type Parser struct {
 
 	// The option-comments parsed in the OptionMap.
 	Comments []*ast.Comment
+
+	// The last package to be loaded by a Locater.
+	LastLocated *packages.Package
+
+	// A key value cache used to reduce the amount of package load operations during a field search.
+	pkgcache map[string][]*packages.Package
+
+	// A key value cache used to reduce the amount of AST operations during a field search.
+	fieldcache map[string]*models.Field
 }
 
 // Parse parses a generator's setup file.
@@ -47,6 +52,7 @@ func Parse(gen *models.Generator) error {
 		return err
 	}
 
+	// setup the parser
 	p := Parser{Setpath: absfilepath}
 	p.Fileset = token.NewFileSet()
 	p.SetupFile, err = parser.ParseFile(p.Fileset, absfilepath, nil, parser.ParseComments)
@@ -54,9 +60,22 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("an error occurred parsing the specified .go setup file: %v\n%v", gen.Setpath, err)
 	}
 
-	// Traverse the Abstract Syntax Tree.
 	p.Options = make(OptionMap)
-	p.parseImports()
+	p.fieldcache = make(map[string]*models.Field)
+	p.pkgcache = make(map[string][]*packages.Package)
+
+	pkgs, err := p.loadPackage("file=" + p.Setpath)
+	if err != nil {
+		return err
+	}
+	for _, pkg := range pkgs {
+		if p.SetupFile.Name.Name == pkg.Name {
+			p.LastLocated = pkg
+			break
+		}
+	}
+
+	// Traverse the Abstract Syntax Tree.
 	err = p.Traverse(gen)
 	if err != nil {
 		return err
@@ -73,19 +92,20 @@ func Parse(gen *models.Generator) error {
 	return nil
 }
 
-// parseImports parses the AST for imports in the setup file.
-func (p *Parser) parseImports() {
-	if p.Imports == nil {
-		p.Imports = make(map[string]string) // map[packagevar]importpath
-	}
+// pLoadMode represents the load mode required for sufficient information during package load.
+const pLoadMode = packages.NeedName + packages.NeedImports + packages.NeedTypes + packages.NeedSyntax + packages.NeedTypesInfo
 
-	for _, imprt := range p.SetupFile.Imports {
-		if imprt.Name != nil { // aliased package (i.e c "strconv")
-			p.Imports[imprt.Name.Name] = imprt.Path.Value
-		} else {
-			base := filepath.Base(imprt.Path.Value)
-			// [:removes the last `"` from the package name]
-			p.Imports[base[:len(base)-1]] = imprt.Path.Value
+// loadPackage loads a package.
+func (p *Parser) loadPackage(importPath string) ([]*packages.Package, error) {
+	pkgs, exists := p.pkgcache[importPath]
+	if !exists {
+		config := &packages.Config{Mode: pLoadMode, Logf: nil}
+		var err error
+		pkgs, err = packages.Load(config, importPath)
+		if err != nil {
+			return nil, fmt.Errorf("an error occurred loading a package from the GOPATH with import: %v.\n%v", importPath, err)
 		}
+		p.pkgcache[importPath] = pkgs
 	}
+	return pkgs, nil
 }

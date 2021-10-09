@@ -14,16 +14,13 @@ type Field struct {
 	// Field variable names are defined by their specifier (i.e '.UserID' in 'domain.Account.UserID').
 	VariableName string
 
-	// The import path for the package that contains the field's definition.
-	Import string
-
 	// The package the field is defined in.
 	Package string
 
 	// The name of the field (i.e `ID` in `ID int`).
 	Name string
 
-	// The type definition of the field (i.e `int` in `ID int`, string, log.Logger).
+	// The type definition of the field (i.e `int` in `ID int`, string, `Logger` in `log.Logger`).
 	Definition string
 
 	// The pointer(s) of the field in string format (i.e **).

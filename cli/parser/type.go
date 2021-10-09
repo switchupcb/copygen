@@ -14,7 +14,7 @@ type parsedTypes struct {
 }
 
 // parseTypes parses an ast.Field (of type func) for to-types and from-types.
-func (p *Parser) parseTypes(function *ast.Field, fieldsearcher *FieldSearcher) (parsedTypes, error) {
+func (p *Parser) parseTypes(function *ast.Field, options []Option) (parsedTypes, error) {
 	var result parsedTypes
 
 	fn, ok := function.Type.(*ast.FuncType)
@@ -22,13 +22,13 @@ func (p *Parser) parseTypes(function *ast.Field, fieldsearcher *FieldSearcher) (
 		return result, fmt.Errorf("an error occurred parsing the types of function %v at Line %d", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	}
 
-	fromTypes, err := p.parseFieldList(fn.Params.List, fieldsearcher) // (incoming) parameters "non-nil"
+	fromTypes, err := p.parseFieldList(fn.Params.List, options) // (incoming) parameters "non-nil"
 	if err != nil {
 		return result, err
 	}
 	var toTypes []models.Type
 	if fn.Results != nil {
-		toTypes, err = p.parseFieldList(fn.Results.List, fieldsearcher) // (outgoing) results "or nil"
+		toTypes, err = p.parseFieldList(fn.Results.List, options) // (outgoing) results "or nil"
 		if err != nil {
 			return result, err
 		}
@@ -50,16 +50,15 @@ func (p *Parser) parseTypes(function *ast.Field, fieldsearcher *FieldSearcher) (
 
 	result.fromTypes = fromTypes
 	result.toTypes = toTypes
-
 	return result, nil
 }
 
 // parseFieldList parses an Abstract Syntax Tree field list for a type's fields.
-func (p *Parser) parseFieldList(fieldlist []*ast.Field, fieldsearcher *FieldSearcher) ([]models.Type, error) {
+func (p *Parser) parseFieldList(fieldlist []*ast.Field, options []Option) ([]models.Type, error) {
 	types := make([]models.Type, 0, len(fieldlist))
 
 	for _, astfield := range fieldlist {
-		field, err := p.parseTypeField(astfield, fieldsearcher)
+		field, err := p.parseTypeField(astfield, options)
 		if err != nil {
 			return nil, err
 		}
@@ -69,19 +68,26 @@ func (p *Parser) parseFieldList(fieldlist []*ast.Field, fieldsearcher *FieldSear
 }
 
 // parseTypeField parses a function *ast.Field into a field model.
-func (p *Parser) parseTypeField(field *ast.Field, fieldsearcher *FieldSearcher) (*models.Field, error) {
-	parsed := parseASTFieldName(field)
+func (p *Parser) parseTypeField(field *ast.Field, options []Option) (*models.Field, error) {
+	parsed := astParseFieldName(field)
 	if parsed.name == "" {
 		return nil, fmt.Errorf("unexpected field expression %v in the Abstract Syntax Tree", field)
 	}
 
-	mField, err := fieldsearcher.SearchForTypeField(p.SetupFile, p.Imports[parsed.pkg], parsed.pkg, parsed.name)
+	typefield, err := p.SearchForField(&FieldSearch{
+		DecFile:    p.SetupFile,
+		Import:     "file=" + p.Setpath,
+		Package:    parsed.pkg,
+		Name:       parsed.name,
+		Definition: "",
+		Options:    options,
+		Parent:     nil,
+	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("an error occurred while searching for the top-level Field %q of package %q.\n%v", parsed.name, parsed.pkg, err)
 	}
-	mField.Pointer = parsed.ptr
-
-	return mField, nil
+	typefield.Pointer = parsed.ptr
+	return typefield, nil
 }
 
 // createVariable generates a valid variable name for a 'set' of parameters.

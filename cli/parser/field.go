@@ -1,237 +1,130 @@
 package parser
 
 import (
-	"fmt"
 	"go/ast"
-	"go/importer"
-	"go/parser"
-	"go/token"
 	"go/types"
-	"strings"
 
 	"github.com/switchupcb/copygen/cli/models"
-	"golang.org/x/tools/go/packages"
 )
 
-const (
-	categoryConvert  = "convert"
-	categoryCustom   = "custom"
-	categoryDeepCopy = "deepcopy"
-	categoryDepth    = "depth"
-	categoryMap      = "map"
-)
+// FieldSearch represents a search that uses Abstract Syntax Tree analysis to find the fields of a typefield.
+type FieldSearch struct {
+	// The import of the field (used for the cache).
+	Import string
 
-// FieldSearcher represents a searcher that uses Abstract Syntax Tree analysis to find fields of a type.
-type FieldSearcher struct {
+	// The package name of the field.
+	Package string
+
+	// The name of the field.
+	Name string
+
+	// The actual typename of the field (i.e `DomainUser` in `User DomainUser`).
+	Definition string
+
+	// The parent of the field the FieldSearch will find.
+	// In the context of the program, a top-level field with no parent is a TypeField.
+	Parent *models.Field
+
+	// The file that holds the type declaration for the field being searched.
+	DecFile *ast.File
+
+	// The filepath of the declaration file.
+	Filepath string
+
 	// The options that pertain to a field (and its subfields).
 	Options []Option
 
-	// A key value cache used to reduce the amount of AST operations.
-	cache map[string]*models.Field
-
-	// The field that initiates the search.
-	Field *models.Field
-
-	// The current search information for the field searcher.
-	SearchInfo FieldSearchInfo
-}
-
-// FieldSearchInfo represents the info for a field search.
-type FieldSearchInfo struct {
-	// The typespec of the searcher that initiated the field search.
-	SearcherTypeSpec *ast.TypeSpec
-
-	// The files discovered during the search.
-	Files []*ast.File
-
-	// The file that holds the type declaration for the searcher.
-	DecFile *ast.File
-
-	// The types info for the search.
-	Info types.Info
-
-	// The current depth-level of the fieldSearch.
+	// The current depth-level of the FieldSearch.
 	Depth int
 
-	// The maximum allowed depth-level of the fieldSearch.
+	// The maximum allowed depth-level of the FieldSearch.
 	MaxDepth int
 }
 
-// SearchForTypeField searches for an *ast.Field which is parsed into a (type) field model.
-//
-// The field search process involves a FieldSearcher that sets up and executes a field search in order to load field data.
-// In the context of the program, a top-level field with no parents is a TypeField.
-// The original setup file (i.e setup.go) is used to locate a field's actual import and package.
-// Then, the files that compose this package are searched for the declaration of the field containing its data and sub-fields.
-func (fs *FieldSearcher) SearchForTypeField(setupfile *ast.File, setimport, setpkg, setname string) (*models.Field, error) {
-	if fs.cache == nil {
-		fs.cache = make(map[string]*models.Field)
+// SearchForField executes a field search by locating a field's type declaration, then its subfields.
+func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
+	if cachedsearch, ok := p.fieldcache[fs.Import+fs.Package+fs.Name]; ok {
+		return cachedsearch, nil
 	}
 
-	// There is a difference between the parameterized properties (which are parsed from a "setup file")
-	// and the actual file properties (which are parsed from the file containing the field's type declaration).
-	//
-	// SearchForField is passed a file, modularized import path, aliased package, and (type) name from a setup file.
-	// This means that imports with aliased packages (i.e c "github.com/switchupb/copygen/examples/main/converter")
-	// will be parsed from the Copygen interface function. However, a module import != importpath && alias != package.
-	// In order to solve this, we must locate the types ACTUAL properties from its declaration in antoher file.
-	//
-	// find the actual file location of the field's type declaration using the setup file.
-	actualimport, err := astLocateImport(setupfile, setimport, setpkg, setname)
+	// setup the field
+	field := &models.Field{
+		Package:    fs.Package,
+		Name:       fs.Name,
+		Definition: fs.Definition,
+	}
+	if field.Definition == "" {
+		// a TypeField definition is its name (i.e `Account` in `type Account struct`)
+		field.Definition = field.Name
+	}
+	if fs.Parent != nil {
+		field.VariableName = "." + fs.Name
+		field.Parent = fs.Parent
+	}
+	setFieldOptions(field, fs.Options)
+	fs.MaxDepth += field.Options.Depth
+
+	// find the fields of the main field if the max depth-level has not been reached.
+	var subfields []*models.Field
+	subfields, err := p.astSubfieldSearch(fs, field)
 	if err != nil {
 		return nil, err
 	}
 
-	// set up and execute the field searcher using data from the actual import file.
-	def := setpkg
-	if def != "" {
-		def += "."
-	}
-	def += setname
-
-	// when fs.Field == nil; a TypeField is instantiated
-	fs.Field = nil
-	fs.SearchInfo = FieldSearchInfo{Depth: 0, MaxDepth: 0}
-	if err := fs.execute(actualimport, setpkg, setname, def); err != nil {
-		return nil, fmt.Errorf("an error occurred while searching for the Field %q of package %q with import: %v.\n%v", setname, setpkg, setimport, err)
-	}
-	return fs.Field, nil
+	field.Fields = subfields
+	p.fieldcache[fs.Import+fs.Package+fs.Name] = field
+	return field, nil
 }
 
-// execute runs a field search by checking the types of an *ast.Fileset (with *ast.Files), loading types.Info and an *ast.TypeSpec
-// then searching for a field and it's subfields.
-func (fs *FieldSearcher) execute(imprt, pkg, name, def string) error {
-	if cachedsearch, ok := fs.cache[imprt+pkg+name]; ok {
-		fs.Field = cachedsearch
-		return nil
-	}
-
-	// setup the field
-	// if the field is nil, it's a TypeField
-	if fs.Field == nil {
-		fs.Field = &models.Field{
-			Import:     imprt,
-			Package:    pkg,
-			Name:       name,
-			Definition: def,
-		}
-	} else {
-		fs.Field.Import = imprt
-		fs.Field.Package = pkg
-		fs.Field.Name = name
-		fs.Field.Definition = def
-		fs.Field.VariableName = "." + name
-	}
-	setFieldOptions(fs.Field, fs.Options)
-	fs.SearchInfo.MaxDepth += fs.Field.Options.Depth
-
-	// load the package the field is located in
-	pckgs, err := packages.Load(&packages.Config{Logf: nil}, imprt[1:len(imprt)-1])
+// astSubfieldSearch searches through an ast.Typespec for sub-fields.
+func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]*models.Field, error) {
+	// the original setup file (i.e setup.go) is used to locate the file location of a field's actual type declaration.
+	td, err := p.astLocateTypeDecl(&Locater{
+		SetupFile:  fs.DecFile,
+		Package:    typefield.Package,
+		Definition: typefield.Definition,
+	})
 	if err != nil {
-		return fmt.Errorf("an error occurred retrieving a package from the GOPATH: %v\n%v", imprt, err)
-	}
-	var gofiles []string
-	for _, pkg := range pckgs {
-		gofiles = append(gofiles, pkg.GoFiles...)
+		return nil, err
 	}
 
-	// prepare the loaded package for AST analysis
-	fileset := token.NewFileSet()
-	for _, filepath := range gofiles {
-		file, err := parser.ParseFile(fileset, filepath, nil, parser.AllErrors)
-		if err != nil {
-			return fmt.Errorf("an error occurred parsing a file for the matcher: %v\n%v", filepath, err)
-		}
-		fs.SearchInfo.Files = append(fs.SearchInfo.Files, file)
-	}
-
-	// determine the types present in the package
-	conf := types.Config{Importer: importer.Default()}
-	fs.SearchInfo.Info = types.Info{Types: make(map[ast.Expr]types.TypeAndValue)}
-	_, err = (conf.Check(pkg, fileset, fs.SearchInfo.Files, &fs.SearchInfo.Info))
-	if err != nil {
-		return fmt.Errorf("an error occurred determining the types of a package.\n%v", err)
-	}
-
-	// determine the TypeSpec for this search using the actual typename (i.e `DomainUser` in `User DomainUser`)
-	var typename string
-	splitdef := strings.Split(def, ".")
-	if len(splitdef) == 1 {
-		typename = def
-	} else {
-		typename = splitdef[1]
-	}
-	var ts *ast.TypeSpec
-	for _, file := range fs.SearchInfo.Files {
-		ts, _ = astTypeSearch(file, typename)
-		if ts != nil {
-			fs.SearchInfo.DecFile = file
-			break
-		}
-	}
-	if ts == nil {
-		return fmt.Errorf("the type declaration for the Field %q with import %v could not be found in the AST.\nIs the package up to date?", fs.Field.FullName(""), imprt)
-	}
-	fs.SearchInfo.SearcherTypeSpec = ts
-
-	// find the fields of the main field if the max depth-level has not been reached.
+	// then that data is parsed into subfield information.
 	var subfields []*models.Field
-	subfields, err = fs.astFieldSearch()
-	if err != nil {
-		return err
-	}
-
-	fs.Field.Fields = subfields
-	fs.cache[fs.Field.Import+fs.Field.Package+fs.Field.Name] = fs.Field
-	return nil
-}
-
-// astFieldSearch searches through an ast.Typespec for sub-fields.
-func (fs *FieldSearcher) astFieldSearch() ([]*models.Field, error) {
-	var subfields []*models.Field
-	switch x := fs.SearchInfo.Info.Types[fs.SearchInfo.SearcherTypeSpec.Type].Type.(type) {
+	switch x := td.Package.TypesInfo.Types[td.TypeSpec.Type].Type.(type) {
 	// structs have fields that can have fields.
 	case *types.Struct:
 		for i := 0; i < x.NumFields(); i++ {
 			xField := x.Field(i)
-
 			// create a new typefield if a subfield is a custom type
-			if (fs.SearchInfo.MaxDepth == 0 || fs.SearchInfo.Depth < fs.SearchInfo.MaxDepth) && !isBasic(xField.Type()) {
-				// find the actual custom type field info
-				splitdefinition := strings.Split(xField.Type().String(), ".")
-				defPkg := splitdefinition[0] // i.e `log` in `log.Logger`
-				if defPkg == "" {
-					defPkg = fs.Field.Package
+			if (fs.MaxDepth == 0 || fs.Depth < fs.MaxDepth) && !isBasic(xField.Type()) {
+				parsedDefinition := p.parseDefinition(xField.Type().String())
+				if parsedDefinition.err != nil {
+					return nil, parsedDefinition.err
 				}
-				actualimport, err := astLocateImport(fs.SearchInfo.DecFile, fs.Field.Import, defPkg, xField.Name())
-				if err != nil {
-					return nil, fmt.Errorf("an error occurred searching for subfield %q of type %q\n%v", fs.Field.FullName(""), xField.Type().String(), err)
-				}
-
-				// a newFieldSearcher contains the same options and cache, but new field search info
-				newFieldSearcher := FieldSearcher{
-					SearchInfo: FieldSearchInfo{
-						Depth:    fs.SearchInfo.Depth + 1,
-						MaxDepth: fs.SearchInfo.MaxDepth,
-					},
-					Options: fs.Options,
-					cache:   fs.cache,
-				}
-
-				// Ensure a new TypeField is NOT created.
-				newFieldSearcher.Field = &models.Field{Parent: fs.Field, Definition: xField.Type().String()}
 
 				// Search for the subfields of the subfield
-				if err := newFieldSearcher.execute(actualimport, defPkg, xField.Name(), xField.Type().String()); err != nil {
+				subfield, err := p.SearchForField(&FieldSearch{
+					Import:     parsedDefinition.imprt,
+					Name:       xField.Name(),
+					Package:    parsedDefinition.pkg,
+					Definition: parsedDefinition.typename,
+					Parent:     typefield,
+					DecFile:    td.File,
+					Options:    fs.Options,
+					Depth:      fs.Depth + 1,
+					MaxDepth:   fs.MaxDepth,
+				})
+
+				if err != nil {
 					return nil, err
 				}
-				subfields = append(subfields, newFieldSearcher.Field)
+				subfields = append(subfields, subfield)
 			} else {
 				subfield := &models.Field{
-					Parent:       fs.Field,
 					VariableName: "." + xField.Name(),
 					Name:         xField.Name(),
 					Definition:   xField.Type().String(),
+					Parent:       typefield,
 				}
 				setFieldOptions(subfield, fs.Options)
 				subfields = append(subfields, subfield)
@@ -244,11 +137,10 @@ func (fs *FieldSearcher) astFieldSearch() ([]*models.Field, error) {
 			// interface functions are declared in the same scope as the interface
 			subfield := &models.Field{
 				VariableName: "." + xMethod.Name() + "(%)",
-				Import:       fs.Field.Import,
-				Package:      fs.Field.Package,
+				Package:      xMethod.Pkg().Name(),
 				Name:         xMethod.Name(),
 				Definition:   xMethod.Type().String(),
-				Parent:       fs.Field,
+				Parent:       typefield,
 			}
 			setFieldOptions(subfield, fs.Options)
 			subfields = append(subfields, subfield)
