@@ -63,7 +63,7 @@ func (p *Parser) astLocateTypeDecl(ltr *Locater) (*TypeDeclaration, error) {
 	// check the setup file.
 	if ltr.SetupFile.Name.Name == ltr.Package {
 		ts, _ = astTypeSearch(ltr.SetupFile, ltr.Definition)
-		if ts != nil && p.LastLocated != nil {
+		if ts != nil {
 			return &TypeDeclaration{
 				Package:  p.LastLocated,
 				File:     ltr.SetupFile,
@@ -74,7 +74,6 @@ func (p *Parser) astLocateTypeDecl(ltr *Locater) (*TypeDeclaration, error) {
 
 	// check the imports of the setup file.
 	for _, setImport := range ltr.SetupFile.Imports {
-
 		// use the exact import (by skipping non-matches) in the case of an alias (i.e `c` in `c "strconv"`)
 		if setImport.Name != nil && setImport.Name.Name != ltr.Package {
 			continue
@@ -132,10 +131,10 @@ func astTypeSearch(file *ast.File, typename string) (*ast.TypeSpec, error) {
 
 // parsedDefinition represents the result of a parsed definition.
 type parsedDefinition struct {
+	err      error
 	imprt    string
 	pkg      string
 	typename string
-	err      error
 }
 
 // parseDefinition determines the actual import, package, and name of a field based on its *types.Var definition.
@@ -160,7 +159,7 @@ func (p *Parser) parseDefinition(definition string) parsedDefinition {
 		pd.pkg = pkg.Name
 	}
 	if pd.pkg == "" {
-		pd.err = fmt.Errorf("an error occurred determining the package of definition %q.", definition)
+		pd.err = fmt.Errorf("an error occurred determining the package of definition %q", definition)
 		return pd
 	}
 

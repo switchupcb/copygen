@@ -28,20 +28,20 @@ type Parser struct {
 	// The ast.Node of the `type Copygen Interface`.
 	Copygen *ast.InterfaceType
 
+	// A key value cache used to reduce the amount of package load operations during a field search.
+	pkgcache map[string][]*packages.Package
+
+	// The last package to be loaded by a Locater.
+	LastLocated *packages.Package
+
+	// A key value cache used to reduce the amount of AST operations during a field search.
+	fieldcache map[string]*models.Field
+
 	// The setup filepath.
 	Setpath string
 
 	// The option-comments parsed in the OptionMap.
 	Comments []*ast.Comment
-
-	// The last package to be loaded by a Locater.
-	LastLocated *packages.Package
-
-	// A key value cache used to reduce the amount of package load operations during a field search.
-	pkgcache map[string][]*packages.Package
-
-	// A key value cache used to reduce the amount of AST operations during a field search.
-	fieldcache map[string]*models.Field
 }
 
 // Parse parses a generator's setup file.
@@ -69,10 +69,15 @@ func Parse(gen *models.Generator) error {
 		return err
 	}
 	for _, pkg := range pkgs {
-		if p.SetupFile.Name.Name == pkg.Name {
+		if p.SetupFile.Name == nil {
+			return fmt.Errorf("the setup file must declare a package: %v", p.Setpath)
+		} else if p.SetupFile.Name.Name == pkg.Name {
 			p.LastLocated = pkg
 			break
 		}
+	}
+	if p.LastLocated == nil {
+		return fmt.Errorf("the setup file's package could not be loaded correctly: %v", p.Setpath)
 	}
 
 	// Traverse the Abstract Syntax Tree.

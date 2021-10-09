@@ -28,9 +28,6 @@ type FieldSearch struct {
 	// The file that holds the type declaration for the field being searched.
 	DecFile *ast.File
 
-	// The filepath of the declaration file.
-	Filepath string
-
 	// The options that pertain to a field (and its subfields).
 	Options []Option
 
@@ -95,6 +92,7 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 	case *types.Struct:
 		for i := 0; i < x.NumFields(); i++ {
 			xField := x.Field(i)
+
 			// create a new typefield if a subfield is a custom type
 			if (fs.MaxDepth == 0 || fs.Depth < fs.MaxDepth) && !isBasic(xField.Type()) {
 				parsedDefinition := p.parseDefinition(xField.Type().String())
@@ -114,10 +112,10 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 					Depth:      fs.Depth + 1,
 					MaxDepth:   fs.MaxDepth,
 				})
-
 				if err != nil {
 					return nil, err
 				}
+
 				subfields = append(subfields, subfield)
 			} else {
 				subfield := &models.Field{
