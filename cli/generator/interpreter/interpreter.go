@@ -18,6 +18,7 @@ func interpretFunc(loadpath, templatepath, symbol string) (*reflect.Value, error
 	if err != nil {
 		return nil, err
 	}
+
 	absfilepath = path.Join(filepath.Dir(absfilepath), templatepath)
 
 	// read the file
@@ -25,6 +26,7 @@ func interpretFunc(loadpath, templatepath, symbol string) (*reflect.Value, error
 	if err != nil {
 		return nil, fmt.Errorf("the specified template file for the template function %q doesn't exist: %v\nIs the relative or absoute filepath set correctly?", symbol, absfilepath)
 	}
+
 	source := string(file)
 
 	// setup the interpreter
@@ -39,6 +41,7 @@ func interpretFunc(loadpath, templatepath, symbol string) (*reflect.Value, error
 	if err := i.Use(stdlib.Symbols); err != nil {
 		return nil, fmt.Errorf("an error occurred loading the template libraries\n%v", err)
 	}
+
 	if _, err := i.Eval(source); err != nil {
 		return nil, fmt.Errorf("an error occurred loading the template file: %v\n%v", absfilepath, err)
 	}
@@ -48,5 +51,6 @@ func interpretFunc(loadpath, templatepath, symbol string) (*reflect.Value, error
 	if err != nil {
 		return nil, fmt.Errorf("an error occurred loading a template function\n%v", err)
 	}
+
 	return &v, nil
 }

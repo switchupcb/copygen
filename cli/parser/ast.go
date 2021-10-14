@@ -20,6 +20,7 @@ type parsedFieldName struct {
 // astParseFieldName parses an *ast.Field (node) for its package, name, and pointer value.
 func astParseFieldName(field ast.Node) parsedFieldName {
 	var result parsedFieldName
+
 	ast.Inspect(field, func(node ast.Node) bool {
 		switch x := node.(type) {
 		case *ast.SelectorExpr:
@@ -34,6 +35,7 @@ func astParseFieldName(field ast.Node) parsedFieldName {
 			return true
 		}
 	})
+
 	return result
 }
 
@@ -96,6 +98,7 @@ func (p *Parser) astLocateTypeDecl(ltr *Locater) (*TypeDeclaration, error) {
 				ts, _ = astTypeSearch(astFile, ltr.Definition)
 				if ts != nil {
 					p.LastLocated = pkg
+
 					return &TypeDeclaration{
 						Package:  pkg,
 						File:     astFile,
@@ -105,6 +108,7 @@ func (p *Parser) astLocateTypeDecl(ltr *Locater) (*TypeDeclaration, error) {
 			}
 		}
 	}
+
 	return nil, fmt.Errorf("the type declaration for the Field %q of package %q could not be found in the AST.\nIs the imported package up to date?", ltr.Definition, ltr.Package)
 }
 
@@ -126,6 +130,7 @@ func astTypeSearch(file *ast.File, typename string) (*ast.TypeSpec, error) {
 			}
 		}
 	}
+
 	return nil, fmt.Errorf("ast: the type %q could not be found in the Abstract Syntax Tree", typename)
 }
 
@@ -155,9 +160,11 @@ func (p *Parser) parseDefinition(definition string) parsedDefinition {
 		pd.err = err
 		return pd
 	}
+
 	for _, pkg := range pkgs {
 		pd.pkg = pkg.Name
 	}
+
 	if pd.pkg == "" {
 		pd.err = fmt.Errorf("an error occurred determining the package of definition %q", definition)
 		return pd
@@ -167,6 +174,7 @@ func (p *Parser) parseDefinition(definition string) parsedDefinition {
 	// (i.e `Logger` in `log.Logger`, `DomainUser`)
 	base := filepath.Base(definition)
 	splitbase := strings.Split(base, ".")
+
 	if len(splitbase) == 1 {
 		pd.typename = base
 	} else {

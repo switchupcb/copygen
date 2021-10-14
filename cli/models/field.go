@@ -78,11 +78,14 @@ func (f *Field) FullName(name string) string {
 		} else {
 			name = f.Name + "." + name
 		}
+
 		return f.Parent.FullName(name)
 	}
+
 	if name != "" {
 		name = "." + name
 	}
+
 	return fmt.Sprintf("%v%v.%v%v", f.Pointer, f.Package, f.Name, name)
 }
 
@@ -91,37 +94,45 @@ func (f *Field) FullVariableName(name string) string {
 	if !f.IsType() {
 		return f.Parent.FullVariableName(f.VariableName + name)
 	}
+
 	return f.VariableName + name
 }
 
 // AllFields gets all the fields in the scope of a field (including itself).
 func (f *Field) AllFields(fields []*Field) []*Field {
 	fields = append(fields, f)
+
 	if len(f.Fields) != 0 {
 		for i := 0; i < len(f.Fields); i++ {
 			fields = f.Fields[i].AllFields(fields)
 		}
 	}
+
 	return fields
 }
 
 func (f *Field) String() string {
-	var direction string
+	var direction, parent string
+
 	if f.From != nil {
 		direction = "To"
 	}
+
 	if f.To != nil {
 		if direction != "" {
 			direction += " and "
 		}
+
 		direction += "From"
 	}
+
 	if direction == "" {
 		direction = "Unpointed"
 	}
-	var parent string
+
 	if f.Parent != nil {
 		parent = f.Parent.FullName("")
 	}
+
 	return fmt.Sprintf("%v Field %q of Definition %q: Parent %q Fields[%v]", direction, f.FullName(""), f.Definition, parent, len(f.Fields))
 }

@@ -44,10 +44,12 @@ func Match(gen *models.Generator) error {
 		for _, fromType := range function.From {
 			fromType.Field.Fields = RelatedFields(fromType.Field.Fields, nil)
 		}
+
 		for _, toType := range function.To {
 			toType.Field.Fields = RelatedFields(toType.Field.Fields, nil)
 		}
 	}
+
 	return nil
 }
 

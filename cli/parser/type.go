@@ -26,13 +26,16 @@ func (p *Parser) parseTypes(function *ast.Field, options []Option) (parsedTypes,
 	if err != nil {
 		return result, err
 	}
+
 	var toTypes []models.Type
+
 	if fn.Results != nil {
 		toTypes, err = p.parseFieldList(fn.Results.List, options) // (outgoing) results "or nil"
 		if err != nil {
 			return result, err
 		}
 	}
+
 	if len(fromTypes) == 0 {
 		return result, fmt.Errorf("function %v at Line %d has no types to copy from", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	} else if len(toTypes) == 0 {
@@ -44,12 +47,14 @@ func (p *Parser) parseTypes(function *ast.Field, options []Option) (parsedTypes,
 	for i := 0; i < len(fromTypes); i++ {
 		fromTypes[i].Field.VariableName = createVariable(paramMap, "f"+fromTypes[i].Field.Name, 0)
 	}
+
 	for i := 0; i < len(toTypes); i++ {
 		toTypes[i].Field.VariableName = createVariable(paramMap, "t"+toTypes[i].Field.Name, 0)
 	}
 
 	result.fromTypes = fromTypes
 	result.toTypes = toTypes
+
 	return result, nil
 }
 
@@ -62,8 +67,10 @@ func (p *Parser) parseFieldList(fieldlist []*ast.Field, options []Option) ([]mod
 		if err != nil {
 			return nil, err
 		}
+
 		types = append(types, models.Type{Field: field})
 	}
+
 	return types, nil
 }
 
@@ -86,7 +93,9 @@ func (p *Parser) parseTypeField(field *ast.Field, options []Option) (*models.Fie
 	if err != nil {
 		return nil, fmt.Errorf("an error occurred while searching for the top-level Field %q of package %q.\n%v", parsed.name, parsed.pkg, err)
 	}
+
 	typefield.Pointer = parsed.ptr
+
 	return typefield, nil
 }
 
@@ -104,5 +113,6 @@ func createVariable(parameters map[string]bool, typename string, occurrence int)
 	if _, exists := parameters[varName]; exists {
 		createVariable(parameters, typename, occurrence+1)
 	}
+
 	return varName
 }

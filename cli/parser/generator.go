@@ -28,6 +28,7 @@ func (p *Parser) Traverse(gen *models.Generator) error {
 				if err != nil {
 					return err
 				}
+
 				p.Comments = append(p.Comments, comments...)
 			}
 
@@ -37,6 +38,7 @@ func (p *Parser) Traverse(gen *models.Generator) error {
 			if err != nil {
 				return err
 			}
+
 			p.Comments = append(p.Comments, comments...)
 		}
 	}
@@ -45,14 +47,17 @@ func (p *Parser) Traverse(gen *models.Generator) error {
 	if p.Copygen == nil {
 		return fmt.Errorf("the \"type Copygen interface\" could not be found in the setup file")
 	}
+
 	var err error
 	gen.Functions, err = p.parseFunctions(p.Copygen)
+
 	if err != nil {
 		return err
 	}
 
 	// Remove option-comments from the AST.
 	astRemoveComments(p.SetupFile, p.Comments)
+
 	return nil
 }
 
@@ -67,14 +72,18 @@ func assertCopygenInterface(x *ast.GenDecl) (*ast.InterfaceType, bool) {
 			}
 		}
 	}
+
 	return nil, false
 }
 
 // assignOptions initializes function and field-specific options.
 // Used in the context of the type Copygen interface.
 func (p *Parser) assignOptions(x ast.Node) ([]*ast.Comment, error) {
-	var comments []*ast.Comment
-	var assignerr error
+	var (
+		comments  []*ast.Comment
+		assignerr error
+	)
+
 	ast.Inspect(x, func(node ast.Node) bool {
 		xcg, ok := node.(*ast.CommentGroup)
 		if !ok {
@@ -131,6 +140,7 @@ func (p *Parser) assignOptions(x ast.Node) ([]*ast.Comment, error) {
 
 		return true
 	})
+
 	return comments, assignerr
 }
 
@@ -171,12 +181,14 @@ func (p *Parser) assignConvertOptions(x *ast.FuncDecl) ([]*ast.Comment, error) {
 
 		return true
 	})
+
 	return comments, assignerr
 }
 
 // astRemoveComments removes comments from an *ast.File.
 func astRemoveComments(file *ast.File, comments []*ast.Comment) {
 	clength := len(comments)
+
 	for i := 0; i < len(file.Comments); i++ {
 		cg := file.Comments[i]
 		// traverse through the comment group
@@ -191,6 +203,7 @@ func astRemoveComments(file *ast.File, comments []*ast.Comment) {
 					} else {
 						cg.List[j].Text = "  " // printer: "" and " " give an out of bounds error
 					}
+
 					break
 				}
 			}

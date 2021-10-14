@@ -10,9 +10,11 @@ func RelatedFields(fields, related []*models.Field) []*models.Field {
 		if len(fields[i].Fields) != 0 {
 			related = append(related, RelatedFields(fields[i].Fields, related)...)
 		}
+
 		if fields[i].To != nil || fields[i].From != nil {
 			related = append(related, fields[i])
 		}
 	}
+
 	return related
 }

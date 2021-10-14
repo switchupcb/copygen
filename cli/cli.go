@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/switchupcb/copygen/cli/config"
 	"github.com/switchupcb/copygen/cli/generator"
@@ -18,43 +19,40 @@ type Environment struct {
 }
 
 // CLI runs the copygen command and returns its exit status.
-func CLI(args []string) int {
+func CLI() int {
 	var env Environment
-	err := env.parseArgs(args)
-	if err != nil {
+
+	if err := env.parseArgs(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return 2
 	}
 
-	if err = env.run(); err != nil {
+	if err := env.run(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return 1
 	}
+
 	return 0
 }
 
 // parseArgs parses the provided command line arguments.
-func (e *Environment) parseArgs(_ []string) error {
+func (e *Environment) parseArgs() error {
 	// define the command line arguments.
-	ymlPtr := flag.String("yml", "", "The path to the .yml flag used for code generation (from the current working directory).")
-	output := flag.Bool("o", false, "Use -o to print generated code to the screen.")
+	var (
+		ymlpath = flag.String("yml", "", "The path to the .yml flag used for code generation (from the current working directory).")
+		output  = flag.Bool("o", false, "Use -o to print generated code to the screen.")
+	)
 
 	// parse the command line arguments.
 	flag.Parse()
 
-	// yml
-	ymlLen := len(*ymlPtr)
-	switch {
-	case ymlLen == 0:
+	if !strings.HasSuffix(*ymlpath, ".yml") {
 		return fmt.Errorf("you must specify a .yml configuration file using -yml")
-	case (*ymlPtr)[ymlLen-4:] != ".yml":
-		return fmt.Errorf("the specified file (-yml) is not a .yml file")
 	}
 
-	e.YMLPath = *ymlPtr
-
-	// output
+	e.YMLPath = *ymlpath
 	e.Output = *output
+
 	return nil
 }
 
@@ -75,5 +73,6 @@ func (e *Environment) run() error {
 	if err = generator.Generate(gen, e.Output); err != nil {
 		return fmt.Errorf("%w", err)
 	}
+
 	return nil
 }
