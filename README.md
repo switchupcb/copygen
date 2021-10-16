@@ -22,6 +22,7 @@ Each example has a **README**.
 | main                                                                            | The default example.                                         |
 | [manual](https://github.com/switchupcb/copygen/tree/main/examples/manual)       | Uses the manual map feature.                                 |
 | [automatch](https://github.com/switchupcb/copygen/tree/main/examples/automatch) | Uses the automatch feature with depth.                       |
+| [cyclic](https://github.com/switchupcb/copygen/tree/main/examples/automatch)    | Uses a cyclic type (recursive) with a shallow copy.          |
 | deepcopy _(Roadmap Feature)_                                                    | Uses the deepcopy option.                                    |
 | [error](https://github.com/switchupcb/copygen/tree/main/examples/error)         | Uses templates to return an error (temporarily unsupported). |
 
