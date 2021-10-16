@@ -75,6 +75,7 @@ func Parse(gen *models.Generator) error {
 			return fmt.Errorf("the setup file must declare a package: %v", p.Setpath)
 		} else if p.SetupFile.Name.Name == pkg.Name {
 			p.LastLocated = pkg
+
 			break
 		}
 	}
@@ -108,8 +109,7 @@ const pLoadMode = packages.NeedName + packages.NeedImports + packages.NeedTypes 
 
 // loadPackage loads a package.
 func (p *Parser) loadPackage(importPath string) ([]*packages.Package, error) {
-	pkgs, exists := p.pkgcache[importPath]
-	if exists {
+	if pkgs, exists := p.pkgcache[importPath]; exists {
 		return pkgs, nil
 	}
 

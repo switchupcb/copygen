@@ -11,20 +11,17 @@ linters:
     - errorlint
     - exhaustivestruct
     - forbidigo
-    - funlen
     - goerr113
     - gomnd
     - gocognit
     - lll
     - maligned
-    - nlreturn
-    - tagliatelle
     - wrapcheck
     - golint # deprecated
     - scopelint # deprecated
     - interfacer # deprecated
-
   fast: false
+
 linters-settings:
   gocritic:
     enabled-tags:

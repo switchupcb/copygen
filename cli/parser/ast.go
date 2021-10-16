@@ -27,11 +27,14 @@ func astParseFieldName(field ast.Node) parsedFieldName {
 			// FieldInfo is always in a selector expression.
 			result.pkg += x.X.(*ast.Ident).Name // 'log' in 'Field log.Logger'
 			result.name += x.Sel.Name           // 'Logger' in 'Field log.Logger'
+
 			return false
 		case *ast.StarExpr:
 			result.ptr += "*"
+
 			return true
 		default:
+
 			return true
 		}
 	})
@@ -158,6 +161,7 @@ func (p *Parser) parseDefinition(definition string) parsedDefinition {
 	pkgs, err := p.loadPackage(pd.imprt)
 	if err != nil {
 		pd.err = err
+
 		return pd
 	}
 
@@ -167,6 +171,7 @@ func (p *Parser) parseDefinition(definition string) parsedDefinition {
 
 	if pd.pkg == "" {
 		pd.err = fmt.Errorf("an error occurred determining the package of definition %q", definition)
+
 		return pd
 	}
 
