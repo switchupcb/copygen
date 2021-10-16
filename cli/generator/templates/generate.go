@@ -4,8 +4,6 @@
 package templates
 
 import (
-	"fmt"
-
 	"github.com/switchupcb/copygen/cli/models"
 )
 
@@ -66,12 +64,12 @@ func generateComment(function *models.Function) string {
 		fromComment = fromComment[:len(fromComment)-2]
 	}
 
-	return fmt.Sprintf("// %s copies a %s to a %s.", function.Name, fromComment, toComment)
+	return "// " + function.Name + " copies a " + fromComment + " to a " + toComment + "."
 }
 
 // generateSignature generates a function's signature.
 func generateSignature(function *models.Function) string {
-	return fmt.Sprintf("func %s(%s) {", function.Name, generateParameters(function))
+	return "func " + function.Name + "(" + generateParameters(function) + ") {"
 }
 
 // generateParameters generates the parameters of a function.

@@ -106,6 +106,8 @@ The same reasoning applies to `for i := 0; i < count; i++` loops.
 
 Copygen uses [golangci-lint](https://github.com/golangci/golangci-lint) in order to statically analyze code. You can install golangci-lint with `go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1` and run it using `golangci-lint run`. If you recieve a `diff` error, you must add a `diff` tool in your PATH. There is one located in the `Git` bin.
 
+If you recieve `File is not ... with -...`, use `golangci-lint run --disable-all --no-config -Egofmt --fix`.
+
 # Roadmap
 
 Focus on these features:
