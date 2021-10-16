@@ -12,7 +12,7 @@ func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, 
 	functions := make([]models.Function, 0, len(copygen.Methods.List))
 
 	for _, method := range copygen.Methods.List {
-		options, manual := p.setOptionMap(method)
+		options, manual := p.filterOptionMap(method)
 
 		parsed, err := p.parseTypes(method, options)
 		if err != nil {
@@ -35,9 +35,21 @@ func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, 
 	return functions, nil
 }
 
-// setOptionMap filters an Option map for options that only pertain to the fields of a function.
+// parseMethodForName parses a method inside of a Copygen interface to provide its name.
+func parseMethodForName(method *ast.Field) string {
+	var funcname string // i.e 'ModelsToDomain' in func ModelsToDomain(models.Account, *models.User) *domain.Account
+
+	// ast Note: "Field.Names contains a single name "type" for elements of interface type lists"
+	for _, name := range method.Names {
+		funcname += name.String() // i.e ModelsToDomain
+	}
+
+	return funcname
+}
+
+// filterOptionMap filters an Option map for options that only pertain to the fields of a function.
 // To reduce overhead, it also returns whether the function uses a manual matcher.
-func (p *Parser) setOptionMap(x ast.Node) ([]Option, bool) {
+func (p *Parser) filterOptionMap(x ast.Node) ([]Option, bool) {
 	var (
 		options []Option
 		manual  bool
@@ -87,16 +99,4 @@ func (p *Parser) assignCustomOption(options []Option) map[string][]string {
 	}
 
 	return optionmap
-}
-
-// parseMethodForName parses a method inside of a Copygen interface to provide its name.
-func parseMethodForName(method *ast.Field) string {
-	var funcname string // i.e 'ModelsToDomain' in func ModelsToDomain(models.Account, *models.User) *domain.Account
-
-	// ast Note: "Field.Names contains a single name "type" for elements of interface type lists"
-	for _, name := range method.Names {
-		funcname += name.String() // i.e ModelsToDomain
-	}
-
-	return funcname
 }
