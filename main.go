@@ -6,6 +6,7 @@ import (
 	"github.com/switchupcb/copygen/cli"
 )
 
+//
 func main() {
 	os.Exit(cli.CLI())
 }
