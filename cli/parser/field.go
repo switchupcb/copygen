@@ -50,19 +50,21 @@ func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
 		Name:       fs.Name,
 		Definition: fs.Definition,
 	}
+
 	if field.Definition == "" {
 		// a TypeField definition is its name (i.e `Account` in `type Account struct`)
 		field.Definition = field.Name
 	}
+
 	if fs.Parent != nil {
 		field.VariableName = "." + fs.Name
 		field.Parent = fs.Parent
 	}
+
 	setFieldOptions(field, fs.Options)
 	fs.MaxDepth += field.Options.Depth
 
 	// find the fields of the main field if the max depth-level has not been reached.
-	var subfields []*models.Field
 	subfields, err := p.astSubfieldSearch(fs, field)
 	if err != nil {
 		return nil, err
@@ -70,6 +72,7 @@ func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
 
 	field.Fields = subfields
 	p.fieldcache[fs.Import+fs.Package+fs.Name] = field
+
 	return field, nil
 }
 
@@ -87,6 +90,7 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 
 	// then that data is parsed into subfield information.
 	var subfields []*models.Field
+
 	switch x := td.Package.TypesInfo.Types[td.TypeSpec.Type].Type.(type) {
 	// structs have fields that can have fields.
 	case *types.Struct:
@@ -143,9 +147,9 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 			setFieldOptions(subfield, fs.Options)
 			subfields = append(subfields, subfield)
 		}
-	default:
-		// if no fields are present, this is a basic type.
+	default: // if no fields are present, this is a basic type.
 	}
+
 	return subfields, nil
 }
 
@@ -207,7 +211,9 @@ func setDepthOption(field *models.Field, options []Option) {
 				if value == 0 {
 					value = -1
 				}
+
 				field.Options.Depth = value
+
 				break
 			}
 		}

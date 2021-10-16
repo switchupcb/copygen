@@ -22,6 +22,7 @@ func (t Type) ParameterName() string {
 	if t.Field.Package == "" {
 		return t.Field.Pointer + t.Field.Definition
 	}
+
 	return t.Field.Pointer + t.Field.Package + "." + t.Field.Definition
 }
 

@@ -34,6 +34,7 @@ const (
 // parseConvert parses a convert option.
 func parseConvert(option, value string) (*Option, error) {
 	splitoption := strings.Fields(option)
+
 	if len(splitoption) == 0 {
 		return nil, fmt.Errorf("there is an unspecified convert option at an unknown line")
 	} else if len(splitoption) == 1 || len(splitoption) > 2 {
@@ -63,6 +64,7 @@ func parseDeepcopy(option string) (*Option, error) {
 	if err != nil {
 		return nil, fmt.Errorf("an error occurred compiling the regex for a deepcopy option: %q\n%v", option, err)
 	}
+
 	return &Option{
 		Category: "deepcopy",
 		Regex:    map[int]*regexp.Regexp{0: re},
@@ -73,6 +75,7 @@ func parseDeepcopy(option string) (*Option, error) {
 // parseDepth parses a depth option.
 func parseDepth(option string) (*Option, error) {
 	splitoption := strings.Fields(option)
+
 	if len(splitoption) == 0 {
 		return nil, fmt.Errorf("there is an unspecified depth option at an unknown line")
 	} else if len(splitoption) == 1 || len(splitoption) > 2 {
@@ -99,6 +102,7 @@ func parseDepth(option string) (*Option, error) {
 // parseMap parses a map option.
 func parseMap(option string) (*Option, error) {
 	splitoption := strings.Fields(option)
+
 	if len(splitoption) == 0 {
 		return nil, fmt.Errorf("there is an unspecified map option at an unknown line")
 	} else if len(splitoption) == 1 || len(splitoption) > 2 {

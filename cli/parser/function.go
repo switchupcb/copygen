@@ -13,6 +13,7 @@ func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, 
 
 	for _, method := range copygen.Methods.List {
 		options, manual := p.setOptionMap(method)
+
 		parsed, err := p.parseTypes(method, options)
 		if err != nil {
 			return nil, fmt.Errorf("an error occurred while parsing the types of function %q.\n%v", parseMethodForName(method), err)
@@ -30,14 +31,18 @@ func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, 
 
 		functions = append(functions, function)
 	}
+
 	return functions, nil
 }
 
 // setOptionMap filters an Option map for options that only pertain to the fields of a function.
 // To reduce overhead, it also returns whether the function uses a manual matcher.
 func (p *Parser) setOptionMap(x ast.Node) ([]Option, bool) {
-	var options []Option
-	var manual bool
+	var (
+		options []Option
+		manual  bool
+	)
+
 	ast.Inspect(x, func(node ast.Node) bool {
 		if xcg, ok := node.(*ast.CommentGroup); ok {
 			for _, comment := range xcg.List {
@@ -58,19 +63,18 @@ func (p *Parser) setOptionMap(x ast.Node) ([]Option, bool) {
 			options = append(options, option)
 		}
 	}
+
 	return options, manual
 }
 
 // assignCustomOption parses a functions *ast.CommentGroups for custom options to return a Custom map.
 func (p *Parser) assignCustomOption(options []Option) map[string][]string {
 	optionmap := make(map[string][]string)
+
 	// functions only have custom options
 	for i := 0; i < len(options); i++ {
 		switch options[i].Category {
-		case "convert":
-		case "deepcopy":
-		case "depth":
-		case "map":
+		case categoryConvert, categoryDeepCopy, categoryDepth, categoryMap:
 		default:
 			if customoptionmap, ok := options[i].Value.(map[string]string); ok {
 				for customoption, value := range customoptionmap {
@@ -81,6 +85,7 @@ func (p *Parser) assignCustomOption(options []Option) map[string][]string {
 			}
 		}
 	}
+
 	return optionmap
 }
 
@@ -92,5 +97,6 @@ func parseMethodForName(method *ast.Field) string {
 	for _, name := range method.Names {
 		funcname += name.String() // i.e ModelsToDomain
 	}
+
 	return funcname
 }

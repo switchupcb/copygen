@@ -13,9 +13,11 @@ import (
 // DO NOT REMOVE.
 func Generate(gen *models.Generator) string {
 	content := string(gen.Keep) + "\n"
+
 	for i := range gen.Functions {
 		content += Function(&gen.Functions[i]) + "\n"
 	}
+
 	return content
 }
 
@@ -35,15 +37,18 @@ func Function(function *models.Function) string {
 
 	// end of function
 	fn += "}"
+
 	return fn
 }
 
 // generateComment generates a function comment.
 func generateComment(function *models.Function) string {
 	var toComment string
+
 	for _, toType := range function.To {
 		toComment += toType.Field.Name + ", "
 	}
+
 	if toComment != "" {
 		// remove last ", "
 		toComment = toComment[:len(toComment)-2]
@@ -53,6 +58,7 @@ func generateComment(function *models.Function) string {
 	for _, fromType := range function.From {
 		fromComment += fromType.Field.Name + ", "
 	}
+
 	if fromComment != "" {
 		// remove last ", "
 		fromComment = fromComment[:len(fromComment)-2]
@@ -63,8 +69,7 @@ func generateComment(function *models.Function) string {
 
 // generateSignature generates a function's signature.
 func generateSignature(function *models.Function) string {
-	sig := "func " + function.Name + "(" + generateParameters(function) + ") {"
-	return sig
+	return "func " + function.Name + "(" + generateParameters(function) + ") {"
 }
 
 // generateParameters generates the parameters of a function.
@@ -103,14 +108,17 @@ func generateBody(function *models.Function) string {
 			body += toField.FullVariableName("")
 			body += " = "
 			fromField := toField.From
+
 			if fromField.Options.Convert != "" {
 				body += fromField.Options.Convert + "(" + fromField.FullVariableName("") + ")\n"
 			} else {
 				body += fromField.FullVariableName("") + "\n"
 			}
 		}
+
 		body += "\n"
 	}
+
 	return body
 }
 

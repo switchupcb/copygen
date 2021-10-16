@@ -9,6 +9,7 @@ func PrintFunctionFields(function *Function) {
 	for i := 0; i < len(function.From); i++ {
 		PrintFieldGraph(function.From[i].Field, "\t")
 	}
+
 	for i := 0; i < len(function.To); i++ {
 		fmt.Println(function.To[i])
 		PrintFieldGraph(function.To[i].Field, "\t")
@@ -18,6 +19,7 @@ func PrintFunctionFields(function *Function) {
 // PrintFieldGraph prints a list of fields with the related fields.
 func PrintFieldGraph(field *Field, tabs string) {
 	fmt.Printf("%v%v\n", tabs, field)
+
 	for i := 0; i < len(field.Fields); i++ {
 		if len(field.Fields) != 0 {
 			PrintFieldGraph(field.Fields[i], tabs+"\t")
@@ -34,6 +36,7 @@ func PrintFieldTree(typename string, fields []*Field, tabs string) {
 	tabs += "\t" // field tab
 	for i := 0; i < len(fields); i++ {
 		fmt.Println(tabs + fields[i].Name + "\t" + fields[i].Definition)
+
 		if len(fields[i].Fields) != 0 {
 			PrintFieldTree(fields[i].Definition, fields[i].Fields, tabs+"\t")
 		}
@@ -89,5 +92,6 @@ func CountFields(fields []*Field) int {
 	for _, field := range fields {
 		return 1 + CountFields(field.Fields)
 	}
+
 	return 0
 }

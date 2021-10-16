@@ -16,6 +16,7 @@ func Generate(gen *models.Generator) (string, error) {
 		content += templates.Generate(gen) + "\n"
 		return content, nil
 	}
+
 	return content, fmt.Errorf("templates are temporarily unsupported")
 }
 
@@ -27,5 +28,6 @@ func interpretFunction(gen *models.Generator) error {
 	}
 
 	fmt.Println(v)
+
 	return nil
 }
