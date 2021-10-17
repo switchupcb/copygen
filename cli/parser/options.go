@@ -33,8 +33,6 @@ const (
 	formatConvert = "<option>:<whitespaces><regex><whitespaces><regex>"
 	formatDepth   = "<option>:<whitespaces><regex><whitespaces><int>"
 	formatMap     = "<option>:<whitespaces><regex><whitespaces><regex>"
-
-	regexCompileErr = "an error occurred compiling the regex"
 )
 
 // parseConvert parses a convert option.
@@ -46,12 +44,12 @@ func parseConvert(option, value string) (*Option, error) {
 
 	funcRe, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("%s for the first field in the %s option: %q\n%v", regexCompileErr, categoryConvert, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the first field in the %s option: %q\n%v", categoryConvert, option, err)
 	}
 
 	fieldRe, err := regexp.Compile("^" + splitoption[1] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("%s for the second field in the %s option: %q\n%v", regexCompileErr, categoryConvert, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the second field in the %s option: %q\n%v", categoryConvert, option, err)
 	}
 
 	return &Option{
@@ -65,7 +63,7 @@ func parseConvert(option, value string) (*Option, error) {
 func parseDeepcopy(option string) (*Option, error) {
 	re, err := regexp.Compile("^" + option + "$")
 	if err != nil {
-		return nil, fmt.Errorf("%s for a %s option: %q\n%v", regexCompileErr, categoryDeepCopy, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for a %s option: %q\n%v", categoryDeepCopy, option, err)
 	}
 
 	return &Option{
@@ -84,7 +82,7 @@ func parseDepth(option string) (*Option, error) {
 
 	re, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("%s for a %s option: %q\n%v", regexCompileErr, categoryDepth, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for a %s option: %q\n%v", categoryDepth, option, err)
 	}
 
 	depth, err := strconv.Atoi(splitoption[1])
@@ -108,7 +106,7 @@ func parseMap(option string) (*Option, error) {
 
 	fromRe, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("%s for the from field in the %s option: %q\n%v", regexCompileErr, categoryMap, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the from field in the %s option: %q\n%v", categoryMap, option, err)
 	}
 
 	// map options are compared in the matcher
@@ -119,6 +117,7 @@ func parseMap(option string) (*Option, error) {
 	}, nil
 }
 
+// splitOption splits option string and validates it.
 func splitOption(option, category, format string) ([]string, error) {
 	splitoption := strings.Fields(option)
 

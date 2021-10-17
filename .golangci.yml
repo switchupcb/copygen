@@ -11,11 +11,14 @@ linters:
     - errorlint
     - exhaustivestruct
     - forbidigo
+    - funlen
     - goerr113
     - gomnd
     - gocognit
     - lll
     - maligned
+    - nlreturn
+    - tagliatelle
     - wrapcheck
     - golint # deprecated
     - scopelint # deprecated
