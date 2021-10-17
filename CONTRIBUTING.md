@@ -35,23 +35,24 @@ The command line interface package allows you see the flow of the program.
 // The configuration file is loaded (.yml)
 gen, err := config.LoadYML(e.YMLPath)
 if err != nil {
-   return err
+    return err
 }
 
 // The data file is parsed (.go)
 if err = parser.Parse(gen); err != nil {
-		return err
+    return err
 }
 
 // The matcher is run on the parsed data (which are application models).
 if err = matcher.Match(gen); err != nil {
-   return err
+    return err
 }
 
 // The generator is used to generate code.
 if err = generator.Generate(gen, e.Output); err != nil {
-   return err
+    return err
 }
+
 return nil
 ```
 
@@ -61,10 +62,6 @@ A setup file's Abstract Syntax Tree is traversed once. This is done in three ste
 1. **Options:** Regex complilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique option-comments once. The location of a `convert` option cannot be assumed: Therefore, we must traverse the entire Abstract Syntax Tree in order to correctly assign options. As a result, the `type Copygen Interface` is stored for post-traversal analysis.
 2. **Keep:** The code that is kept after generation is stored — or moreso kept — in the AST. We do not want to keep option-comments nor the Copygen interface in the AST. However, they must still be present during the `type Copygen Interface` analysis _(which requires the option-comments)_. As a result, comments are stored in the parser for post-analysis removal.
 3. **type Copygen Interface:** The `type Copygen interface` is parsed to setup the function and fields used in the program. 
-   
-#### Tests
-
-The Command Line Interface and Generator (with templates) either work or don't. The config uses a tested library. The matcher serves it purpose (matching fields to other fields) and is only effected by external options. For this reason, the majority of the edge cases this program encounters will be located in the `parser`. In contrast, the parser is the most likely to change (as it is based on the UI). 
 
 ### Specification
 
