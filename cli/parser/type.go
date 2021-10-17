@@ -89,6 +89,7 @@ func (p *Parser) parseTypeField(field *ast.Field, options []Option) (*models.Fie
 		Definition: "",
 		Options:    options,
 		Parent:     nil,
+		cache:      make(map[string]bool),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("an error occurred while searching for the top-level Field %q of package %q.\n%v", parsed.name, parsed.pkg, err)

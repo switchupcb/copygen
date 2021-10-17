@@ -9,6 +9,9 @@ import (
 
 // FieldSearch represents a search that uses Abstract Syntax Tree analysis to find the fields of a typefield.
 type FieldSearch struct {
+	// A key value cache used to prevent cyclic fields from unnecessary duplication or stack overflow.
+	cache map[string]bool
+
 	// The import of the field (used for the cache).
 	Import string
 
@@ -40,7 +43,28 @@ type FieldSearch struct {
 
 // SearchForField executes a field search by locating a field's type declaration, then its subfields.
 func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
-	if cachedsearch, ok := p.fieldcache[fs.Import+fs.Package+fs.Name]; ok {
+	cachename := fs.Import + fs.Package + fs.Name
+	if cachedsearch, ok := p.fieldcache[cachename]; ok {
+		if _, exists := fs.cache[cachename]; exists {
+			// a cyclic field (with the same type as its parent) is never
+			// shallow copied or assigned (unlike its parent or parent's fields).
+			cyclicfield := &models.Field{
+				VariableName: "." + cachedsearch.Name,
+				Package:      cachedsearch.Package,
+				Name:         cachedsearch.Name,
+				Definition:   cachedsearch.Definition,
+				Pointer:      cachedsearch.Pointer,
+				Parent:       cachedsearch,
+			}
+
+			// depth is ignored for cyclic fields.
+			setFieldOptions(cyclicfield, fs.Options)
+
+			return cyclicfield, nil
+		}
+
+		fs.cache[cachename] = true
+
 		return cachedsearch, nil
 	}
 
@@ -64,6 +88,10 @@ func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
 	setFieldOptions(field, fs.Options)
 	fs.MaxDepth += field.Options.Depth
 
+	// set the cache
+	p.fieldcache[cachename] = field
+	fs.cache[cachename] = true
+
 	// find the fields of the main field if the max depth-level has not been reached.
 	subfields, err := p.astSubfieldSearch(fs, field)
 	if err != nil {
@@ -71,7 +99,6 @@ func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
 	}
 
 	field.Fields = subfields
-	p.fieldcache[fs.Import+fs.Package+fs.Name] = field
 
 	return field, nil
 }
@@ -115,6 +142,7 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 					Options:    fs.Options,
 					Depth:      fs.Depth + 1,
 					MaxDepth:   fs.MaxDepth,
+					cache:      fs.cache,
 				})
 				if err != nil {
 					return nil, err
