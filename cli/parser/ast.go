@@ -90,7 +90,7 @@ func (p *Parser) astLocateTypeDecl(ltr *Locater) (*TypeDeclaration, error) {
 		// search through the package for a type
 		for _, pkg := range pkgs {
 			// use the exact package (by skipping non-matches) in the case of no alias
-			if pkg.Name != ltr.Package {
+			if setImport.Name == nil && pkg.Name != ltr.Package {
 				continue
 			}
 
