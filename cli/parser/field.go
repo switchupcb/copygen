@@ -93,12 +93,14 @@ func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
 	fs.cache[cachename] = true
 
 	// find the fields of the main field if the max depth-level has not been reached.
-	subfields, err := p.astSubfieldSearch(fs, field)
-	if err != nil {
-		return nil, err
-	}
+	if fs.MaxDepth == 0 || fs.Depth < fs.MaxDepth {
+		subfields, err := p.astSubfieldSearch(fs, field)
+		if err != nil {
+			return nil, err
+		}
 
-	field.Fields = subfields
+		field.Fields = subfields
+	}
 
 	return field, nil
 }
@@ -125,7 +127,7 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 			xField := x.Field(i)
 
 			// create a new typefield if a subfield is a custom type
-			if (fs.MaxDepth == 0 || fs.Depth < fs.MaxDepth) && !isBasic(xField.Type()) {
+			if !isBasic(xField.Type()) {
 				parsedDefinition := p.parseDefinition(xField.Type().String())
 				if parsedDefinition.err != nil {
 					return nil, parsedDefinition.err

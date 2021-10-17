@@ -141,7 +141,7 @@ go install github.com/switchupcb/copygen@latest
 
 Install a specific version by specifying a tag version.
 ```
-go install github.com/switchupcb/copygen@v0.2.1
+go install github.com/switchupcb/copygen@v0.2.2
 ```
 
 Run the executable with given options.
@@ -227,30 +227,30 @@ When fields aren't specified using options, Copygen will attempt to automatch ty
 The automatcher uses a field-based depth system. A field with a depth-level of 0 will only match itself. Increasing the depth-level allows its sub-fields to be matched. This system allows you to specify the depth-level for whole types **and** specific fields.
 
 ```go
-// depth-level in relation to the first-level fields.
+// depth-level in relation to the first-level field (0).
 type Account
-  // 0
+  // 1
   ID      int
   Name    string
   Email   string
   Basic   domain.T // int
   User    domain.DomainUser
-              // 1
+              // 2
               UserID   string
               Name     string
               UserData map[string]interface{}
-  // 0
+  // 1
   Log     log.Logger
-              // 1
+              // 2
               mu      sync.Mutex
-                          // 2
+                          // 3
                           state   int32
                           sema    uint32
-              // 1
+              // 2
               prefix  string
               flag    int
               out     io.Writer
-                          // 2
+                          // 3
                           Write   func(p []byte) (n int, err error)
               buf     []byte
 ```

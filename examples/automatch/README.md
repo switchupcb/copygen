@@ -2,27 +2,30 @@
 
 The automatch examples uses the automatcher to match three models with varying level of depth:
 ```go
+// 0
 type Account // domain
-    // 0
+    // 1
     ID      int
     Name    string
     Email   string
-            // 1
+            // 2
     User    domain.DomainUser
                 UserID   int
                 Username string    
+// 0
 type User    // models
-    // 0 
+    // 1
     UserID    int
     Username  string
-              // 1
+              // 2
     UserData  models.UserData
                   Options map[string]interface{}
-                  // 2
+                  // 3
                   Data    models.Data
                         ID      int
+// 0            
 type Account // models
-    // 0
+    // 1
     ID       int
     Name     string
     Password string
@@ -42,7 +45,7 @@ generated:
 
 ## Go
 
-Specify a depth-level of one for all fields of `domain.Account`. Specify a depth-level of 1 for the `models.User` field. Specify a depth-level for `models.Account` of 2. Keep in mind that not specifying a depth-level for `models.Account` would result in the same outcome, as Copygen uses a maximum depth by default.
+Specify a depth-level of two for the subfields of `domain.Account`. Specify a depth-level of 1 for the `models.User` field. Keep in mind that not specifying a depth-level for `models.Account` would result in the same outcome, as Copygen uses a maximum depth by default.
 
 ```go
 // Copygen defines the functions that will be generated.
