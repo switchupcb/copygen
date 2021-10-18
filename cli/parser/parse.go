@@ -108,8 +108,7 @@ const pLoadMode = packages.NeedName + packages.NeedImports + packages.NeedTypes 
 
 // loadPackage loads a package.
 func (p *Parser) loadPackage(importPath string) ([]*packages.Package, error) {
-	pkgs, exists := p.pkgcache[importPath]
-	if exists {
+	if pkgs, exists := p.pkgcache[importPath]; exists {
 		return pkgs, nil
 	}
 

@@ -197,7 +197,7 @@ func astRemoveComments(file *ast.File, comments []*ast.Comment) {
 			for c := 0; c < clength; c++ {
 				if cg.List[j] == comments[c] {
 					// remove from the comment group top-down.
-					if j-1 > -1 {
+					if j > 0 {
 						cg.List[j].Text = cg.List[j-1].Text
 						cg.List[j-1].Text = "  " // printer: "" and " " give an out of bounds error
 					} else {
