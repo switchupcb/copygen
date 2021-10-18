@@ -18,19 +18,17 @@ type Environment struct {
 	Output  bool   // Whether to print the generated code to stdout.
 }
 
-// Runs the copygen command and returns its exit status.
-func Run() int {
+// CLI runs the copygen command and returns its exit status.
+func CLI() int {
 	var env Environment
 
 	if err := env.parseArgs(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
-
 		return 2
 	}
 
 	if err := env.run(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
-
 		return 1
 	}
 

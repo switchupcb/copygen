@@ -54,7 +54,6 @@ func (p *Parser) setOptionMap(x ast.Node) ([]Option, bool) {
 				}
 			}
 		}
-
 		return true
 	})
 

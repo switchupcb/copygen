@@ -93,7 +93,6 @@ func (p *Parser) assignOptions(x ast.Node) ([]*ast.Comment, error) {
 		for i := 0; i < len(xcg.List); i++ {
 			if xcg.List[i].Slash < x.Pos() {
 				comments = append(comments, xcg.List[i])
-
 				continue
 			}
 			// do not use the Doc above the node as an option
@@ -110,7 +109,6 @@ func (p *Parser) assignOptions(x ast.Node) ([]*ast.Comment, error) {
 					opt, err := parseDeepcopy(option)
 					if err != nil {
 						assignerr = err
-
 						return false
 					}
 					p.Options[text] = *opt
@@ -118,7 +116,6 @@ func (p *Parser) assignOptions(x ast.Node) ([]*ast.Comment, error) {
 					opt, err := parseDepth(option)
 					if err != nil {
 						assignerr = err
-
 						return false
 					}
 					p.Options[text] = *opt
@@ -126,7 +123,6 @@ func (p *Parser) assignOptions(x ast.Node) ([]*ast.Comment, error) {
 					opt, err := parseMap(option)
 					if err != nil {
 						assignerr = err
-
 						return false
 					}
 					p.Options[text] = *opt
@@ -175,7 +171,6 @@ func (p *Parser) assignConvertOptions(x *ast.FuncDecl) ([]*ast.Comment, error) {
 					opt, err := parseConvert(option, x.Name.Name)
 					if err != nil {
 						assignerr = err
-
 						return false
 					}
 					p.Options[text] = *opt

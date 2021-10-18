@@ -23,8 +23,8 @@ linters:
     - golint # deprecated
     - scopelint # deprecated
     - interfacer # deprecated
-  fast: false
 
+  fast: false
 linters-settings:
   gocritic:
     enabled-tags:

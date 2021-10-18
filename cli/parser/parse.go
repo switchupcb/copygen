@@ -75,7 +75,6 @@ func Parse(gen *models.Generator) error {
 			return fmt.Errorf("the setup file must declare a package: %v", p.Setpath)
 		} else if p.SetupFile.Name.Name == pkg.Name {
 			p.LastLocated = pkg
-
 			break
 		}
 	}

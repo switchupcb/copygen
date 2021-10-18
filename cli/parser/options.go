@@ -29,15 +29,11 @@ const (
 	categoryDeepCopy = "deepcopy"
 	categoryDepth    = "depth"
 	categoryMap      = "map"
-
-	formatConvert = "<option>:<whitespaces><regex><whitespaces><regex>"
-	formatDepth   = "<option>:<whitespaces><regex><whitespaces><int>"
-	formatMap     = "<option>:<whitespaces><regex><whitespaces><regex>"
 )
 
 // parseConvert parses a convert option.
 func parseConvert(option, value string) (*Option, error) {
-	splitoption, err := splitOption(option, categoryConvert, formatConvert)
+	splitoption, err := splitOption(option, categoryConvert, "<option>:<whitespaces><regex><whitespaces><regex>")
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +71,7 @@ func parseDeepcopy(option string) (*Option, error) {
 
 // parseDepth parses a depth option.
 func parseDepth(option string) (*Option, error) {
-	splitoption, err := splitOption(option, categoryDepth, formatDepth)
+	splitoption, err := splitOption(option, categoryDepth, "<option>:<whitespaces><regex><whitespaces><int>")
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +95,7 @@ func parseDepth(option string) (*Option, error) {
 
 // parseMap parses a map option.
 func parseMap(option string) (*Option, error) {
-	splitoption, err := splitOption(option, categoryMap, formatMap)
+	splitoption, err := splitOption(option, categoryMap, "<option>:<whitespaces><regex><whitespaces><regex>")
 	if err != nil {
 		return nil, err
 	}

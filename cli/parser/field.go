@@ -184,7 +184,6 @@ func setConvertOption(field *models.Field, options []Option) {
 		if options[i].Category == categoryConvert && options[i].Regex[1].MatchString(field.FullName("")) {
 			if value, ok := options[i].Value.(string); ok {
 				field.Options.Convert = value
-
 				break
 			}
 		}
@@ -197,7 +196,6 @@ func setDeepcopyOption(field *models.Field, options []Option) {
 	for i := len(options) - 1; i > -1; i-- {
 		if options[i].Category == categoryDeepCopy && options[i].Regex[0].MatchString(field.FullName("")) {
 			field.Options.Deepcopy = true
-
 			break
 		}
 	}
@@ -229,7 +227,6 @@ func setMapOption(field *models.Field, options []Option) {
 		if options[i].Category == categoryMap && options[i].Regex[0].MatchString(field.FullName("")) {
 			if value, ok := options[i].Value.(string); ok {
 				field.Options.Map = value
-
 				break
 			}
 		}

@@ -14,7 +14,6 @@ func Generate(gen *models.Generator) (string, error) {
 	// determine the method to analyze each function.
 	if gen.Tempath == "" {
 		content += templates.Generate(gen) + "\n"
-
 		return content, nil
 	}
 
