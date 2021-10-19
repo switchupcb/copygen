@@ -209,7 +209,9 @@ func New() {
 
 #### Templates
 
-Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package template Generate(*models.Generator) (string, error)` to generate code. As a result, **this function is required** for your templates to work. View the [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/generator.go) type for context on the parameters passed to each function. Generator options are parsed from the YML configuration file. Function options are parsed from `custom` options. Any other option represents a field option. Templates are interpreted by our [temporary yaegi fork](https://github.com/switchupcb/copygen) which supports Go modules. The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main/error) modifies the `.yml` in order to use **custom template functions** that `return error`.
+Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package template Generate(*models.Generator) (string, error)` to generate code. As a result, **this function is required** for your templates to work. View the [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/generator.go) type for context on the parameters passed to each function. Generator options are parsed from the YML configuration file. Function options are parsed from `custom` options. Any other option represents a field option. Templates are interpreted by our [temporary yaegi fork](https://github.com/switchupcb/yaegi). The [error example](https://github.com/switchupcb/copygen/tree/main/examples/error) modifies the `.yml` in order to use **custom template functions** that `return error`. 
+
+Use of Go Modules with Templates may be unsupported at the current time.
 
 ## Matcher
 
