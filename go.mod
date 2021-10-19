@@ -8,6 +8,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
+replace github.com/traefik/yaegi v0.10.0 => github.com/switchupcb/yaegi v0.10.1
+
 require (
 	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/sys v0.0.0-20210927052749-1cf2251ac284 // indirect
