@@ -31,7 +31,6 @@ The command-line interface _(cli)_ consists of 5 packages.
 
 The command line interface package allows you see the flow of the program.
 ```go
-/* Comments not present in actual project. */
 // The configuration file is loaded (.yml)
 gen, err := config.LoadYML(e.YMLPath)
 if err != nil {
@@ -43,7 +42,7 @@ if err = parser.Parse(gen); err != nil {
     return err
 }
 
-// The matcher is run on the parsed data (which are application models).
+// The matcher is run on the parsed data (to create the objects used during generation).
 if err = matcher.Match(gen); err != nil {
     return err
 }
@@ -98,6 +97,12 @@ for _, field := range fields {
 ```
 
 The same reasoning applies to `for i := 0; i < count; i++` loops.
+
+#### Antipatterns
+
+Using the `*models.Field` definition for a `models.Field`'s `Parent` field can be considered an antipattern. In the program, a `models.Type` specifically refers to the types in a function signature _(i.e `func(models.Account, models.User) *domain.Account`)_. While these types **are** fields _(which may contain other fields)_ , their actual `Type` properties are not relevant to `models.Field`. As a result, `models.Field` objects are pointed directly to maintain simplicity.
+
+Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation`: `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program and more room for extension.
 
 #### CI/CD
 

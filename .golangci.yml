@@ -7,6 +7,7 @@ linters:
   disable:
     - deadcode # The repository has no Application Life Cycle Management. Run manually prior to a release.
     - unused # The repository has no Application Life Cycle Management. Run manually prior to a release.
+    - gomoddirectives # The repository uses go modules in its interpreter functionality from a temporary tagged fork.
     - cyclop
     - errorlint
     - exhaustivestruct

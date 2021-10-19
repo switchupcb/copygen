@@ -1,8 +1,8 @@
 /* NOTE: The following template was copied from "github.com/switchupcb/copygen/cli/generator/templates/generate.go" and modified. */
 // DO NOT CHANGE PACKAGE
 
-// Package templates provides a template used by copygen to generate custom code.
-package templates
+// Package template provides a template used by copygen to generate custom code.
+package template
 
 import (
 	"github.com/switchupcb/copygen/cli/models"
@@ -12,14 +12,14 @@ import (
 // GENERATOR FUNCTION.
 // EDITABLE.
 // DO NOT REMOVE.
-func Generate(gen *models.Generator) string {
+func Generate(gen *models.Generator) (string, error) {
 	content := string(gen.Keep) + "\n"
 
 	for i := range gen.Functions {
 		content += Function(&gen.Functions[i]) + "\n"
 	}
 
-	return content
+	return content, nil
 }
 
 // Function provides generated code for a function.

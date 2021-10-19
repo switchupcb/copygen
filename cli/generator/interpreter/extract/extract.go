@@ -4,6 +4,6 @@ package extract
 import "reflect"
 
 // Symbols are extracted from the internal types (compiled at runtime).
-var Symbols map[string]map[string]reflect.Value = make(map[string]map[string]reflect.Value)
+var Symbols = make(map[string]map[string]reflect.Value) // nolint:gochecknoglobals // yaegi
 
 //go:generate yaegi extract github.com/switchupcb/copygen/cli/models

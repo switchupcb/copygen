@@ -7,13 +7,15 @@ import (
 	"path/filepath"
 
 	"github.com/switchupcb/copygen/cli/generator/interpreter"
+	"github.com/switchupcb/copygen/cli/generator/template"
 	"github.com/switchupcb/copygen/cli/models"
 )
 
+const GenerateFunction = "template.Generate"
+
 // Generate creates the file with generated code (with gofmt).
 func Generate(gen *models.Generator, output bool) error {
-	// generate code
-	content, err := interpreter.Generate(gen)
+	content, err := generateCode(gen)
 	if err != nil {
 		return fmt.Errorf("an error occurred while generating code\n%v", err)
 	}
@@ -44,4 +46,35 @@ func Generate(gen *models.Generator, output bool) error {
 	}
 
 	return nil
+}
+
+// generateCode determines the func to generate function code.
+func generateCode(gen *models.Generator) (string, error) {
+	if gen.Tempath == "" {
+		content, _ := template.Generate(gen)
+		return content, nil
+	}
+
+	// use an interpreted function (from a template file)
+	abstempath, err := filepath.Abs(filepath.Join(filepath.Dir(gen.Loadpath), gen.Tempath))
+	if err != nil {
+		return "", fmt.Errorf("an error occurred loading the absolute filepath of template path %v from the cwd %v\n%v", gen.Loadpath, gen.Tempath, err)
+	}
+
+	v, err := interpreter.InterpretFunction(abstempath, GenerateFunction)
+	if err != nil {
+		return "", err
+	}
+
+	fn, ok := v.Interface().(func(*models.Generator) (string, error))
+	if !ok {
+		return "", fmt.Errorf("the template function `Generate` could not be type asserted. Is it a func(*models.Generator) (string, error)?")
+	}
+
+	content, err := fn(gen)
+	if err != nil {
+		return "", fmt.Errorf("%w", err)
+	}
+
+	return content, nil
 }

@@ -57,19 +57,23 @@ func (e *Environment) parseArgs() error {
 }
 
 func (e *Environment) run() error {
+	// The configuration file is loaded (.yml)
 	gen, err := config.LoadYML(e.YMLPath)
 	if err != nil {
 		return err
 	}
 
+	// The data file is parsed (.go)
 	if err = parser.Parse(gen); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
+	// The matcher is run on the parsed data (to create the objects used during generation).
 	if err = matcher.Match(gen); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
+	// The generator is used to generate code.
 	if err = generator.Generate(gen, e.Output); err != nil {
 		return fmt.Errorf("%w", err)
 	}

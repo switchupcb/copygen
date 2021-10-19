@@ -17,14 +17,13 @@ Copygen is a command-line [code generator](https://github.com/gophersgang/go-cod
 
 Each example has a **README**.
 
-| Example                                                                         | Description                                                  |
-| :------------------------------------------------------------------------------ | :----------------------------------------------------------- |
-| main                                                                            | The default example.                                         |
-| [manual](https://github.com/switchupcb/copygen/tree/main/examples/manual)       | Uses the manual map feature.                                 |
-| [automatch](https://github.com/switchupcb/copygen/tree/main/examples/automatch) | Uses the automatch feature with depth.                       |
-| [cyclic](https://github.com/switchupcb/copygen/tree/main/examples/automatch)    | Uses a cyclic type (recursive) with a shallow copy.          |
-| deepcopy _(Roadmap Feature)_                                                    | Uses the deepcopy option.                                    |
-| [error](https://github.com/switchupcb/copygen/tree/main/examples/error)         | Uses templates to return an error (temporarily unsupported). |
+| Example                                                                         | Description                            |
+| :------------------------------------------------------------------------------ | :------------------------------------- |
+| main                                                                            | The default example.                   |
+| [manual](https://github.com/switchupcb/copygen/tree/main/examples/manual)       | Uses the manual map feature.           |
+| [automatch](https://github.com/switchupcb/copygen/tree/main/examples/automatch) | Uses the automatch feature with depth. |
+| deepcopy _(Roadmap Feature)_                                                    | Uses the deepcopy option.              |
+| [error](https://github.com/switchupcb/copygen/tree/main/examples/error)         | Uses templates to return an error.     |
 
 This [example](https://github.com/switchupcb/copygen/blob/main/examples/main) uses three type-structs to generate the `ModelsToDomain()` function.
 
@@ -141,7 +140,7 @@ go install github.com/switchupcb/copygen@latest
 
 Install a specific version by specifying a tag version.
 ```
-go install github.com/switchupcb/copygen@v0.2.2
+go install github.com/switchupcb/copygen@v0.2.3
 ```
 
 Run the executable with given options.
@@ -210,9 +209,7 @@ func New() {
 
 #### Templates
 
-Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package templates Generate(*models.Generator)` to generate code. As a result, this funtion is **required** for your templates to work. View [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/generator.go) for context on the parameters passed to each function. Generator options are parsed from the YML configuration file. Function options refer to `custom` options. Any other option represents a field option.
-
-Templates are interpreted by [yaegi](https://github.com/traefik/yaegi) which has limitations on module imports _(Pull Request Pending)_: As a result, **templates are temporarily unsupported.** The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main) modifies the .yml to use **custom functions** which `return error`. This is done by modifying the .yml and creating **custom template files**.
+Templates can be created using **Go** to customize the generated code algorithm. The `copygen` generator uses the `package template Generate(*models.Generator) (string, error)` to generate code. As a result, **this function is required** for your templates to work. View the [models.Generator](https://github.com/switchupcb/copygen/blob/main/cli/models/generator.go) type for context on the parameters passed to each function. Generator options are parsed from the YML configuration file. Function options are parsed from `custom` options. Any other option represents a field option. Templates are interpreted by our [temporary yaegi fork](https://github.com/switchupcb/copygen) which supports Go modules. The [error example](https://github.com/switchupcb/copygen/blob/main/examples/main/error) modifies the `.yml` in order to use **custom template functions** that `return error`.
 
 ## Matcher
 

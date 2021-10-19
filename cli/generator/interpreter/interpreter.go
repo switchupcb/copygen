@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"go/build"
 	"os"
-	"path"
-	"path/filepath"
 	"reflect"
 
 	"github.com/switchupcb/copygen/cli/generator/interpreter/extract"
@@ -13,31 +11,19 @@ import (
 	"github.com/traefik/yaegi/stdlib"
 )
 
-// interpretFunc loads a template package.function into an interpreter.
-func interpretFunc(loadpath, templatepath, symbol string) (*reflect.Value, error) {
-	// determine actual filepath
-	absfilepath, err := filepath.Abs(loadpath)
+// InterpretFunction loads a template symbol from an interpreter.
+func InterpretFunction(filepath, symbol string) (*reflect.Value, error) {
+	file, err := os.ReadFile(filepath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("an error occurred loading a template file: %v\nIs the relative or absoute filepath set correctly?\n%v", filepath, err)
 	}
-
-	absfilepath = path.Join(filepath.Dir(absfilepath), templatepath)
-
-	// read the file
-	file, err := os.ReadFile(absfilepath)
-	if err != nil {
-		return nil, fmt.Errorf("the specified template file for the template function %q doesn't exist: %v\nIs the relative or absoute filepath set correctly?", symbol, absfilepath)
-	}
-
-	source := string(file)
 
 	// setup the interpreter
 	goCache, err := os.UserCacheDir()
 	if err != nil {
-		return nil, fmt.Errorf("An error occurred loading the template file. Is the GOCACHE set in `go env`?\n%v", err)
+		return nil, fmt.Errorf("an error occurred loading the template file. Is the GOCACHE set in `go env`?\n%v", err)
 	}
 
-	// create the interpreter
 	i := interp.New(interp.Options{GoPath: os.Getenv("GOPATH"), GoCache: goCache, GoToolDir: build.ToolDir})
 	if err := i.Use(stdlib.Symbols); err != nil {
 		return nil, fmt.Errorf("an error occurred loading the template stdlib libraries\n%v", err)
@@ -46,18 +32,18 @@ func interpretFunc(loadpath, templatepath, symbol string) (*reflect.Value, error
 	// models.types created by the compiled binary are different from models.types created by the interpreter at runtime.
 	// pass the compiled models.types to the interpreter
 	if err := i.Use(extract.Symbols); err != nil {
-		return nil, fmt.Errorf("an error occurred loading the template models libary\n%v", err)
+		return nil, fmt.Errorf("an error occurred loading the template models library\n%v", err)
 	}
 
 	// load the source
-	if _, err := i.Eval(source); err != nil {
-		return nil, fmt.Errorf("an error occurred loading the template file: %v\n%v", absfilepath, err)
+	if _, err := i.Eval(string(file)); err != nil {
+		return nil, fmt.Errorf("an error occurred evaluating the template file\n%v", err)
 	}
 
 	// load the func from the interpreter
 	v, err := i.Eval(symbol)
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred loading a template function\n%v", err)
+		return nil, fmt.Errorf("an error occurred evaluating a template function. Is it located in the file?\n%v", err)
 	}
 
 	return &v, nil
