@@ -5,7 +5,10 @@
 package template
 
 import (
+	"fmt"
+
 	"github.com/switchupcb/copygen/cli/models"
+	"github.com/switchupcb/copygen/cli/parser"
 )
 
 // Generate provides generated code.
@@ -13,6 +16,7 @@ import (
 // EDITABLE.
 // DO NOT REMOVE.
 func Generate(gen *models.Generator) (string, error) {
+	fmt.Println(parser.Parser{})
 	content := string(gen.Keep) + "\n"
 
 	for i := range gen.Functions {

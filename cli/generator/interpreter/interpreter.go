@@ -9,6 +9,7 @@ import (
 	"github.com/switchupcb/copygen/cli/generator/interpreter/extract"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
+	"github.com/traefik/yaegi/stdlib/unsafe"
 )
 
 // InterpretFunction loads a template symbol from an interpreter.
@@ -26,6 +27,10 @@ func InterpretFunction(filepath, symbol string) (*reflect.Value, error) {
 
 	i := interp.New(interp.Options{GoPath: os.Getenv("GOPATH"), GoCache: goCache, GoToolDir: build.ToolDir})
 	if err := i.Use(stdlib.Symbols); err != nil {
+		return nil, fmt.Errorf("an error occurred loading the template stdlib libraries\n%v", err)
+	}
+
+	if err := i.Use(unsafe.Symbols); err != nil {
 		return nil, fmt.Errorf("an error occurred loading the template stdlib libraries\n%v", err)
 	}
 
