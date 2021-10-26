@@ -7,8 +7,8 @@ import (
 	"reflect"
 
 	"github.com/switchupcb/copygen/cli/generator/interpreter/extract"
-	"github.com/traefik/yaegi/interp"
-	"github.com/traefik/yaegi/stdlib"
+	"github.com/switchupcb/yaegi/interp"
+	"github.com/switchupcb/yaegi/stdlib"
 )
 
 // InterpretFunction loads a template symbol from an interpreter.

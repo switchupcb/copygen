@@ -138,9 +138,14 @@ Install the command line utility. Copygen is an executable and not a dependency,
 go install github.com/switchupcb/copygen@latest
 ```
 
-Install a specific version by specifying a tag version.
+Install a specific version by specifying a branch.
 ```
-go install github.com/switchupcb/copygen@v0.2.3
+go install github.com/switchupcb/copygen@main
+```
+
+Install a specific version by specifying a tag.
+```
+go install github.com/switchupcb/copygen@v0.2.4
 ```
 
 Run the executable with given options.
