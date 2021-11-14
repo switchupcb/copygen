@@ -84,7 +84,7 @@ func generateCode(gen *models.Generator) (string, error) {
 	return content, nil
 }
 
-// Generate provides generated code.
+// RunTemplate provides generated code.
 // GENERATOR FUNCTION.
 // EDITABLE.
 // DO NOT REMOVE.
