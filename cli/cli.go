@@ -77,6 +77,6 @@ func (e *Environment) run() error {
 	if err = generator.Generate(gen, e.Output); err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
+	fmt.Println("ss")
 	return nil
 }

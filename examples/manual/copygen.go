@@ -23,5 +23,4 @@ func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
 	tA.Name = fA.Name
 	tA.UserID = Itoa(fU.UserID)
 	tA.ID = fA.ID
-
 }

@@ -1,17 +1,22 @@
 package generator
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
 	"go/format"
 	"os"
 	"path/filepath"
+	"text/template"
 
 	"github.com/switchupcb/copygen/cli/generator/interpreter"
-	"github.com/switchupcb/copygen/cli/generator/template"
 	"github.com/switchupcb/copygen/cli/models"
 )
 
 const GenerateFunction = "template.Generate"
+
+//go:embed template/template.tmpl
+var tmpl string
 
 // Generate creates the file with generated code (with gofmt).
 func Generate(gen *models.Generator, output bool) error {
@@ -51,7 +56,7 @@ func Generate(gen *models.Generator, output bool) error {
 // generateCode determines the func to generate function code.
 func generateCode(gen *models.Generator) (string, error) {
 	if gen.Tempath == "" {
-		content, _ := template.Generate(gen)
+		content, _ := RunTemplate(gen)
 		return content, nil
 	}
 
@@ -77,4 +82,23 @@ func generateCode(gen *models.Generator) (string, error) {
 	}
 
 	return content, nil
+}
+
+// Generate provides generated code.
+// GENERATOR FUNCTION.
+// EDITABLE.
+// DO NOT REMOVE.
+func RunTemplate(gen *models.Generator) (string, error) {
+	buf := bytes.NewBuffer(nil)
+	funcMap := template.FuncMap{
+		"SliceBytesToString": func(a []byte) string {
+			return string(a)
+		},
+	}
+	if t, e := template.New("").Funcs(funcMap).Parse(tmpl); e != nil {
+		return "", fmt.Errorf(`template parse error: %s`, e)
+	} else if e := t.Execute(buf, gen); e != nil {
+		return "", fmt.Errorf(`template execute error: %s`, e)
+	}
+	return buf.String(), nil
 }
