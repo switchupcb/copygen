@@ -1,10 +1,14 @@
 package cli
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"go/printer"
 	"os"
 	"strings"
+
+	"golang.org/x/tools/go/ast/astutil"
 
 	"github.com/switchupcb/copygen/cli/config"
 	"github.com/switchupcb/copygen/cli/generator"
@@ -72,6 +76,20 @@ func (e *Environment) run() error {
 	if err = matcher.Match(gen); err != nil {
 		return fmt.Errorf("%w", err)
 	}
+
+	// Add new imports if needed
+	for path, name := range gen.ImportsByPath {
+		if !gen.AlreadyImported[path] {
+			astutil.AddNamedImport(gen.Fileset, gen.SetupFile, name, path)
+		}
+	}
+
+	buf := bytes.NewBuffer(nil)
+	if err := printer.Fprint(buf, gen.Fileset, gen.SetupFile); err != nil {
+		return fmt.Errorf("an error occurred writing the code that will be kept after generation\n%v", err)
+	}
+
+	gen.Keep = buf.Bytes()
 
 	// The generator is used to generate code.
 	if err = generator.Generate(gen, e.Output); err != nil {

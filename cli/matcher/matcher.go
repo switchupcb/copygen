@@ -2,6 +2,9 @@
 package matcher
 
 import (
+	"path"
+	"strconv"
+
 	"github.com/switchupcb/copygen/cli/models"
 )
 
@@ -33,6 +36,20 @@ func Match(gen *models.Generator) error {
 								automatch(toFields[i], fromFields[j])
 							}
 						}
+						// fill imports if required
+						if toFields[i].From == fromFields[j] {
+							if toFields[i].Import != "" {
+								if gen.ImportsByPath[toFields[i].Import] == "" {
+									k := 0
+									bn := path.Base(toFields[i].Import)
+									for k = 0; gen.ImportsByName[bn+strconv.Itoa(k)] != ""; k++ {
+									}
+									gen.ImportsByName[bn+strconv.Itoa(k)] = toFields[i].Import
+									gen.ImportsByPath[toFields[i].Import] = bn + strconv.Itoa(k)
+								}
+								toFields[i].Package = gen.ImportsByPath[toFields[i].Import]
+							}
+						}
 					}
 				}
 			}
@@ -56,9 +73,11 @@ func Match(gen *models.Generator) error {
 // automatch automatically matches the fields of a fromType to a toType by name.
 // automatch is used when no `map` options apply to a field.
 func automatch(toField, fromField *models.Field) {
-	if toField.Name == fromField.Name && (toField.Definition == fromField.Definition || fromField.Options.Convert != "") {
-		fromField.To = toField
-		toField.From = fromField
+	if toField.Name == fromField.Name {
+		if (toField.Definition == fromField.Definition && toField.Import == fromField.Import) || fromField.Options.Convert != "" || toField.OrigDefinition == fromField.OrigDefinition {
+			fromField.To = toField
+			toField.From = fromField
+		}
 	}
 }
 

@@ -17,11 +17,17 @@ type Field struct {
 	// The package the field is defined in.
 	Package string
 
+	// Import path
+	Import string
+
 	// The name of the field (i.e `ID` in `ID int`).
 	Name string
 
 	// The type definition of the field (i.e `int` in `ID int`, string, `Logger` in `log.Logger`).
 	Definition string
+
+	// The type definition of the field (i.e `int` in `ID int`, string, `Logger` in `log.Logger`).
+	OrigDefinition string
 
 	// The pointer(s) of the field in string format (i.e **).
 	Pointer string
