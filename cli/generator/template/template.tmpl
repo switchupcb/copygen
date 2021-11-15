@@ -4,7 +4,7 @@
 		{{- $Type.Field.Name -}}
 	{{- end -}}
 {{end -}}
-{{- define "JoinFieldsParameter"}}
+{{- define "JoinParameters"}}
     {{- range $key, $Type := . -}}
 		{{- if ne $key 0}}, {{end}}{{- $Type.Field.VariableName}} {{$Type.ParameterName}}
 	{{- end -}}
@@ -13,7 +13,7 @@
 {{.Keep| SliceBytesToString}}
 {{range $fkey, $function := .Functions -}}
 // {{$function.Name}} copies a {{template "JoinFields" $function.From}} to a {{template "JoinFields" $function.To}}.
-func {{$function.Name}}( {{- template "JoinFieldsParameter" $function.To -}}, {{- template "JoinFieldsParameter" $function.From -}}) {
+func {{$function.Name}}( {{template "JoinParameters" $function.To}}, {{template "JoinParameters" $function.From}} ) {
 	{{- range $tkey, $toType := $function.To }}
 	// {{$toType.Field.Name}} fields
 		{{- range $fkey, $toField := $toType.Field.Fields }}
