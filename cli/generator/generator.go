@@ -56,7 +56,10 @@ func Generate(gen *models.Generator, output bool) error {
 // generateCode determines the func to generate function code.
 func generateCode(gen *models.Generator) (string, error) {
 	if gen.Tempath == "" {
-		content, _ := RunTemplate(gen)
+		content, err := RunTemplate(gen)
+		if err != nil {
+			return "", fmt.Errorf("an error occurred loading template %w", err)
+		}
 		return content, nil
 	}
 
