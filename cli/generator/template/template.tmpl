@@ -12,21 +12,19 @@
 {{end -}}
 
 {{.Keep| SliceBytesToString}}
-{{""}}
-{{- range $fkey, $function := .Functions -}}
+{{range $fkey, $function := .Functions -}}
 // {{$function.Name}} copies a {{template "JoinFields" $function.From}} to a {{template "JoinFields" $function.To}}.
 func {{$function.Name}}( {{- template "JoinFieldsParameter" $function.To -}}, {{- template "JoinFieldsParameter" $function.From -}}) {
 	{{- range $tkey, $toType := $function.To }}
 	// {{$toType.Field.Name}} fields
-{{""}}
-		{{- range $fkey, $toField := $toType.Field.Fields -}}
-{{""}}	{{$toField.FullVariableName ""}} = {{""}}
+		{{- range $fkey, $toField := $toType.Field.Fields }}
+        	{{$toField.FullVariableName ""}} = {{""}}
 				{{- if ne $toField.From.Options.Convert "" -}}
 					{{$toField.From.Options.Convert}}({{$toField.From.FullVariableName ""}})
 				{{- else -}}
 					{{$toField.From.FullVariableName ""}}
 				{{- end}}
-{{""}}		{{- end -}}
+		{{- end -}}
 	{{- end -}}
 }
 {{- end -}}
