@@ -6,8 +6,7 @@
 {{end -}}
 {{- define "JoinFieldsParameter"}}
     {{- range $key, $Type := . -}}
-		{{- if ne $key 0}}, {{end -}}
-		{{- $Type.Field.VariableName }} {{$Type.ParameterName}}
+		{{- if ne $key 0}}, {{end}}{{- $Type.Field.VariableName}} {{$Type.ParameterName}}
 	{{- end -}}
 {{end -}}
 
@@ -27,4 +26,4 @@ func {{$function.Name}}( {{- template "JoinFieldsParameter" $function.To -}}, {{
 		{{- end -}}
 	{{- end -}}
 }
-{{- end -}}
+{{end}}
