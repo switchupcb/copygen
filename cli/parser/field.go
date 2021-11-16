@@ -136,18 +136,22 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 			xField := x.Field(i)
 
 			// create a new typefield if a subfield is a custom type
+			parsedDefinition := p.parseDefinition(xField.Type().String())
 			if !isBasic(xField.Type()) {
-				parsedDefinition := p.parseDefinition(xField.Type().String())
 				if parsedDefinition.err != nil {
 					return nil, parsedDefinition.err
 				}
 				// Search for the subfields of the subfield
+				origDef := xField.Type().Underlying().String()
+				if sl, ok := xField.Type().(*types.Slice); ok {
+					origDef = sl.Elem().Underlying().String()
+				}
 				subfield, err := p.SearchForField(&FieldSearch{
 					Import:         parsedDefinition.imprt,
 					Name:           xField.Name(),
 					Package:        parsedDefinition.pkg,
 					Definition:     parsedDefinition.typename,
-					OrigDefinition: xField.Type().Underlying().String(),
+					OrigDefinition: origDef,
 					Parent:         typefield,
 					DecFile:        td.File,
 					Options:        fs.Options,
@@ -158,15 +162,16 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 				if err != nil {
 					return nil, err
 				}
-
+				subfield.ContainerType = parsedDefinition.containerType
 				subfields = append(subfields, subfield)
 			} else {
 				subfield := &models.Field{
 					VariableName:   "." + xField.Name(),
 					Name:           xField.Name(),
-					Definition:     xField.Type().String(),
-					OrigDefinition: xField.Type().String(),
+					Definition:     parsedDefinition.typename,
+					OrigDefinition: parsedDefinition.typename,
 					Parent:         typefield,
+					ContainerType:  parsedDefinition.containerType,
 				}
 				setFieldOptions(subfield, fs.Options)
 				subfields = append(subfields, subfield)
@@ -199,7 +204,7 @@ func isBasic(t types.Type) bool {
 	case *types.Basic:
 		return true
 	case *types.Slice:
-		return true
+		return isBasic(x.Elem())
 	case *types.Map:
 		return true
 	case *types.Pointer:

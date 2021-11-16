@@ -7,6 +7,15 @@ import (
 
 // Field represents a field to be copied to/from.
 // A field's struct properties are set in the parser unless its stated otherwise.
+
+type ContainerType int
+
+const (
+	ContainerTypeNone ContainerType = iota
+	ContainerTypeSlice
+	ContainerTypeMap
+)
+
 type Field struct {
 	// The variable name the field is assigned for assignment.
 	// This value will always be unique in the context of the application.
@@ -31,6 +40,9 @@ type Field struct {
 
 	// The pointer(s) of the field in string format (i.e **).
 	Pointer string
+
+	// Container type
+	ContainerType
 
 	// The type or field that contains this field.
 	Parent *Field

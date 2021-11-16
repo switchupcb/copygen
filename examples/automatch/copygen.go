@@ -19,4 +19,12 @@ func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
 	tA.Email = fA.Email
 	tA.FieldSuperString = string(fA.FieldSuperString)
 	tA.FieldReversedType = domain.ReversStringType(fA.FieldReversedType)
+	tA.FieldSliceReversedType = make([]domain.ReversStringType, len(fA.FieldSliceReversedType))
+	for key, val := range fA.FieldSliceReversedType {
+		tA.FieldSliceReversedType[key] = domain.ReversStringType(val)
+	}
+	tA.SliceString = make([]string, len(fA.SliceString))
+	for key, val := range fA.SliceString {
+		tA.SliceString[key] = val
+	}
 }

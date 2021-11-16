@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/packages"
+
+	"github.com/switchupcb/copygen/cli/models"
 )
 
 // parsedFieldName represents the identification data of a parsed *ast.Field.
@@ -136,10 +138,11 @@ func astTypeSearch(file *ast.File, typename string) (*ast.TypeSpec, error) {
 
 // parsedDefinition represents the result of a parsed definition.
 type parsedDefinition struct {
-	err      error
-	imprt    string
-	pkg      string
-	typename string
+	err           error
+	imprt         string
+	pkg           string
+	typename      string
+	containerType models.ContainerType
 }
 
 // parseDefinition determines the actual import, package, and name of a field based on its *types.Var definition.
@@ -147,6 +150,10 @@ func (p *Parser) parseDefinition(definition string) parsedDefinition {
 	var pd parsedDefinition
 
 	// remove pointers
+	if strings.Index(definition, "[]") == 0 {
+		definition = strings.TrimPrefix(definition, "[]")
+		pd.containerType = models.ContainerTypeSlice
+	}
 	definition = strings.TrimPrefix(definition, "*")
 	splitdefinition := strings.Split(definition, ".")
 
