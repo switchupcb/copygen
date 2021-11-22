@@ -16,23 +16,23 @@ type parsedTypes struct {
 }
 
 func (p *Parser) packageNameByImport(imp string) string {
-	if p.ImportsByPath[imp] == "" {
+	if p.gen.ImportsByPath[imp] == "" {
 		k := 0
 		bn := path.Base(imp)
 		// Fix for packages like `yaml.v3` with dot in name. Only `yaml` should be taken.
 		if strings.Index(bn, ".") > 0 {
 			bn = bn[0:strings.Index(bn, ".")]
 		}
-		for k = 0; p.ImportsByName[bn+strconv.Itoa(k)] != ""; k++ {
+		for k = 0; p.gen.ImportsByName[bn+strconv.Itoa(k)] != ""; k++ {
 		}
 		name := bn
 		if k > 0 {
 			name += strconv.Itoa(k)
 		}
-		p.ImportsByName[name] = imp
-		p.ImportsByPath[imp] = name
+		p.gen.ImportsByName[name] = imp
+		p.gen.ImportsByPath[imp] = name
 	}
-	return p.ImportsByPath[imp]
+	return p.gen.ImportsByPath[imp]
 }
 
 // parseTypes parses an ast.Field (of type func) for to-types and from-types.
@@ -75,7 +75,7 @@ func (p *Parser) parseFieldList(fieldlist *types.Tuple, options []Option) ([]mod
 
 	for i := 0; i < fieldlist.Len(); i++ {
 		field, err := p.parseTypeField(fieldlist.At(i), options)
-		field.Package = p.ImportsByPath[field.Import]
+		field.Package = p.packageNameByImport(field.Import)
 		if err != nil {
 			return nil, err
 		}

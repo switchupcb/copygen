@@ -15,6 +15,9 @@ type Generator struct {
 	Tempath   string           // The filepath for the template used to generate code.
 	Keep      []byte           // The code that is kept from the setup file.
 
+	ImportsByName   map[string]string // Map of imports to its alias.
+	ImportsByPath   map[string]string // Map of imports to its alias.
+	AlreadyImported map[string]bool   // Map of imports to its alias.
 	// The fileset of the parser.
 	Fileset *token.FileSet
 

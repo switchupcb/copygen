@@ -19,8 +19,7 @@ import (
 
 // Parser represents a parser that parses Abstract Syntax Tree data into models.
 type Parser struct {
-	ImportsByName map[string]string // Map of imports to its alias.
-	ImportsByPath map[string]string // Map of imports to its alias.
+	gen *models.Generator
 
 	// The parser options contain options located in the entire setup file.
 	Options OptionMap
@@ -59,7 +58,7 @@ func Parse(gen *models.Generator) error {
 	}
 
 	// setup the parser
-	p := Parser{Setpath: absfilepath, goProjectPath: getProjectPath(absfilepath)}
+	p := Parser{Setpath: absfilepath, goProjectPath: getProjectPath(absfilepath), gen: gen}
 
 	config := &packages.Config{
 		Mode: pLoadMode,
@@ -77,9 +76,9 @@ func Parse(gen *models.Generator) error {
 	p.SetupFile, err = parser.ParseFile(p.Fileset, absfilepath, nil, parser.ParseComments)
 	imports := astutil.Imports(p.pkg.Fset, p.SetupFile)
 
-	p.ImportsByName = map[string]string{}
-	p.ImportsByPath = map[string]string{}
-	alreadyImported := map[string]bool{}
+	p.gen.ImportsByName = map[string]string{}
+	p.gen.ImportsByPath = map[string]string{}
+	p.gen.AlreadyImported = map[string]bool{}
 	for i := range imports {
 		for _, imp := range imports[i] {
 			ipath := imp.Path.Value[1 : len(imp.Path.Value)-1]
@@ -87,9 +86,9 @@ func Parse(gen *models.Generator) error {
 			if imp.Name != nil {
 				name = imp.Name.Name
 			}
-			alreadyImported[ipath] = true
-			p.ImportsByName[name] = ipath
-			p.ImportsByPath[ipath] = name
+			p.gen.AlreadyImported[ipath] = true
+			p.gen.ImportsByName[name] = ipath
+			p.gen.ImportsByPath[ipath] = name
 		}
 	}
 
@@ -113,12 +112,6 @@ func Parse(gen *models.Generator) error {
 	gen.Fileset = p.Fileset
 	gen.SetupFile = p.SetupFile
 
-	// Add new imports if needed
-	for path, name := range p.ImportsByPath {
-		if !alreadyImported[path] {
-			astutil.AddNamedImport(gen.Fileset, gen.SetupFile, name, path)
-		}
-	}
 	return nil
 }
 
