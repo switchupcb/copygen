@@ -2,9 +2,6 @@
 package matcher
 
 import (
-	"path"
-	"strconv"
-
 	"github.com/switchupcb/copygen/cli/models"
 )
 
@@ -34,20 +31,6 @@ func Match(gen *models.Generator) error {
 								}
 							} else {
 								automatch(toFields[i], fromFields[j])
-							}
-						}
-						// fill imports if required
-						if toFields[i].From == fromFields[j] {
-							if toFields[i].Import != "" {
-								if gen.ImportsByPath[toFields[i].Import] == "" {
-									k := 0
-									bn := path.Base(toFields[i].Import)
-									for k = 0; gen.ImportsByName[bn+strconv.Itoa(k)] != ""; k++ {
-									}
-									gen.ImportsByName[bn+strconv.Itoa(k)] = toFields[i].Import
-									gen.ImportsByPath[toFields[i].Import] = bn + strconv.Itoa(k)
-								}
-								toFields[i].Package = gen.ImportsByPath[toFields[i].Import]
 							}
 						}
 					}

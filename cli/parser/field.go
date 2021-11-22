@@ -1,9 +1,7 @@
 package parser
 
 import (
-	"go/ast"
 	"go/types"
-	"strings"
 
 	"github.com/switchupcb/copygen/cli/models"
 )
@@ -12,25 +10,6 @@ import (
 type FieldSearch struct {
 	// A key value cache used to prevent cyclic fields from unnecessary duplication or stack overflow.
 	cache map[string]bool
-
-	// The import of the field (used for the cache).
-	Import string
-
-	// The package name of the field.
-	Package string
-
-	// The name of the field.
-	Name string
-
-	// The actual typename of the field (i.e `DomainUser` in `User DomainUser`).
-	Definition     string
-	OrigDefinition string
-	// The parent of the field the FieldSearch will find.
-	// In the context of the program, a top-level field with no parent is a TypeField.
-	Parent *models.Field
-
-	// The file that holds the type declaration for the field being searched.
-	DecFile *ast.File
 
 	// The options that pertain to a field (and its subfields).
 	Options []Option
@@ -43,67 +22,26 @@ type FieldSearch struct {
 }
 
 // SearchForField executes a field search by locating a field's type declaration, then its subfields.
-func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
-	cachename := fs.Import + fs.Package + fs.Name
-	if cachedsearch, ok := p.fieldcache[cachename]; ok {
-		if _, exists := fs.cache[cachename]; exists {
-			// a cyclic field (with the same type as its parent) is never
-			// shallow copied or assigned (unlike its parent or parent's fields).
-			cyclicfield := &models.Field{
-				Import:         fs.Import,
-				VariableName:   "." + cachedsearch.Name,
-				Package:        cachedsearch.Package,
-				Name:           cachedsearch.Name,
-				Definition:     cachedsearch.Definition,
-				OrigDefinition: cachedsearch.OrigDefinition,
-				Pointer:        cachedsearch.Pointer,
-				Parent:         cachedsearch,
-			}
-
-			// depth is ignored for cyclic fields.
-			setFieldOptions(cyclicfield, fs.Options)
-
-			return cyclicfield, nil
-		}
-
-		fs.cache[cachename] = true
-
-		return cachedsearch, nil
-	}
+func (p *Parser) SearchForField(fs *FieldSearch, typ types.Type) (*models.Field, error) {
+	parsedDefinition := p.parseDefinition(typ.String())
 
 	// setup the field
 	field := &models.Field{
-		Package:        fs.Package,
-		Name:           fs.Name,
-		Import:         fs.Import,
-		Definition:     fs.Definition,
-		OrigDefinition: fs.OrigDefinition,
-	}
-	if fs.OrigDefinition == "" {
-		field.OrigDefinition = fs.Definition
-	} else if strings.Index(fs.OrigDefinition, "struct") == 0 {
-		field.OrigDefinition = fs.Import + "/" + fs.OrigDefinition
-	}
-	if field.Definition == "" {
-		// a TypeField definition is its name (i.e `Account` in `type Account struct`)
-		field.Definition = field.Name
-	}
-
-	if fs.Parent != nil {
-		field.VariableName = "." + fs.Name
-		field.Parent = fs.Parent
+		Name:           parsedDefinition.typename,
+		VariableName:   parsedDefinition.typename,
+		Import:         parsedDefinition.imprt,
+		Definition:     parsedDefinition.typename,
+		OrigDefinition: parsedDefinition.typename,
+		Package:        p.packageNameByImport(parsedDefinition.imprt),
 	}
 
 	setFieldOptions(field, fs.Options)
 	fs.MaxDepth += field.Options.Depth
 
-	// set the cache
-	p.fieldcache[cachename] = field
-	fs.cache[cachename] = true
-
 	// find the fields of the main field if the max depth-level has not been reached.
 	if fs.MaxDepth == 0 || fs.Depth < fs.MaxDepth {
-		subfields, err := p.astSubfieldSearch(fs, field)
+		_, typ = p.unwrapPointer(typ)
+		subfields, err := p.astSubfieldSearch(typ.(*types.Named).Obj().Type().Underlying(), fs, field)
 		if err != nil {
 			return nil, err
 		}
@@ -115,67 +53,82 @@ func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
 }
 
 // astSubfieldSearch searches through an ast.Typespec for sub-fields.
-func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]*models.Field, error) {
-	// the original setup file (i.e setup.go) is used to locate the file location of a field's actual type declaration.
-	td, err := p.astLocateTypeDecl(&Locater{
-		SetupFile:  fs.DecFile,
-		Package:    typefield.Package,
-		Definition: typefield.Definition,
-	})
-	if err != nil {
-		return nil, err
-	}
-
+func (p *Parser) astSubfieldSearch(td types.Type, fs *FieldSearch, parent *models.Field) ([]*models.Field, error) {
 	// then that data is parsed into subfield information.
-	var subfields []*models.Field
+	subfields := make([]*models.Field, 0)
 
-	switch x := td.Package.TypesInfo.Types[td.TypeSpec.Type].Type.(type) {
+	switch x := td.(type) {
 	// structs have fields that can have fields.
 	case *types.Struct:
 		for i := 0; i < x.NumFields(); i++ {
 			xField := x.Field(i)
-
+			cachename := x.String() + "." + xField.Name()
+			if cachedsearch, ok := p.fieldcache[cachename]; ok {
+				if _, exists := fs.cache[cachename]; exists {
+					// a cyclic field (with the same type as its parent) is never
+					// shallow copied or assigned (unlike its parent or parent's fields).
+					cyclicfield := &(*cachedsearch)
+					// depth is ignored for cyclic fields.
+					setFieldOptions(cyclicfield, fs.Options)
+					subfields = append(subfields, cyclicfield)
+				}
+				fs.cache[cachename] = true
+				continue
+			}
 			// create a new typefield if a subfield is a custom type
 			parsedDefinition := p.parseDefinition(xField.Type().String())
-			if !isBasic(xField.Type()) {
+			tp := xField.Type()
+			def := xField.Type().String()
+			origDef := xField.Type().Underlying().String()
+			if sl, ok := xField.Type().(*types.Slice); ok {
+				origDef = sl.Elem().Underlying().String()
+				parsedDefinition := p.parseDefinition(sl.Elem().String())
+				def = parsedDefinition.typename
+				tp = sl.Elem()
+			}
+			subfield := &models.Field{
+				VariableName:   "." + xField.Name(),
+				Name:           xField.Name(),
+				Definition:     def,
+				OrigDefinition: origDef,
+				Import:         parsedDefinition.imprt,
+				Parent:         parent,
+				ContainerType:  parsedDefinition.containerType,
+			}
+			if parent == nil {
+				subfield.VariableName = "." + xField.Name()
+			}
+			if parsedDefinition.imprt != "" {
+				subfield.Package = p.packageNameByImport(parsedDefinition.imprt)
+				subfield.Definition = parsedDefinition.typename
+			}
+
+			if !isBasic(tp) {
+				if tpn, ok := tp.(*types.Pointer); ok {
+					tp = tpn.Elem()
+				}
+				subfield.OrigDefinition = parsedDefinition.typename
+
 				if parsedDefinition.err != nil {
 					return nil, parsedDefinition.err
 				}
 				// Search for the subfields of the subfield
-				origDef := xField.Type().Underlying().String()
-				if sl, ok := xField.Type().(*types.Slice); ok {
-					origDef = sl.Elem().Underlying().String()
+				subfield.OrigDefinition = origDef
+				if _, ok := xField.Type().Underlying().(*types.Struct); ok {
+					var err error
+					subfield.Fields, err = p.astSubfieldSearch(xField.Type().Underlying(), fs, subfield)
+					if err != nil {
+						return nil, err
+					}
 				}
-				subfield, err := p.SearchForField(&FieldSearch{
-					Import:         parsedDefinition.imprt,
-					Name:           xField.Name(),
-					Package:        parsedDefinition.pkg,
-					Definition:     parsedDefinition.typename,
-					OrigDefinition: origDef,
-					Parent:         typefield,
-					DecFile:        td.File,
-					Options:        fs.Options,
-					Depth:          fs.Depth + 1,
-					MaxDepth:       fs.MaxDepth,
-					cache:          fs.cache,
-				})
-				if err != nil {
-					return nil, err
-				}
-				subfield.ContainerType = parsedDefinition.containerType
-				subfields = append(subfields, subfield)
+				subfields = append(subfields, subfield.Fields...)
 			} else {
-				subfield := &models.Field{
-					VariableName:   "." + xField.Name(),
-					Name:           xField.Name(),
-					Definition:     parsedDefinition.typename,
-					OrigDefinition: parsedDefinition.typename,
-					Parent:         typefield,
-					ContainerType:  parsedDefinition.containerType,
-				}
-				setFieldOptions(subfield, fs.Options)
 				subfields = append(subfields, subfield)
 			}
+			setFieldOptions(subfield, fs.Options)
+			// set the cache
+			p.fieldcache[cachename] = subfield
+			fs.cache[cachename] = true
 		}
 	// interfaces have method fields
 	case *types.Interface:
@@ -187,7 +140,7 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 				Package:      xMethod.Pkg().Name(),
 				Name:         xMethod.Name(),
 				Definition:   xMethod.Type().String(),
-				Parent:       typefield,
+				Parent:       parent,
 			}
 			setFieldOptions(subfield, fs.Options)
 			subfields = append(subfields, subfield)
@@ -210,7 +163,10 @@ func isBasic(t types.Type) bool {
 	case *types.Pointer:
 		return isBasic(x.Elem())
 	default:
-		return false
+		if x == x.Underlying() {
+			return false
+		}
+		return isBasic(x.Underlying())
 	}
 }
 

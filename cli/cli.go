@@ -8,8 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"golang.org/x/tools/go/ast/astutil"
-
 	"github.com/switchupcb/copygen/cli/config"
 	"github.com/switchupcb/copygen/cli/generator"
 	"github.com/switchupcb/copygen/cli/matcher"
@@ -75,13 +73,6 @@ func (e *Environment) run() error {
 	// The matcher is run on the parsed data (to create the objects used during generation).
 	if err = matcher.Match(gen); err != nil {
 		return fmt.Errorf("%w", err)
-	}
-
-	// Add new imports if needed
-	for path, name := range gen.ImportsByPath {
-		if !gen.AlreadyImported[path] {
-			astutil.AddNamedImport(gen.Fileset, gen.SetupFile, name, path)
-		}
 	}
 
 	buf := bytes.NewBuffer(nil)

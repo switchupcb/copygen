@@ -6,8 +6,10 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/tools/go/ast/astutil"
 	"golang.org/x/tools/go/packages"
@@ -17,6 +19,9 @@ import (
 
 // Parser represents a parser that parses Abstract Syntax Tree data into models.
 type Parser struct {
+	ImportsByName map[string]string // Map of imports to its alias.
+	ImportsByPath map[string]string // Map of imports to its alias.
+
 	// The parser options contain options located in the entire setup file.
 	Options OptionMap
 
@@ -26,14 +31,14 @@ type Parser struct {
 	// The setup file as an Abstract Syntax Tree.
 	SetupFile *ast.File
 
+	// Path to root of go project
+	goProjectPath string
+
 	// The ast.Node of the `type Copygen Interface`.
 	Copygen *ast.InterfaceType
 
 	// A key value cache used to reduce the amount of package load operations during a field search.
-	pkgcache map[string][]*packages.Package
-
-	// The last package to be loaded by a Locater.
-	LastLocated *packages.Package
+	pkg *packages.Package
 
 	// A key value cache used to reduce the amount of AST operations during a field search.
 	fieldcache map[string]*models.Field
@@ -54,34 +59,49 @@ func Parse(gen *models.Generator) error {
 	}
 
 	// setup the parser
-	p := Parser{Setpath: absfilepath}
+	p := Parser{Setpath: absfilepath, goProjectPath: getProjectPath(absfilepath)}
+
+	config := &packages.Config{
+		Mode: pLoadMode,
+		Dir:  p.goProjectPath,
+	}
+
+	pkgs, err := packages.Load(config, "file="+p.Setpath)
+	if err != nil {
+		return fmt.Errorf("the setup file's package could not be loaded correctly: %v, %w", p.Setpath, err)
+	}
+	p.pkg = pkgs[0]
+
 	p.Fileset = token.NewFileSet()
 
 	p.SetupFile, err = parser.ParseFile(p.Fileset, absfilepath, nil, parser.ParseComments)
+	imports := astutil.Imports(p.pkg.Fset, p.SetupFile)
+
+	p.ImportsByName = map[string]string{}
+	p.ImportsByPath = map[string]string{}
+	alreadyImported := map[string]bool{}
+	for i := range imports {
+		for _, imp := range imports[i] {
+			ipath := imp.Path.Value[1 : len(imp.Path.Value)-1]
+			name := path.Base(ipath)
+			if imp.Name != nil {
+				name = imp.Name.Name
+			}
+			alreadyImported[ipath] = true
+			p.ImportsByName[name] = ipath
+			p.ImportsByPath[ipath] = name
+		}
+	}
+
 	if err != nil {
 		return fmt.Errorf("an error occurred parsing the specified .go setup file: %v\n%v", gen.Setpath, err)
 	}
 
 	p.Options = make(OptionMap)
 	p.fieldcache = make(map[string]*models.Field)
-	p.pkgcache = make(map[string][]*packages.Package)
 
-	pkgs, err := p.loadPackage("file=" + p.Setpath)
-	if err != nil {
-		return err
-	}
-
-	for _, pkg := range pkgs {
-		if p.SetupFile.Name == nil {
-			return fmt.Errorf("the setup file must declare a package: %v", p.Setpath)
-		} else if p.SetupFile.Name.Name == pkg.Name {
-			p.LastLocated = pkg
-			break
-		}
-	}
-
-	if p.LastLocated == nil {
-		return fmt.Errorf("the setup file's package could not be loaded correctly: %v", p.Setpath)
+	if p.SetupFile.Name == nil {
+		return fmt.Errorf("the setup file must declare a package: %v", p.Setpath)
 	}
 
 	// Traverse the Abstract Syntax Tree.
@@ -93,21 +113,10 @@ func Parse(gen *models.Generator) error {
 	gen.Fileset = p.Fileset
 	gen.SetupFile = p.SetupFile
 
-	imports := astutil.Imports(gen.Fileset, gen.SetupFile)
-
-	gen.ImportsByName = map[string]string{}
-	gen.ImportsByPath = map[string]string{}
-	gen.AlreadyImported = map[string]bool{}
-	for i := range imports {
-		for _, imp := range imports[i] {
-			ipath := imp.Path.Value[1 : len(imp.Path.Value)-1]
-			name := path.Base(ipath)
-			if imp.Name != nil {
-				name = imp.Name.Name
-			}
-			gen.AlreadyImported[ipath] = true
-			gen.ImportsByName[name] = ipath
-			gen.ImportsByPath[ipath] = name
+	// Add new imports if needed
+	for path, name := range p.ImportsByPath {
+		if !alreadyImported[path] {
+			astutil.AddNamedImport(gen.Fileset, gen.SetupFile, name, path)
 		}
 	}
 	return nil
@@ -116,20 +125,13 @@ func Parse(gen *models.Generator) error {
 // pLoadMode represents the load mode required for sufficient information during package load.
 const pLoadMode = packages.NeedName + packages.NeedImports + packages.NeedTypes + packages.NeedSyntax + packages.NeedTypesInfo
 
-// loadPackage loads a package.
-func (p *Parser) loadPackage(importPath string) ([]*packages.Package, error) {
-	if pkgs, exists := p.pkgcache[importPath]; exists {
-		return pkgs, nil
+// getProjectPath go up on folders to get directory with `go.mod` file.
+func getProjectPath(ppath string) string {
+	ppath = strings.Replace(ppath, "\\", "/", -1)
+	for ; ppath != ""; ppath = path.Dir(ppath) {
+		if _, err := os.Stat(path.Join(ppath, "go.mod")); err == nil {
+			break
+		}
 	}
-
-	config := &packages.Config{Mode: pLoadMode, Logf: nil}
-
-	pkgs, err := packages.Load(config, importPath)
-	if err != nil {
-		return nil, fmt.Errorf("an error occurred loading a package from the GOPATH with import: %v.\n%v", importPath, err)
-	}
-
-	p.pkgcache[importPath] = pkgs
-
-	return pkgs, nil
+	return ppath
 }

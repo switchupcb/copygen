@@ -3,71 +3,64 @@ package parser
 import (
 	"fmt"
 	"go/ast"
+	"go/types"
 
 	"github.com/switchupcb/copygen/cli/models"
 )
 
 // parseFunctions parses the AST for functions in the setup file.
-func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, error) {
-	functions := make([]models.Function, 0, len(copygen.Methods.List))
+func (p *Parser) parseFunctions() ([]models.Function, error) {
+	functions := make([]models.Function, 0)
+	for i, def := range p.pkg.TypesInfo.Defs {
+		_, _ = i, def
+		if def != nil && def.Name() == "Copygen" {
+			obj := def.(*types.TypeName)
+			if t, ok := obj.Type().Underlying().(*types.Interface); ok {
+				for i := 0; i < t.NumMethods(); i++ {
+					method := t.Method(i)
+					s := p.pkg.Syntax[0].Scope.Lookup("Copygen").Decl.(*ast.TypeSpec)
+					z := s.Type.(*ast.InterfaceType).Methods.List[i].Doc
+					options, manual := p.filterOptionMap(z)
+					parsed, err := p.parseTypes(method.Type().(*types.Signature), options)
+					if err != nil {
+						return nil, fmt.Errorf("an error occurred while parsing the types of function %q.\n%v", method.Name(), err)
+					}
 
-	for _, method := range copygen.Methods.List {
-		options, manual := p.filterOptionMap(method)
+					function := models.Function{
+						Name: method.Name(),
+						To:   parsed.toTypes,
+						From: parsed.fromTypes,
+						Options: models.FunctionOptions{
+							Custom: p.assignCustomOption(options),
+							Manual: manual,
+						},
+					}
 
-		parsed, err := p.parseTypes(method, options)
-		if err != nil {
-			return nil, fmt.Errorf("an error occurred while parsing the types of function %q.\n%v", parseMethodForName(method), err)
+					functions = append(functions, function)
+				}
+			}
 		}
-
-		function := models.Function{
-			Name: parseMethodForName(method),
-			To:   parsed.toTypes,
-			From: parsed.fromTypes,
-			Options: models.FunctionOptions{
-				Custom: p.assignCustomOption(options),
-				Manual: manual,
-			},
-		}
-
-		functions = append(functions, function)
 	}
-
 	return functions, nil
-}
-
-// parseMethodForName parses a method inside of a Copygen interface to provide its name.
-func parseMethodForName(method *ast.Field) string {
-	var funcname string // i.e 'ModelsToDomain' in func ModelsToDomain(models.Account, *models.User) *domain.Account
-
-	// ast Note: "Field.Names contains a single name "type" for elements of interface type lists"
-	for _, name := range method.Names {
-		funcname += name.String() // i.e ModelsToDomain
-	}
-
-	return funcname
 }
 
 // filterOptionMap filters an Option map for options that only pertain to the fields of a function.
 // To reduce overhead, it also returns whether the function uses a manual matcher.
-func (p *Parser) filterOptionMap(x ast.Node) ([]Option, bool) {
+func (p *Parser) filterOptionMap(x *ast.CommentGroup) ([]Option, bool) {
 	var (
 		options []Option
 		manual  bool
 	)
-
-	ast.Inspect(x, func(node ast.Node) bool {
-		if xcg, ok := node.(*ast.CommentGroup); ok {
-			for _, comment := range xcg.List {
-				if _, exists := p.Options[comment.Text]; exists {
-					options = append(options, p.Options[comment.Text])
-					if p.Options[comment.Text].Category == categoryMap {
-						manual = true
-					}
+	if x != nil {
+		for _, comment := range x.List {
+			if _, exists := p.Options[comment.Text]; exists {
+				options = append(options, p.Options[comment.Text])
+				if p.Options[comment.Text].Category == categoryMap {
+					manual = true
 				}
 			}
 		}
-		return true
-	})
+	}
 
 	// add all convert options; which aren't in the scope of any functions but may apply
 	for _, option := range p.Options {

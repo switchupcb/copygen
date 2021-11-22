@@ -49,7 +49,7 @@ func (p *Parser) Traverse(gen *models.Generator) error {
 	}
 
 	var err error
-	gen.Functions, err = p.parseFunctions(p.Copygen)
+	gen.Functions, err = p.parseFunctions()
 
 	if err != nil {
 		return err

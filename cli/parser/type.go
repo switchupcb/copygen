@@ -2,8 +2,10 @@ package parser
 
 import (
 	"fmt"
-	"go/ast"
+	"go/types"
+	"path"
 	"strconv"
+	"strings"
 
 	"github.com/switchupcb/copygen/cli/models"
 )
@@ -13,33 +15,42 @@ type parsedTypes struct {
 	toTypes   []models.Type
 }
 
+func (p *Parser) packageNameByImport(imp string) string {
+	if p.ImportsByPath[imp] == "" {
+		k := 0
+		bn := path.Base(imp)
+		// Fix for packages like `yaml.v3` with dot in name. Only `yaml` should be taken.
+		if strings.Index(bn, ".") > 0 {
+			bn = bn[0:strings.Index(bn, ".")]
+		}
+		for k = 0; p.ImportsByName[bn+strconv.Itoa(k)] != ""; k++ {
+		}
+		name := bn
+		if k > 0 {
+			name += strconv.Itoa(k)
+		}
+		p.ImportsByName[name] = imp
+		p.ImportsByPath[imp] = name
+	}
+	return p.ImportsByPath[imp]
+}
+
 // parseTypes parses an ast.Field (of type func) for to-types and from-types.
-func (p *Parser) parseTypes(function *ast.Field, options []Option) (parsedTypes, error) {
+func (p *Parser) parseTypes(function *types.Signature, options []Option) (parsedTypes, error) {
 	var result parsedTypes
 
-	fn, ok := function.Type.(*ast.FuncType)
-	if !ok {
-		return result, fmt.Errorf("an error occurred parsing the types of function %v at Line %d", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
-	}
-
-	fromTypes, err := p.parseFieldList(fn.Params.List, options) // (incoming) parameters "non-nil"
+	fromTypes, err := p.parseFieldList(function.Params(), options) // (incoming) parameters "non-nil"
 	if err != nil {
 		return result, err
 	}
 
 	var toTypes []models.Type
 
-	if fn.Results != nil {
-		toTypes, err = p.parseFieldList(fn.Results.List, options) // (outgoing) results "or nil"
+	if function.Results() != nil {
+		toTypes, err = p.parseFieldList(function.Results(), options) // (outgoing) results "or nil"
 		if err != nil {
 			return result, err
 		}
-	}
-
-	if len(fromTypes) == 0 {
-		return result, fmt.Errorf("function %v at Line %d has no types to copy from", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
-	} else if len(toTypes) == 0 {
-		return result, fmt.Errorf("function %v at Line %d has no types to copy to", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
 	}
 
 	// assign variable names and determine the definition and sub-fields of each type
@@ -59,38 +70,50 @@ func (p *Parser) parseTypes(function *ast.Field, options []Option) (parsedTypes,
 }
 
 // parseFieldList parses an Abstract Syntax Tree field list for a type's fields.
-func (p *Parser) parseFieldList(fieldlist []*ast.Field, options []Option) ([]models.Type, error) {
-	types := make([]models.Type, 0, len(fieldlist))
+func (p *Parser) parseFieldList(fieldlist *types.Tuple, options []Option) ([]models.Type, error) {
+	types := make([]models.Type, 0, fieldlist.Len())
 
-	for _, astfield := range fieldlist {
-		field, err := p.parseTypeField(astfield, options)
+	for i := 0; i < fieldlist.Len(); i++ {
+		field, err := p.parseTypeField(fieldlist.At(i), options)
+		field.Package = p.ImportsByPath[field.Import]
 		if err != nil {
 			return nil, err
 		}
 
 		types = append(types, models.Type{Field: field})
+
 	}
 
 	return types, nil
 }
 
+func (p *Parser) unwrapPointer(t types.Type) (string, *types.Named) {
+	out := ""
+	if subType, ok := t.(*types.Pointer); ok {
+		out = "*"
+		resp, newT := p.unwrapPointer(subType.Elem())
+		out += resp
+		t = newT
+	}
+	return out, t.(*types.Named)
+}
+
 // parseTypeField parses a function *ast.Field into a field model.
-func (p *Parser) parseTypeField(field *ast.Field, options []Option) (*models.Field, error) {
-	parsed := astParseFieldName(field)
+func (p *Parser) parseTypeField(field *types.Var, options []Option) (*models.Field, error) {
+	strPtr, ptr := p.unwrapPointer(field.Type())
+	parsed := parsedFieldName{
+		pkg:  field.Pkg().Name(),
+		name: ptr.Obj().Name(),
+		ptr:  strPtr,
+	}
 	if parsed.name == "" {
 		return nil, fmt.Errorf("unexpected field expression %v in the Abstract Syntax Tree", field)
 	}
 
 	typefield, err := p.SearchForField(&FieldSearch{
-		DecFile:    p.SetupFile,
-		Import:     "file=" + p.Setpath,
-		Package:    parsed.pkg,
-		Name:       parsed.name,
-		Definition: "",
-		Options:    options,
-		Parent:     nil,
-		cache:      make(map[string]bool),
-	})
+		Options: options,
+		cache:   make(map[string]bool),
+	}, field.Type())
 	if err != nil {
 		return nil, fmt.Errorf("an error occurred while searching for the top-level Field %q of package %q.\n%v", parsed.name, parsed.pkg, err)
 	}
