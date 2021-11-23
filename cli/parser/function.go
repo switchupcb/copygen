@@ -11,16 +11,15 @@ import (
 // parseFunctions parses the AST for functions in the setup file.
 func (p *Parser) parseFunctions() ([]models.Function, error) {
 	functions := make([]models.Function, 0)
-	for i, def := range p.pkg.TypesInfo.Defs {
-		_, _ = i, def
+	for _, def := range p.pkg.TypesInfo.Defs {
 		if def != nil && def.Name() == "Copygen" {
 			obj := def.(*types.TypeName)
 			if t, ok := obj.Type().Underlying().(*types.Interface); ok {
 				for i := 0; i < t.NumMethods(); i++ {
 					method := t.Method(i)
-					s := p.pkg.Syntax[0].Scope.Lookup("Copygen").Decl.(*ast.TypeSpec)
-					z := s.Type.(*ast.InterfaceType).Methods.List[i].Doc
-					options, manual := p.filterOptionMap(z)
+					decl := p.pkg.Syntax[0].Scope.Lookup("Copygen").Decl.(*ast.TypeSpec)
+					doc := decl.Type.(*ast.InterfaceType).Methods.List[i].Doc
+					options, manual := p.filterOptionMap(doc)
 					parsed, err := p.parseTypes(method.Type().(*types.Signature), options)
 					if err != nil {
 						return nil, fmt.Errorf("an error occurred while parsing the types of function %q.\n%v", method.Name(), err)
