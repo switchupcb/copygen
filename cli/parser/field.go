@@ -41,7 +41,7 @@ func (p *Parser) SearchForField(fs *FieldSearch, typ types.Type) (*models.Field,
 	// find the fields of the main field if the max depth-level has not been reached.
 	if fs.MaxDepth == 0 || fs.Depth < fs.MaxDepth {
 		_, typ = p.unwrapPointer(typ)
-		subfields, err := p.astSubfieldSearch(typ.(*types.Named).Obj().Type().Underlying(), fs, field)
+		subfields, err := p.subfieldSearch(typ.(*types.Named).Obj().Type().Underlying(), fs, field)
 		if err != nil {
 			return nil, err
 		}
@@ -52,8 +52,8 @@ func (p *Parser) SearchForField(fs *FieldSearch, typ types.Type) (*models.Field,
 	return field, nil
 }
 
-// astSubfieldSearch searches through an ast.Typespec for sub-fields.
-func (p *Parser) astSubfieldSearch(td types.Type, fs *FieldSearch, parent *models.Field) ([]*models.Field, error) {
+// subfieldSearch searches through an types.Type for sub-fields.
+func (p *Parser) subfieldSearch(td types.Type, fs *FieldSearch, parent *models.Field) ([]*models.Field, error) {
 	// then that data is parsed into subfield information.
 	subfields := make([]*models.Field, 0)
 
@@ -116,7 +116,7 @@ func (p *Parser) astSubfieldSearch(td types.Type, fs *FieldSearch, parent *model
 				subfield.OrigDefinition = origDef
 				if _, ok := xField.Type().Underlying().(*types.Struct); ok {
 					var err error
-					subfield.Fields, err = p.astSubfieldSearch(xField.Type().Underlying(), fs, subfield)
+					subfield.Fields, err = p.subfieldSearch(xField.Type().Underlying(), fs, subfield)
 					if err != nil {
 						return nil, err
 					}
