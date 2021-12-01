@@ -3,6 +3,7 @@ package models
 
 import (
 	"fmt"
+	"reflect"
 )
 
 // Field represents a field to be copied to/from.
@@ -60,6 +61,7 @@ type Field struct {
 
 	// The custom options of a field.
 	Options FieldOptions
+	Tags    reflect.StructTag
 }
 
 // FieldOptions represent options for a Field.
@@ -75,11 +77,13 @@ type FieldOptions struct {
 
 	// Whether the field should be deepcopied.
 	Deepcopy bool
+
+	Tag string
 }
 
 // IsType returns whether the field is a type.
 func (f *Field) IsType() bool {
-	return f.Parent == nil
+	return f == nil || f.Parent == nil
 }
 
 // IsPointer returns the type is a pointer of a type definition.
@@ -96,8 +100,9 @@ func (f *Field) FullName(name string) string {
 		} else {
 			name = f.Name + "." + name
 		}
-
-		return f.Parent.FullName(name)
+		if f.Parent != nil {
+			return f.Parent.FullName(name)
+		}
 	}
 
 	if name != "" {

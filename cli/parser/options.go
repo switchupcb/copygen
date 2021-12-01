@@ -24,16 +24,17 @@ type Option struct {
 }
 
 const (
-	categoryConvert  = "convert"
-	categoryCustom   = "custom"
-	categoryDeepCopy = "deepcopy"
-	categoryDepth    = "depth"
-	categoryMap      = "map"
+	categoryConvert   = "convert"
+	categoryCustom    = "custom"
+	categoryDeepCopy  = "deepcopy"
+	categoryDepth     = "depth"
+	categoryMap       = "map"
+	categoryCommonTag = "tag"
 )
 
 // parseConvert parses a convert option.
 func parseConvert(option, value string) (*Option, error) {
-	splitoption, err := splitOption(option, categoryConvert, "<option>:<whitespaces><regex><whitespaces><regex>")
+	splitoption, err := splitOption(option, categoryConvert, "<option>:<whitespaces><tag name><whitespaces><regex>")
 	if err != nil {
 		return nil, err
 	}
@@ -124,4 +125,24 @@ func splitOption(option, category, format string) ([]string, error) {
 	}
 
 	return splitoption, nil
+}
+
+// parseMatchByTag parses a map option.
+func parseMatchByTag(option string) (*Option, error) {
+	splitoption, err := splitOption(option, categoryCommonTag, "<option>:<whitespaces><model><whitespaces><tag>")
+	if err != nil {
+		return nil, err
+	}
+
+	fromRe, err := regexp.Compile("^" + splitoption[0] + "$")
+	if err != nil {
+		return nil, fmt.Errorf("an error occurred compiling the regex for the from field in the %s option: %q\n%v", categoryMap, option, err)
+	}
+
+	// map options are compared in the matcher
+	return &Option{
+		Category: categoryCommonTag,
+		Regex:    map[int]*regexp.Regexp{0: fromRe},
+		Value:    splitoption[1],
+	}, nil
 }

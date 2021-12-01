@@ -81,7 +81,6 @@ func (p *Parser) parseFieldList(fieldlist *types.Tuple, options []Option) ([]mod
 		}
 
 		types = append(types, models.Type{Field: field})
-
 	}
 
 	return types, nil

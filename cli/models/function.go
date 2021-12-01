@@ -12,4 +12,5 @@ type Function struct {
 type FunctionOptions struct {
 	Custom map[string][]string // The custom options of a function (map[option]values).
 	Manual bool                // Whether the function uses a manual matcher (as opposed to an Automatcher).
+	Tag    map[string]string
 }

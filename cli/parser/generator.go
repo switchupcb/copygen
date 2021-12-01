@@ -126,6 +126,13 @@ func (p *Parser) assignOptions(x ast.Node) ([]*ast.Comment, error) {
 						return false
 					}
 					p.Options[text] = *opt
+				case categoryCommonTag:
+					opt, err := parseMatchByTag(option)
+					if err != nil {
+						assignerr = err
+						return false
+					}
+					p.Options[text] = *opt
 				default:
 					p.Options[text] = Option{
 						Category: categoryCustom,

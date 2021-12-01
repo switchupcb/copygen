@@ -2,6 +2,7 @@ package parser
 
 import (
 	"go/types"
+	"reflect"
 
 	"github.com/switchupcb/copygen/cli/models"
 )
@@ -24,7 +25,8 @@ type FieldSearch struct {
 // SearchForField executes a field search by locating a field's type declaration, then its subfields.
 func (p *Parser) SearchForField(fs *FieldSearch, typ types.Type) (*models.Field, error) {
 	parsedDefinition := p.parseDefinition(typ.String())
-
+	// We must reset cache otherwise second function with same methods will fail its execution .
+	p.fieldcache = map[string]*models.Field{}
 	// setup the field
 	field := &models.Field{
 		Name:           parsedDefinition.typename,
@@ -62,6 +64,7 @@ func (p *Parser) subfieldSearch(td types.Type, fs *FieldSearch, parent *models.F
 	case *types.Struct:
 		for i := 0; i < x.NumFields(); i++ {
 			xField := x.Field(i)
+			xTag := x.Tag(i)
 			cachename := x.String() + "." + xField.Name()
 			if cachedsearch, ok := p.fieldcache[cachename]; ok {
 				if _, exists := fs.cache[cachename]; exists {
@@ -93,6 +96,7 @@ func (p *Parser) subfieldSearch(td types.Type, fs *FieldSearch, parent *models.F
 				OrigDefinition: origDef,
 				Import:         parsedDefinition.imprt,
 				Parent:         parent,
+				Tags:           reflect.StructTag(xTag),
 				ContainerType:  parsedDefinition.containerType,
 				Pointer:        parsedDefinition.pointer,
 			}
@@ -109,7 +113,6 @@ func (p *Parser) subfieldSearch(td types.Type, fs *FieldSearch, parent *models.F
 					tp = tpn.Elem()
 				}
 				subfield.OrigDefinition = parsedDefinition.typename
-
 				if parsedDefinition.err != nil {
 					return nil, parsedDefinition.err
 				}
@@ -178,6 +181,7 @@ func setFieldOptions(field *models.Field, options []Option) {
 	setDeepcopyOption(field, options)
 	setDepthOption(field, options)
 	setMapOption(field, options)
+	setTagOption(field, options)
 }
 
 // setConvertOption sets a field's convert option.
@@ -230,6 +234,18 @@ func setMapOption(field *models.Field, options []Option) {
 		if options[i].Category == categoryMap && options[i].Regex[0].MatchString(field.FullName("")) {
 			if value, ok := options[i].Value.(string); ok {
 				field.Options.Map = value
+				break
+			}
+		}
+	}
+}
+
+func setTagOption(field *models.Field, options []Option) {
+	// A tag option can only be set to a field once, so use the last one
+	for i := len(options) - 1; i > -1; i-- {
+		if options[i].Category == categoryCommonTag && options[i].Regex[0].MatchString(field.Package+"."+field.Name) {
+			if value, ok := options[i].Value.(string); ok {
+				field.Options.Tag = value
 				break
 			}
 		}
