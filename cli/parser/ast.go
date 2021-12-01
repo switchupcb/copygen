@@ -20,6 +20,7 @@ type parsedDefinition struct {
 	imprt         string
 	typename      string
 	containerType models.ContainerType
+	pointer       string
 }
 
 // parseDefinition determines the actual import, package, and name of a field based on its *types.Var definition.
@@ -30,6 +31,9 @@ func (p *Parser) parseDefinition(definition string) parsedDefinition {
 	if strings.Index(definition, "[]") == 0 {
 		definition = strings.TrimPrefix(definition, "[]")
 		pd.containerType = models.ContainerTypeSlice
+	}
+	if strings.Index(definition, "*") == 0 {
+		pd.pointer = "*"
 	}
 	definition = strings.TrimPrefix(definition, "*")
 	splitdefinition := strings.Split(definition, ".")

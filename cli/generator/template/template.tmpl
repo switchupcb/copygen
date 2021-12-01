@@ -11,15 +11,15 @@
 {{end -}}
 
 {{- define "CopySlice" -}}
-    make([]
+    make([]{{.Pointer}}
     {{- if ne .Package "" -}} {{.Package}}. {{- end -}}
     {{.Definition}}, len({{.From.FullVariableName ""}}))
     for key, val := range {{.From.FullVariableName ""}} {
         {{.FullVariableName ""}}[key] =
-        {{- if ne .Package "" -}} {{.Package}}. {{- end -}}
         {{- if eq .Definition .From.Definition -}}
             val
         {{- else -}}
+            {{- if ne .Package "" -}} {{.Package}}. {{- end -}}
             {{.Definition}}(val)
         {{- end -}}
     }

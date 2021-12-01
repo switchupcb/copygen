@@ -94,6 +94,7 @@ func (p *Parser) subfieldSearch(td types.Type, fs *FieldSearch, parent *models.F
 				Import:         parsedDefinition.imprt,
 				Parent:         parent,
 				ContainerType:  parsedDefinition.containerType,
+				Pointer:        parsedDefinition.pointer,
 			}
 			if parent == nil {
 				subfield.VariableName = "." + xField.Name()
@@ -121,6 +122,7 @@ func (p *Parser) subfieldSearch(td types.Type, fs *FieldSearch, parent *models.F
 						return nil, err
 					}
 				}
+				subfields = append(subfields, subfield)
 				subfields = append(subfields, subfield.Fields...)
 			} else {
 				subfields = append(subfields, subfield)

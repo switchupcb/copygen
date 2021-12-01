@@ -80,8 +80,11 @@ func (e *Environment) run() error {
 	// Check for used imports.
 	usedImports := map[string]bool{}
 	for _, function := range gen.Functions {
-		for _, fromType := range function.To {
-			usedImports[fromType.Field.Import] = true
+		for _, toType := range function.To {
+			usedImports[toType.Field.Import] = true
+			for _, Type := range toType.Field.Fields {
+				usedImports[Type.Import] = true
+			}
 		}
 	}
 
