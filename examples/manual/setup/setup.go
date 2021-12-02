@@ -4,8 +4,8 @@ package copygen
 import (
 	c "strconv"
 
-	"github.com/switchupcb/copygen/examples/main/domain"
-	"github.com/switchupcb/copygen/examples/main/models"
+	"github.com/switchupcb/copygen/examples/manual/domain"
+	"github.com/switchupcb/copygen/examples/manual/models"
 )
 
 // Copygen defines the functions that will be generated.
