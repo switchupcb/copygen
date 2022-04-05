@@ -26,7 +26,7 @@ The command-line interface _(cli)_ consists of 5 packages.
 | models    | Contains models based on the application's functionality _(business logic)_.                       |
 | config    | Contains external loaders used to configure the file settings and command line options.            |
 | parser    | Uses Abstract Syntax Tree (AST) analysis to parse a data file for fields.                          |
-| matcher   | Contains application logic to match fields to eachoher _(manually and automatically)_.             |
+| matcher   | Contains application logic to match fields to each other _(manually and automatically)_.             |
 | generator | Contains the generator logic used to generate code _(and interpret templates)_.                    |
 
 The command line interface package allows you see the flow of the program.
@@ -58,8 +58,8 @@ return nil
 #### Parser
 
 A setup file's Abstract Syntax Tree is traversed once. This is done in three steps:
-1. **Options:** Regex complilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique option-comments once. The location of a `convert` option cannot be assumed: Therefore, we must traverse the entire Abstract Syntax Tree in order to correctly assign options. As a result, the `type Copygen Interface` is stored for post-traversal analysis.
-2. **Keep:** The code that is kept after generation is stored — or moreso kept — in the AST. We do not want to keep option-comments nor the Copygen interface in the AST. However, they must still be present during the `type Copygen Interface` analysis _(which requires the option-comments)_. As a result, comments are stored in the parser for post-analysis removal.
+1. **Options:** Regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique option-comments once. The location of a `convert` option cannot be assumed: Therefore, we must traverse the entire Abstract Syntax Tree in order to correctly assign options. As a result, the `type Copygen Interface` is stored for post-traversal analysis.
+2. **Keep:** The code that is kept after generation is stored — or more so kept — in the AST. We do not want to keep option-comments nor the Copygen interface in the AST. However, they must still be present during the `type Copygen Interface` analysis _(which requires the option-comments)_. As a result, comments are stored in the parser for post-analysis removal.
 3. **type Copygen Interface:** The `type Copygen interface` is parsed to setup the function and fields used in the program. 
 
 ### Specification
@@ -98,17 +98,17 @@ for _, field := range fields {
 
 The same reasoning applies to `for i := 0; i < count; i++` loops.
 
-#### Antipatterns
+#### Anti-patterns
 
-Using the `*models.Field` definition for a `models.Field`'s `Parent` field can be considered an antipattern. In the program, a `models.Type` specifically refers to the types in a function signature _(i.e `func(models.Account, models.User) *domain.Account`)_. While these types **are** fields _(which may contain other fields)_ , their actual `Type` properties are not relevant to `models.Field`. As a result, `models.Field` objects are pointed directly to maintain simplicity.
+Using the `*models.Field` definition for a `models.Field`'s `Parent` field can be considered an anti-pattern. In the program, a `models.Type` specifically refers to the types in a function signature _(i.e `func(models.Account, models.User) *domain.Account`)_. While these types **are** fields _(which may contain other fields)_ , their actual `Type` properties are not relevant to `models.Field`. As a result, `models.Field` objects are pointed directly to maintain simplicity.
 
 Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation`: `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program and more room for extension.
 
 #### CI/CD
 
-Copygen uses [golangci-lint](https://github.com/golangci/golangci-lint) in order to statically analyze code. You can install golangci-lint with `go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1` and run it using `golangci-lint run`. If you recieve a `diff` error, you must add a `diff` tool in your PATH. There is one located in the `Git` bin.
+Copygen uses [golangci-lint](https://github.com/golangci/golangci-lint) in order to statically analyze code. You can install golangci-lint with `go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1` and run it using `golangci-lint run`. If you receive a `diff` error, you must add a `diff` tool in your PATH. There is one located in the `Git` bin.
 
-If you recieve `File is not ... with -...`, use `golangci-lint run --disable-all --no-config -Egofmt --fix`.
+If you receive `File is not ... with -...`, use `golangci-lint run --disable-all --no-config -Egofmt --fix`.
 
 # Roadmap
 
