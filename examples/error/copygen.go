@@ -7,8 +7,8 @@ package copygen
 import (
 	c "strconv"
 
-	"github.com/switchupcb/copygen/examples/manual/domain"
-	"github.com/switchupcb/copygen/examples/manual/models"
+	"github.com/switchupcb/copygen/examples/error/domain"
+	"github.com/switchupcb/copygen/examples/error/models"
 )
 
 /* Define the function and field this converter is applied to using regex. */
