@@ -1,6 +1,6 @@
-<img src=".github/logo.svg" width="512">
+[<img id="copygen" alt="Copygen Logo" src=".github/logo.svg" width="512">](https://github.com/switchupcb/copygen#copygen)
 
-<br>
+---
 
 [![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=for-the-badge&logo=appveyor&logo=appveyor)](https://pkg.go.dev/github.com/switchupcb/copygen)
 [![Go Report Card](https://goreportcard.com/badge/github.com/switchupcb/copygen?style=for-the-badge)](https://goreportcard.com/report/github.com/switchupcb/copygen)
