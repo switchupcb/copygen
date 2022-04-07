@@ -29,8 +29,9 @@ Each example has a **README**.
 | [automatch](examples/automatch/) | Uses the automatch feature with depth. |
 | [error](examples/error/)         | Uses templates to return an error.     |
 | deepcopy _(Roadmap Feature)_     | Uses the deepcopy option.              |
+| [program](examples/program/)     | Uses Copygen programmatically.         |
 
-This [example](examples/main/) uses three type-structs to generate the `ModelsToDomain()` function.
+This [example](examples/main/) uses three type-structs to generate the `ModelsToDomain()` function using a Command Line Interface.
 
 ### Types
 
@@ -229,6 +230,10 @@ _Use of Go Modules in templates are unsupported at the current time._
 
 ##### Shallow Copy vs. Deep Copy
 The library generates a [shallow copy](https://en.m.wikipedia.org/wiki/Object_copying#Shallow_copy) function by default. An easy way to deep-copy fields with the same return type is by using `new()` as or in a converter function **or** by using a custom template.
+
+##### String Builder
+
+The provided template for code generation uses string concatenation for readability. If this function becomes too slow, replace string concatenation with `strings.Builder`.
 
 ## Matcher
 

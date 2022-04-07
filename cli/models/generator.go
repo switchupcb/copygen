@@ -9,7 +9,6 @@ type Generator struct {
 	Outpath   string           // The filepath the generated code is output to.
 	Tempath   string           // The filepath for the template used to generate code.
 	Keep      []byte           // The code that is kept from the setup file.
-
 }
 
 // GeneratorOptions represent options for a Generator.

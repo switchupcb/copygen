@@ -7,7 +7,7 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// Generate provides generated code.
+// Generate generates code.
 // GENERATOR FUNCTION.
 // EDITABLE.
 // DO NOT REMOVE.
