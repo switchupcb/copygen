@@ -1,8 +1,8 @@
 # Contributing
 
-## License
-
-You agree to license any contribution to this library under the [MIT License](https://github.com/switchupcb/copygen/blob/main/LICENSE).
+## Contributor License Agreement
+ 
+Contributions to this project must be accompanied by a **Contributor License Agreement**. You or your employer retain the copyright to your contribution. This simply gives us permission to use and redistribute your contributions as part of the project.
 
 ## Pull Requests
 
@@ -10,7 +10,7 @@ Pull requests must work with all examples _(confirmed through [integration tests
 
 ## Domain
 
- The domain of Copygen lies in field manipulation. The program uses provided types to determine the fields we must assign. In this context, a "Type" refers to _the types used in a function (as parameters or results)_ rather than a type used to define variables. As the `parser` and `matcher` provides all required field information, you can improve Copygen by modifying the generator.
+The domain of Copygen lies in field manipulation. The program uses provided types to determine the fields we must assign. In this context, a "Type" refers to _the types used in a function (as parameters or results)_ rather than a type used to define variables. As the `parser` and `matcher` provides all required field information, you can improve Copygen by modifying the generator.
 
 ## Project Structure
 
@@ -26,7 +26,7 @@ The command-line interface _(cli)_ consists of 5 packages.
 | models    | Contains models based on the application's functionality _(business logic)_.                       |
 | config    | Contains external loaders used to configure the file settings and command line options.            |
 | parser    | Uses Abstract Syntax Tree (AST) analysis to parse a data file for fields.                          |
-| matcher   | Contains application logic to match fields to each other _(manually and automatically)_.             |
+| matcher   | Contains application logic to match fields to each other _(manually and automatically)_.           |
 | generator | Contains the generator logic used to generate code _(and interpret templates)_.                    |
 
 The command line interface package allows you see the flow of the program.

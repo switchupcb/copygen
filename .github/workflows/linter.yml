@@ -1,5 +1,4 @@
-name: "linter"
-
+name: "Static Code Analysis"
 on:
   push:
     branches:
