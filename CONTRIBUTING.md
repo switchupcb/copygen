@@ -75,13 +75,24 @@ Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fiel
 
 ### Parser
 
-A setup file's Abstract Syntax Tree is traversed once. This is done in three steps:
+A `setup` file's abstract syntax tree is traversed once, but involves three processes.
 
-1. **Options:** Regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique option-comments once. The location of a `convert` option cannot be assumed: Therefore, we must traverse the entire Abstract Syntax Tree in order to correctly assign options. As a result, the `type Copygen Interface` is stored for post-traversal analysis.
-   
-2. **Keep:** The code that is kept after generation is stored — or more so kept — in the AST. We do not want to keep option-comments nor the Copygen interface in the AST. However, they must still be present during the `type Copygen Interface` analysis _(which requires the option-comments)_. As a result, comments are stored in the parser for post-analysis removal.
-   
-3. **type Copygen Interface:** The `type Copygen interface` is parsed to setup the function and fields used in the program.
+#### Keep
+
+The `setup` file is parsed using an Abstract Syntax Tree. This tree contains the `type Copygen Interface` but also code that must be **kept** in the generated `output` file. For example, the package declaration, file imports, convert functions, and [custom types](README.md#custom-types) all exist _outside_ of the `type Copygen Interface`. Instead of storing these declarations and attempting to regenerate them, we simply discard declarations — from the `setup` file's AST — that won't be kept: In this case, the `type Copygen Interface` and `ast.Comments` (that refer to `Options`).
+
+#### Options
+
+**Convert** options are defined **outside** of the `type Copygen Interface` and may apply to multiple functions. As a result, all `ast.Comments` must be parsed before `models.Function` and `models.Field` objects can be created. In order to do this, the `type Copygen Interface` is stored, but **NOT** analyzed until the `setup` file is traversed. This leaves two ways to parse `ast.Comments` into `Options`.
+
+1. Parse **Convert** `ast.Comments` into `Options` during `setup` file traversal, and **field** `ast.Comments` into `Options` _(defined above Copygen functions)_ while analyzing the `type Copygen Interface`.
+2. Parse `ast.Comments` that were removed from the AST into `Options`.
+
+Method **1** is slightly more efficient _(since **convert** `ast.Comments` are only referenced once; not stored)_, but only used because **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. In contrast, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
+
+#### Copygen Interface
+
+The `type Copygen interface` is parsed to setup the `models.Function` and `models.Field` objects used in the `Matcher` and `Generator`.
 
 ## CI/CD
 

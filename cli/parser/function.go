@@ -5,6 +5,7 @@ import (
 	"go/ast"
 
 	"github.com/switchupcb/copygen/cli/models"
+	"github.com/switchupcb/copygen/cli/parser/options"
 )
 
 // parseFunctions parses the AST for functions in the setup file.
@@ -12,7 +13,7 @@ func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, 
 	functions := make([]models.Function, 0, len(copygen.Methods.List))
 
 	for _, method := range copygen.Methods.List {
-		options, manual := p.filterOptionMap(method)
+		options, manual := p.getNodeOptions(method)
 
 		parsed, err := p.parseTypes(method, options)
 		if err != nil {
@@ -47,53 +48,48 @@ func parseMethodForName(method *ast.Field) string {
 	return funcname
 }
 
-// filterOptionMap filters an Option map for options that only pertain to the fields of a function.
+// getNodeOptions gets an ast.Node options from its comments.
 // To reduce overhead, it also returns whether the function uses a manual matcher.
-func (p *Parser) filterOptionMap(x ast.Node) ([]Option, bool) {
-	var (
-		options []Option
-		manual  bool
-	)
+func (p *Parser) getNodeOptions(x ast.Node) ([]*options.Option, bool) {
+	nodeOptions := make([]*options.Option, 0, len(p.CommentOptionMap))
+	var manual bool
 
 	ast.Inspect(x, func(node ast.Node) bool {
-		if xcg, ok := node.(*ast.CommentGroup); ok {
-			for _, comment := range xcg.List {
-				if _, exists := p.Options[comment.Text]; exists {
-					options = append(options, p.Options[comment.Text])
-					if p.Options[comment.Text].Category == categoryMap {
-						manual = true
-					}
+		commentGroup, ok := node.(*ast.CommentGroup)
+		if !ok {
+			return true
+		}
+
+		for _, comment := range commentGroup.List {
+			if p.CommentOptionMap[comment.Text] != nil {
+				nodeOptions = append(nodeOptions, p.CommentOptionMap[comment.Text])
+				if p.CommentOptionMap[comment.Text].Category == options.CategoryMap {
+					manual = true
 				}
 			}
 		}
+
 		return true
 	})
 
-	// add all convert options; which aren't in the scope of any functions but may apply
-	for _, option := range p.Options {
-		if option.Category == categoryConvert {
-			options = append(options, option)
-		}
-	}
-
-	return options, manual
+	return nodeOptions, manual
 }
 
 // assignCustomOption parses a functions *ast.CommentGroups for custom options to return a Custom map.
-func (p *Parser) assignCustomOption(options []Option) map[string][]string {
+func (p *Parser) assignCustomOption(o []*options.Option) map[string][]string {
 	optionmap := make(map[string][]string)
 
 	// functions only have custom options
-	for i := 0; i < len(options); i++ {
-		switch options[i].Category {
-		case categoryConvert, categoryDeepCopy, categoryDepth, categoryMap:
+	for i := 0; i < len(o); i++ {
+		switch o[i].Category {
+		case options.CategoryConvert, options.CategoryDeepCopy, options.CategoryDepth, options.CategoryMap:
 		default:
-			if customoptionmap, ok := options[i].Value.(map[string]string); ok {
+			if customoptionmap, ok := o[i].Value.(map[string]string); ok {
 				for customoption, value := range customoptionmap {
 					optionmap[customoption] = append(optionmap[customoption], value)
 				}
 			} else if customoptionmap != nil {
-				fmt.Printf("WARNING: Failed to assign custom option: %v\n", options[i].Value)
+				fmt.Printf("WARNING: Failed to assign custom option: %v\n", o[i].Value)
 			}
 		}
 	}

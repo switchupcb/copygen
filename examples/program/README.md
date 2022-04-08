@@ -31,6 +31,7 @@ code, err := env.Run()
 if err != nil {
     return err
 }
+
 fmt.Println(code)
 ```
 
@@ -68,11 +69,20 @@ Copygen's standard functions (`Parse`, `Match`, `Generate`) accept a [`model.Gen
 
 ### Configuration
 
-Read the [documentation](https://pkg.go.dev/github.com/switchupcb/copygen/cli/config#section-documentation).
+The purpose of the config is to configure the `setup`, `output`, and `template` filepaths of a `Generator`; along with any `GeneratorOptions`. For more more information, read the [documentation](https://pkg.go.dev/github.com/switchupcb/copygen/cli/config#section-documentation).
 
 ### Parser
 
-Read the [documentation](https://pkg.go.dev/github.com/switchupcb/copygen/cli/parser#section-documentation).
+The purpose of the parser is to determine:
+
+1. The code that is **kept** _(`Generator.Keep`)_ from the `setup` file _(placed above generated code in the `output` file)_.
+2. Define the `Generator.Functions` (which contain fields).
+
+For more information, read the [documentation](https://pkg.go.dev/github.com/switchupcb/copygen/cli/parser#section-documentation).
+
+#### Parser Options
+
+Read the [documentation](https://pkg.go.dev/github.com/switchupcb/copygen/cli/parser/options#section-documentation).
 
 ### Matcher
 

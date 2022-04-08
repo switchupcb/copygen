@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/switchupcb/copygen/cli/models"
+	"github.com/switchupcb/copygen/cli/parser/options"
 )
 
 type parsedTypes struct {
@@ -14,7 +15,7 @@ type parsedTypes struct {
 }
 
 // parseTypes parses an ast.Field (of type func) for to-types and from-types.
-func (p *Parser) parseTypes(function *ast.Field, options []Option) (parsedTypes, error) {
+func (p *Parser) parseTypes(function *ast.Field, options []*options.Option) (parsedTypes, error) {
 	var result parsedTypes
 
 	fn, ok := function.Type.(*ast.FuncType)
@@ -59,7 +60,7 @@ func (p *Parser) parseTypes(function *ast.Field, options []Option) (parsedTypes,
 }
 
 // parseFieldList parses an Abstract Syntax Tree field list for a type's fields.
-func (p *Parser) parseFieldList(fieldlist []*ast.Field, options []Option) ([]models.Type, error) {
+func (p *Parser) parseFieldList(fieldlist []*ast.Field, options []*options.Option) ([]models.Type, error) {
 	types := make([]models.Type, 0, len(fieldlist))
 
 	for _, astfield := range fieldlist {
@@ -75,7 +76,7 @@ func (p *Parser) parseFieldList(fieldlist []*ast.Field, options []Option) ([]mod
 }
 
 // parseTypeField parses a function *ast.Field into a field model.
-func (p *Parser) parseTypeField(field *ast.Field, options []Option) (*models.Field, error) {
+func (p *Parser) parseTypeField(field *ast.Field, options []*options.Option) (*models.Field, error) {
 	parsed := astParseFieldName(field)
 	if parsed.name == "" {
 		return nil, fmt.Errorf("unexpected field expression %v in the Abstract Syntax Tree", field)

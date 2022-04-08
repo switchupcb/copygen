@@ -5,6 +5,7 @@ import (
 	"go/types"
 
 	"github.com/switchupcb/copygen/cli/models"
+	"github.com/switchupcb/copygen/cli/parser/options"
 )
 
 // FieldSearch represents a search that uses Abstract Syntax Tree analysis to find the fields of a typefield.
@@ -32,7 +33,7 @@ type FieldSearch struct {
 	DecFile *ast.File
 
 	// The options that pertain to a field (and its subfields).
-	Options []Option
+	Options []*options.Option
 
 	// The current depth-level of the FieldSearch.
 	Depth int
@@ -58,7 +59,7 @@ func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
 			}
 
 			// depth is ignored for cyclic fields.
-			setFieldOptions(cyclicfield, fs.Options)
+			p.setFieldOptions(cyclicfield, fs.Options)
 
 			return cyclicfield, nil
 		}
@@ -85,7 +86,7 @@ func (p *Parser) SearchForField(fs *FieldSearch) (*models.Field, error) {
 		field.Parent = fs.Parent
 	}
 
-	setFieldOptions(field, fs.Options)
+	p.setFieldOptions(field, fs.Options)
 	fs.MaxDepth += field.Options.Depth
 
 	// set the cache
@@ -158,7 +159,7 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 					Definition:   xField.Type().String(),
 					Parent:       typefield,
 				}
-				setFieldOptions(subfield, fs.Options)
+				p.setFieldOptions(subfield, fs.Options)
 				subfields = append(subfields, subfield)
 			}
 		}
@@ -174,7 +175,7 @@ func (p *Parser) astSubfieldSearch(fs *FieldSearch, typefield *models.Field) ([]
 				Definition:   xMethod.Type().String(),
 				Parent:       typefield,
 			}
-			setFieldOptions(subfield, fs.Options)
+			p.setFieldOptions(subfield, fs.Options)
 			subfields = append(subfields, subfield)
 		}
 	default: // if no fields are present, this is a basic type.
@@ -200,65 +201,9 @@ func isBasic(t types.Type) bool {
 }
 
 // setFieldOptions sets a field's (and its subfields) options.
-func setFieldOptions(field *models.Field, options []Option) {
-	setConvertOption(field, options)
-	setDeepcopyOption(field, options)
-	setDepthOption(field, options)
-	setMapOption(field, options)
-}
-
-// setConvertOption sets a field's convert option.
-func setConvertOption(field *models.Field, options []Option) {
-	// A convert option can only be set to a field once, so use the last one
-	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == categoryConvert && options[i].Regex[1].MatchString(field.FullName("")) {
-			if value, ok := options[i].Value.(string); ok {
-				field.Options.Convert = value
-				break
-			}
-		}
-	}
-}
-
-// setDeepcopyOption sets a field's deepcopy option.
-func setDeepcopyOption(field *models.Field, options []Option) {
-	// A deepcopy option can only be set to a field once, so use the last one
-	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == categoryDeepCopy && options[i].Regex[0].MatchString(field.FullName("")) {
-			field.Options.Deepcopy = true
-			break
-		}
-	}
-}
-
-// setDepthOption sets a field's depth option.
-func setDepthOption(field *models.Field, options []Option) {
-	// A depth option can only be set to a field once, so use the last one
-	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == categoryDepth && options[i].Regex[0].MatchString(field.FullName("")) {
-			if value, ok := options[i].Value.(int); ok {
-				// Automatch all is on by default; if a user specifies 0 depth-level, guarantee it.
-				if value == 0 {
-					value = -1
-				}
-
-				field.Options.Depth = value
-
-				break
-			}
-		}
-	}
-}
-
-// setMapOption sets a field's deepcopy option.
-func setMapOption(field *models.Field, options []Option) {
-	// A map option can only be set to a field once, so use the last one
-	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == categoryMap && options[i].Regex[0].MatchString(field.FullName("")) {
-			if value, ok := options[i].Value.(string); ok {
-				field.Options.Map = value
-				break
-			}
-		}
-	}
+func (p *Parser) setFieldOptions(field *models.Field, opts []*options.Option) {
+	options.SetConvert(field, p.ConvertOptions)
+	options.SetDeepcopy(field, opts)
+	options.SetDepth(field, opts)
+	options.SetMap(field, opts)
 }
