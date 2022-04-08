@@ -8,5 +8,5 @@ import (
 
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	ModelsToDomain(data.Account, data.User) *service.Account
+	ModelsToDomain(*data.Account, *data.User) *service.Account
 }

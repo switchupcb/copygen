@@ -11,6 +11,15 @@ import (
 	"github.com/switchupcb/copygen/cli"
 )
 
+// normalizeLineBreaks normalizes line breaks for file comparison.
+func normalizeLineBreaks(d []byte) []byte {
+	// replace CRLF \r\n with LF \n
+	d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
+	// replace CF \r with LF \n
+	d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
+	return d
+}
+
 // TestExamples tests calls cli.Run() in a similar manner to calling the CLI,
 // checking for a valid output.
 func TestExamples(t *testing.T) {
@@ -86,7 +95,7 @@ func TestExamples(t *testing.T) {
 			t.Fatalf("error reading file in test %q.\n%v", test.name, err)
 		}
 
-		if !bytes.Equal([]byte(code), valid) {
+		if !bytes.Equal(normalizeLineBreaks([]byte(code)), normalizeLineBreaks(valid)) {
 			fmt.Println(code)
 			t.Fatalf("Run(%v) output not equivalent to %v", test.name, test.wantpath)
 		}

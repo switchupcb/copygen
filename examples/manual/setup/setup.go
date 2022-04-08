@@ -10,10 +10,10 @@ import (
 
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	// map models.Account.ID *domain.Account.ID
-	// map models.Account.Name *domain.Account.Name
-	// map models.User.UserID *domain.Account.UserID
-	ModelsToDomain(models.Account, models.User) *domain.Account
+	// map models.Account.ID domain.Account.ID
+	// map models.Account.Name domain.Account.Name
+	// map models.User.UserID domain.Account.UserID
+	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 
 /* Define the function and field this converter is applied to using regex. */

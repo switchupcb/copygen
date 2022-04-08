@@ -10,7 +10,7 @@ import (
 )
 
 // ModelsToDomain copies a Account, User to a Account.
-func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
+func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	// Account fields
 	tA.User.Username = fU.Username
 	tA.User.UserID = fU.UserID
