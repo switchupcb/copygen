@@ -52,9 +52,11 @@ Specify a depth-level of two for the subfields of `domain.Account`. Specify a de
 type Copygen interface {
 	// depth domain.Account 2
 	// depth models.User 1
-	ModelsToDomain(models.Account, models.User) *domain.Account
+	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 ```
+
+_Use pointers to avoid allocations._
 
 ## Output
 
@@ -73,7 +75,7 @@ import (
 )
 
 // ModelsToDomain copies a Account, User to a Account.
-func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
+func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	// Account fields
 	tA.User.Username = fU.Username
 	tA.User.UserID = fU.UserID

@@ -1,10 +1,15 @@
-name: "linter"
+name: "Static Code Analysis"
 
 on:
   push:
+    branches:
+     - main
+  pull_request:
+    branches:
+     - main
 
 jobs:
-  Static-Code-Analysis:
+  Linter:
     name: lint
     runs-on: ubuntu-latest
     steps:
@@ -13,4 +18,4 @@ jobs:
       - name: Perform static code analysis via golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.42
+          version: v1.45

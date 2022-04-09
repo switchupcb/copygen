@@ -73,7 +73,7 @@ import (
 // Copygen defines the functions that will be generated.
 type Copygen interface {
 	// custom see table in the README for options
-	ModelsToDomain(models.Account, models.User) *domain.Account
+	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 
 /* Define the function and field this converter is applied to using regex. */
@@ -83,6 +83,8 @@ func Itoa(i int) string {
 	return c.Itoa(i)
 }
 ```
+
+_Use pointers to avoid allocations._
 
 ## Output
 
@@ -109,7 +111,7 @@ func Itoa(i int) string {
 }
 
 // ModelsToDomain copies a Account, User to a Account.
-func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) error {
+func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) error {
 	// Account fields
 	tA.Name = fA.Name
 	tA.UserID = Itoa(fU.UserID)

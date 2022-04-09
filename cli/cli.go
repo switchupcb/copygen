@@ -16,9 +16,10 @@ import (
 type Environment struct {
 	YMLPath string // The .yml file path used as a configuration file.
 	Output  bool   // Whether to print the generated code to stdout.
+	Write   bool   // Whether to write the generated code to a file.
 }
 
-// CLI runs the copygen command and returns its exit status.
+// CLI runs copygen from a Command Line Interface and returns the exit status.
 func CLI() int {
 	var env Environment
 
@@ -27,7 +28,7 @@ func CLI() int {
 		return 2
 	}
 
-	if err := env.run(); err != nil {
+	if _, err := env.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return 1
 	}
@@ -52,31 +53,34 @@ func (e *Environment) parseArgs() error {
 
 	e.YMLPath = *ymlpath
 	e.Output = *output
+	e.Write = true
 
 	return nil
 }
 
-func (e *Environment) run() error {
+// Run runs copygen programmatically using the given Environment's YMLPath.
+func (e *Environment) Run() (string, error) {
 	// The configuration file is loaded (.yml)
 	gen, err := config.LoadYML(e.YMLPath)
 	if err != nil {
-		return err
+		return "", fmt.Errorf("%w", err)
 	}
 
 	// The data file is parsed (.go)
 	if err = parser.Parse(gen); err != nil {
-		return fmt.Errorf("%w", err)
+		return "", fmt.Errorf("%w", err)
 	}
 
 	// The matcher is run on the parsed data (to create the objects used during generation).
 	if err = matcher.Match(gen); err != nil {
-		return fmt.Errorf("%w", err)
+		return "", fmt.Errorf("%w", err)
 	}
 
 	// The generator is used to generate code.
-	if err = generator.Generate(gen, e.Output); err != nil {
-		return fmt.Errorf("%w", err)
+	code, err := generator.Generate(gen, e.Output, e.Write)
+	if err != nil {
+		return "", fmt.Errorf("%w", err)
 	}
 
-	return nil
+	return code, nil
 }

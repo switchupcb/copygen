@@ -4,14 +4,14 @@ package copygen
 import (
 	c "strconv"
 
-	"github.com/switchupcb/copygen/examples/main/domain"
-	"github.com/switchupcb/copygen/examples/main/models"
+	"github.com/switchupcb/copygen/examples/error/domain"
+	"github.com/switchupcb/copygen/examples/error/models"
 )
 
 // Copygen defines the functions that will be generated.
 type Copygen interface {
 	// custom see table in the README for options
-	ModelsToDomain(models.Account, models.User) *domain.Account
+	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 
 /* Define the function and field this converter is applied to using regex. */
