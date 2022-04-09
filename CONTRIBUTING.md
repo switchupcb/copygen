@@ -110,6 +110,13 @@ Copygen uses [golangci-lint](https://github.com/golangci/golangci-lint) in order
 
 If you receive `File is not ... with -...`, use `golangci-lint run --disable-all --no-config -Egofmt --fix`.
 
+#### Fieldalignment
+
+**Struct padding** aligns the fields of a struct to addresses in memory. The compiler does this to improve performance and prevent numerous issues on a system's architecture _(32-bit, 64-bit)_. As a result, misaligned fields add more memory-usage to a program, which can effect performance in a numerous amount of ways. For a simple explanation, view [Golang Struct Size and Memory Optimization](https://medium.com/techverito/golang-struct-size-and-memory-optimisation-b46b124f008d
+). Fieldalignment can be fixed using the [fieldalignment tool](https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/fieldalignment) which is installed using `go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest`.
+
+**ALWAYS COMMIT BEFORE USING `fieldalignment -fix ./cli/...`** as it may remove comments.
+
 ### Tests
 
 For information on testing, read [Integration Tests](examples/tests/).
@@ -117,6 +124,5 @@ For information on testing, read [Integration Tests](examples/tests/).
 # Roadmap
 
 Focus on these features:
-   - Generate (Template): Copy logic for all types
+   - Generate (Template): copy logic for all types + examples (in `tests`)
    - Generator: deepcopy + example
-   - more examples in `tests`

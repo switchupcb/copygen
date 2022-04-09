@@ -11,8 +11,7 @@ linters:
     - gomoddirectives # The repository uses go modules in its interpreter functionality from a temporary tagged fork.
 
     - gocognit # temporary prior to new matcher implementation
-    - goerr113 # temporary prior to new release
-    - errorlint # enable
+    - cyclop # temporary prior to new matcher implementation
 
     - lll
     - nlreturn
@@ -23,9 +22,8 @@ linters:
     - gofumpt # too many false positives
     - exhaustivestruct # exhausting
     - varnamelen # for loops
-    - cyclop # can't handle switch statement
     - funlen # can't handle switch statement
-
+    - goerr113 # errors used once
 
     - golint # deprecated
     - scopelint # deprecated
@@ -38,4 +36,4 @@ linters-settings:
     enable-all: true
     disable:
       - shadow
-      # - fieldalignment
+      - fieldalignment

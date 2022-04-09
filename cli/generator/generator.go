@@ -12,12 +12,13 @@ import (
 )
 
 const GenerateFunction = "template.Generate"
+const writeFileMode = 0222
 
 // Generate outputs the generated code (with gofmt).
 func Generate(gen *models.Generator, output bool, write bool) (string, error) {
 	content, err := generateCode(gen)
 	if err != nil {
-		return "", fmt.Errorf("an error occurred while generating code\n%v", err)
+		return "", fmt.Errorf("an error occurred while generating code\n%w", err)
 	}
 
 	// gofmt
@@ -26,10 +27,10 @@ func Generate(gen *models.Generator, output bool, write bool) (string, error) {
 	if err != nil {
 		if output {
 			fmt.Println(content)
-			return content, fmt.Errorf("an error occurred while formatting the generated code.\n%v", err)
+			return content, fmt.Errorf("an error occurred while formatting the generated code.\n%w", err)
 		}
 
-		return content, fmt.Errorf("an error occurred while formatting the generated code.\n%v\nUse -o to view output", err)
+		return content, fmt.Errorf("an error occurred while formatting the generated code.\n%w\nUse -o to view output", err)
 	}
 
 	code := string(fmtcontent)
@@ -48,8 +49,8 @@ func Generate(gen *models.Generator, output bool, write bool) (string, error) {
 		absfilepath = filepath.Join(filepath.Dir(absfilepath), gen.Outpath)
 
 		// create file
-		if err := os.WriteFile(absfilepath, fmtcontent, 0222); err != nil { //nolint:gofumpt // ignore
-			return code, fmt.Errorf("an error occurred creating the file.\n%v", err)
+		if err := os.WriteFile(absfilepath, fmtcontent, writeFileMode); err != nil {
+			return code, fmt.Errorf("an error occurred creating the file.\n%w", err)
 		}
 	}
 
@@ -66,7 +67,7 @@ func generateCode(gen *models.Generator) (string, error) {
 	// use an interpreted function (from a template file)
 	abstempath, err := filepath.Abs(filepath.Join(filepath.Dir(gen.Loadpath), gen.Tempath))
 	if err != nil {
-		return "", fmt.Errorf("an error occurred loading the absolute filepath of template path %v from the cwd %v\n%v", gen.Loadpath, gen.Tempath, err)
+		return "", fmt.Errorf("an error occurred loading the absolute filepath of template path %v from the cwd %v\n%w", gen.Loadpath, gen.Tempath, err)
 	}
 
 	v, err := interpreter.InterpretFunction(abstempath, GenerateFunction)
