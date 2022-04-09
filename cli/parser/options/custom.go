@@ -30,7 +30,7 @@ func MapCustomOption(optionmap map[string][]string, option *Option) error {
 	}
 
 	switch option.Category {
-	case CategoryConvert, CategoryDeepCopy, CategoryDepth, CategoryMap:
+	case CategoryConvert, CategoryDeepcopy, CategoryDepth, CategoryMap:
 	default:
 		if v, ok := option.Value.(string); ok {
 			optionmap[option.Category] = append(optionmap[option.Category], v)
@@ -51,5 +51,6 @@ func MapCustomOptions(options []*Option) (map[string][]string, error) {
 			return nil, err
 		}
 	}
+
 	return optionmap, nil
 }

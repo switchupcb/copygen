@@ -8,7 +8,7 @@ import (
 	"github.com/switchupcb/copygen/cli/parser/options"
 )
 
-// NOTE: This file refers to the Parser Options Process.
+// NOTE: This file refers to the Parser's Option Process.
 // See CONTRIBUTING.md#options
 
 // CommentOptionMap represents a map of comments to an option.
@@ -44,7 +44,7 @@ func MapCommentsToOptions(comments []*ast.Comment) (CommentOptionMap, error) {
 // assignFunctionOption assigns a function (field-oriented) option.
 func assignFunctionOption(category, option string) (*options.Option, error) {
 	switch category {
-	case options.CategoryDeepCopy:
+	case options.CategoryDeepcopy:
 		opt, err := options.ParseDeepcopy(option)
 		if err != nil {
 			return nil, fmt.Errorf("%w", err)

@@ -16,6 +16,9 @@ type fieldParser struct {
 	// parent represents the parent of the field parse.
 	parent *models.Field
 
+	// cyclic is a key value cache used to prevent cyclic fields from unnecessary duplication or stack overflow.
+	cyclic map[string]bool
+
 	// container represents a field's container.
 	container string
 
@@ -85,18 +88,20 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 			setFieldImportAndPackage(subfield, x.Field(i).Pkg().Path(), x.Field(i).Pkg().Name())
 
 			// a cyclic subfield (with the same type as its parent) is never fully assigned.
-			if !cyclic[subfield.Import+subfield.Package+subfield.Name] {
+			if !fp.cyclic[subfield.Import+subfield.Package+subfield.Name] {
 				subfieldParser := &fieldParser{
 					field:     subfield,
 					parent:    nil,
 					container: "",
 					options:   fp.options,
+					cyclic:    fp.cyclic,
 				}
 
 				// sets the definition, container, and fields.
-				cyclic[subfield.Import+subfield.Package+subfield.Name] = true
+				fp.cyclic[subfield.Import+subfield.Package+subfield.Name] = true
 				subfield = subfieldParser.parseField(x.Field(i).Type())
 			}
+
 			fp.field.Fields = append(fp.field.Fields, subfield)
 		}
 
@@ -123,6 +128,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 				parent:    nil,
 				container: "",
 				options:   fp.options,
+				cyclic:    fp.cyclic,
 			}
 
 			// sets the definition, container, and fields.
@@ -132,7 +138,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	}
 
 	setFieldOptions(fp.field, fp.options)
-	cyclic[fp.field.Import+fp.field.Package+fp.field.Name] = true
+	fp.cyclic[fp.field.Import+fp.field.Package+fp.field.Name] = true
 	return fp.field
 }
 
@@ -141,6 +147,20 @@ func setFieldVariableName(field *models.Field, varname string) {
 	if field.VariableName == "" {
 		field.VariableName = varname
 	}
+}
+
+// alphastring only returns alphabetic characters (English) in a string.
+func alphastring(s string) string {
+	bytes := []byte(s)
+	i := 0
+	for _, b := range bytes {
+		if ('a' <= b && b <= 'z') || ('A' <= b && b <= 'Z') || b == ' ' {
+			bytes[i] = b
+			i++
+		}
+	}
+
+	return string(bytes[:i])
 }
 
 // setFieldImportAndPackage sets the import and package of a field.
@@ -157,22 +177,21 @@ func setFieldImportAndPackage(field *models.Field, path string, varname string) 
 
 // setFieldOptions sets a field's (and its subfields) options.
 func setFieldOptions(field *models.Field, fieldoptions []*options.Option) {
-	options.SetConvert(field, fieldoptions)
-	options.SetDeepcopy(field, fieldoptions)
-	options.SetDepth(field, fieldoptions)
-	options.SetMap(field, fieldoptions)
-}
+	for _, option := range fieldoptions {
+		switch option.Category {
 
-// alphastring only returns alphabetic characters (English) in a string.
-func alphastring(s string) string {
-	bytes := []byte(s)
-	i := 0
-	for _, b := range bytes {
-		if ('a' <= b && b <= 'z') || ('A' <= b && b <= 'Z') || b == ' ' {
-			bytes[i] = b
-			i++
+		case options.CategoryConvert:
+			options.SetConvert(field, *option)
+
+		case options.CategoryDepth:
+			options.SetDepth(field, *option)
+
+		case options.CategoryDeepcopy:
+			options.SetDeepcopy(field, *option)
+
+		case options.CategoryMap:
+			options.SetMap(field, *option)
+
 		}
 	}
-	return string(bytes[:i])
-
 }

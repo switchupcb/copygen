@@ -3,17 +3,26 @@ package options
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-const CategoryConvert = "convert"
+const (
+	CategoryConvert = "convert"
+
+	// FormatConvert represents an end-user facing format for convert options.
+	// <option> refers to the "convert" option.
+	FormatConvert = "<option>:<whitespaces><regex><whitespaces><regex>"
+)
 
 // ParseConvert parses a convert option.
 func ParseConvert(option, value string) (*Option, error) {
-	splitoption, err := splitOption(option, CategoryConvert, "<option>:<whitespaces><regex><whitespaces><regex>")
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+	splitoption := strings.Fields(option)
+	if len(splitoption) == 0 {
+		return nil, fmt.Errorf("there is an unspecified %s option at an unknown line", CategoryConvert)
+	} else if len(splitoption) != 2 {
+		return nil, fmt.Errorf("there is a misconfigured %s option: %q.\nIs it in format %s?", CategoryConvert, option, FormatConvert)
 	}
 
 	funcRe, err := regexp.Compile("^" + splitoption[0] + "$")
@@ -33,16 +42,16 @@ func ParseConvert(option, value string) (*Option, error) {
 	}, nil
 }
 
-// SetConvert sets a field's convert option.
-func SetConvert(field *models.Field, options []*Option) {
-	// A convert option can only be set to a field once, so use the last one
-	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == CategoryConvert &&
-			options[i].Regex[1].MatchString(field.FullNameWithoutContainer("")) {
-			if value, ok := options[i].Value.(string); ok {
-				field.Options.Convert = value
-				break
-			}
+// SetConvert sets a field's depth option.
+func SetConvert(field *models.Field, option Option) {
+	// A convert option can only be set to a field once.
+	if field.Options.Convert != "" {
+		return
+	}
+
+	if option.Regex[1] != nil && option.Regex[1].MatchString(field.FullNameWithoutContainer("")) {
+		if value, ok := option.Value.(string); ok {
+			field.Options.Convert = value
 		}
 	}
 }

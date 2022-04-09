@@ -3,17 +3,26 @@ package options
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-const CategoryMap = "map"
+const (
+	CategoryMap = "map"
+
+	// FormatMap represents an end-user facing format for map options.
+	// <option> refers to the "map" option.
+	FormatMap = "<option>:<whitespaces><regex><whitespaces><regex>"
+)
 
 // ParseMap parses a map option.
 func ParseMap(option string) (*Option, error) {
-	splitoption, err := splitOption(option, CategoryMap, "<option>:<whitespaces><regex><whitespaces><regex>")
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+	splitoption := strings.Fields(option)
+	if len(splitoption) == 0 {
+		return nil, fmt.Errorf("there is an unspecified %s option at an unknown line", CategoryMap)
+	} else if len(splitoption) != 2 {
+		return nil, fmt.Errorf("there is a misconfigured %s option: %q.\nIs it in format %s?", CategoryMap, option, FormatMap)
 	}
 
 	fromRe, err := regexp.Compile("^" + splitoption[0] + "$")
@@ -30,15 +39,15 @@ func ParseMap(option string) (*Option, error) {
 }
 
 // SetMap sets a field's deepcopy option.
-func SetMap(field *models.Field, options []*Option) {
-	// A map option can only be set to a field once, so use the last one
-	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == CategoryMap &&
-			options[i].Regex[0].MatchString(field.FullNameWithoutContainer("")) {
-			if value, ok := options[i].Value.(string); ok {
-				field.Options.Map = value
-				break
-			}
+func SetMap(field *models.Field, option Option) {
+	// A map option can only be set to a field once.
+	if field.Options.Map != "" {
+		return
+	}
+
+	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutContainer("")) {
+		if value, ok := option.Value.(string); ok {
+			field.Options.Map = value
 		}
 	}
 }

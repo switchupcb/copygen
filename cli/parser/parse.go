@@ -16,27 +16,23 @@ import (
 )
 
 var (
-	// commentOptionMap represents a map of function (field-specific) options to comments.
-	commentOptionMap CommentOptionMap
-
-	// convertOptions represents a list of convert options (for convert functions).
+	// convertOptions represents a global list of convert options (for convert functions).
 	convertOptions []*options.Option
 
-	// aliasImportMap represents a map of package paths to aliased import variables names (defined in the setup file).
+	// aliasImportMap represents a global map of package paths to aliased import variables names (defined in the setup file).
 	aliasImportMap map[string]string
 
 	// ignorepkgpath is used to prevent the field parser from assigning a package name
 	// to a field that is defined in the setup file's package.
 	ignorepkgpath string
-
-	// cyclic is a key value cache used to prevent cyclic fields from unnecessary duplication or stack overflow.
-	cyclic map[string]bool
 )
 
 // Parser represents a parser that parses Abstract Syntax Tree data into models.
 type Parser struct {
-	Config Config
-	Pkgs   []*packages.Package
+	// CommentOptionMap represents a map of function (field-specific) options to comments.
+	CommentOptionMap CommentOptionMap
+	Config           Config
+	Pkgs             []*packages.Package
 }
 
 // Config represents a Parser's configuration.
@@ -56,22 +52,9 @@ const parserLoadMode = packages.NeedName + packages.NeedImports + packages.NeedD
 
 // Parse parses a generator's setup file.
 func Parse(gen *models.Generator) error {
-	// determine the actual filepath of the setup.go file.
-	absfilepath, err := filepath.Abs(filepath.Join(filepath.Dir(gen.Loadpath), gen.Setpath))
+	p, err := setupParser(gen)
 	if err != nil {
 		return fmt.Errorf("%w", err)
-	}
-
-	// Setup the parser.
-	p := Parser{
-		Config: Config{
-			Setpath: absfilepath,
-		},
-	}
-	p.Config.Fileset = token.NewFileSet()
-	p.Config.SetupFile, err = parser.ParseFile(p.Config.Fileset, absfilepath, nil, parser.ParseComments)
-	if err != nil {
-		return fmt.Errorf("an error occurred parsing the specified .go setup file: %v\n%w", gen.Setpath, err)
 	}
 
 	// Write the Keep.
@@ -94,7 +77,7 @@ func Parse(gen *models.Generator) error {
 
 	// Parse ast.Comments into Options.
 	convertOptions = removed.ConvertOptions
-	commentOptionMap, err = MapCommentsToOptions(removed.Comments)
+	p.CommentOptionMap, err = MapCommentsToOptions(removed.Comments)
 	if err != nil {
 		return fmt.Errorf("an error occurred while parsing comments for options\n%w", err)
 	}
@@ -116,12 +99,31 @@ func Parse(gen *models.Generator) error {
 	}
 	ignorepkgpath = p.Pkgs[0].PkgPath
 
-	// setup the cache used to prevent cyclic types.
-	cyclic = make(map[string]bool)
-
+	// create the models.Function objects.
 	if gen.Functions, err = p.parseFunctions(removed.Copygen); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
 	return nil
+}
+
+func setupParser(gen *models.Generator) (*Parser, error) {
+	// determine the actual filepath of the setup.go file.
+	absfilepath, err := filepath.Abs(filepath.Join(filepath.Dir(gen.Loadpath), gen.Setpath))
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	// Setup the parser.
+	p := &Parser{
+		Config: Config{
+			Setpath: absfilepath,
+		},
+	}
+	p.Config.Fileset = token.NewFileSet()
+	p.Config.SetupFile, err = parser.ParseFile(p.Config.Fileset, absfilepath, nil, parser.ParseComments)
+	if err != nil {
+		return nil, fmt.Errorf("an error occurred parsing the specified .go setup file: %v\n%w", gen.Setpath, err)
+	}
+	return p, nil
 }

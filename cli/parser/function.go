@@ -78,7 +78,7 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 // getNodeOptions gets an ast.Node options from its comments.
 // To reduce overhead, it also returns whether a manual matcher is used.
 func (p *Parser) getNodeOptions(x ast.Node) ([]*options.Option, bool) {
-	nodeOptions := make([]*options.Option, 0, len(commentOptionMap))
+	nodeOptions := make([]*options.Option, 0, len(p.CommentOptionMap))
 	var manual bool
 
 	ast.Inspect(x, func(node ast.Node) bool {
@@ -88,9 +88,9 @@ func (p *Parser) getNodeOptions(x ast.Node) ([]*options.Option, bool) {
 		}
 
 		for _, comment := range commentGroup.List {
-			if commentOptionMap[comment.Text] != nil {
-				nodeOptions = append(nodeOptions, commentOptionMap[comment.Text])
-				if commentOptionMap[comment.Text].Category == options.CategoryMap {
+			if p.CommentOptionMap[comment.Text] != nil {
+				nodeOptions = append(nodeOptions, p.CommentOptionMap[comment.Text])
+				if p.CommentOptionMap[comment.Text].Category == options.CategoryMap {
 					manual = true
 				}
 			}
