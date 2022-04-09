@@ -13,12 +13,12 @@ const CategoryMap = "map"
 func ParseMap(option string) (*Option, error) {
 	splitoption, err := splitOption(option, CategoryMap, "<option>:<whitespaces><regex><whitespaces><regex>")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w", err)
 	}
 
 	fromRe, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred compiling the regex for the from field in the %s option: %q\n%v", CategoryMap, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the from field in the %s option: %q\n%w", CategoryMap, option, err)
 	}
 
 	// map options are compared in the matcher
@@ -33,8 +33,8 @@ func ParseMap(option string) (*Option, error) {
 func SetMap(field *models.Field, options []*Option) {
 	// A map option can only be set to a field once, so use the last one
 	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == CategoryMap && options[i].Regex[0].MatchString(field.FullName("")) {
-			fmt.Println(field.FullName(""))
+		if options[i].Category == CategoryMap &&
+			options[i].Regex[0].MatchString(field.FullNameWithoutContainer("")) {
 			if value, ok := options[i].Value.(string); ok {
 				field.Options.Map = value
 				break

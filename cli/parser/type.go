@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	"go/ast"
+	"go/types"
 	"strconv"
 
 	"github.com/switchupcb/copygen/cli/models"
@@ -14,91 +14,64 @@ type parsedTypes struct {
 	toTypes   []models.Type
 }
 
-// parseTypes parses an ast.Field (of type func) for to-types and from-types.
-func (p *Parser) parseTypes(function *ast.Field, options []*options.Option) (parsedTypes, error) {
+// parseTypes parses a types.Func's parameters for from-types and results for to-types.
+func parseTypes(method *types.Func, options []*options.Option) (parsedTypes, error) {
 	var result parsedTypes
 
-	fn, ok := function.Type.(*ast.FuncType)
+	signature, ok := method.Type().(*types.Signature)
 	if !ok {
-		return result, fmt.Errorf("an error occurred parsing the types of function %v at Line %d", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
+		return result, fmt.Errorf("impossible")
 	}
 
-	fromTypes, err := p.parseFieldList(fn.Params.List, options) // (incoming) parameters "non-nil"
+	if signature.Params().Len() == 0 {
+		return result, fmt.Errorf("function %v has no types to copy from", method.Name())
+	} else if signature.Results().Len() == 0 {
+		return result, fmt.Errorf("function %v has no types to copy to", method.Name())
+	}
+
+	var err error
+	result.fromTypes, err = parseTypeField(signature.Params(), options)
 	if err != nil {
-		return result, err
+		return result, fmt.Errorf("an error occurred while parsing a from type parameter in %v\n%w", method.Name(), err)
 	}
 
-	var toTypes []models.Type
-
-	if fn.Results != nil {
-		toTypes, err = p.parseFieldList(fn.Results.List, options) // (outgoing) results "or nil"
-		if err != nil {
-			return result, err
-		}
+	result.toTypes, err = parseTypeField(signature.Results(), options)
+	if err != nil {
+		return result, fmt.Errorf("an error occurred while parsing a from type parameter in %v\n%w", method.Name(), err)
 	}
 
-	if len(fromTypes) == 0 {
-		return result, fmt.Errorf("function %v at Line %d has no types to copy from", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
-	} else if len(toTypes) == 0 {
-		return result, fmt.Errorf("function %v at Line %d has no types to copy to", parseMethodForName(function), p.Fileset.Position(function.Pos()).Line)
-	}
-
-	// assign variable names and determine the definition and sub-fields of each type
-	paramMap := make(map[string]bool)
-	for i := 0; i < len(fromTypes); i++ {
-		fromTypes[i].Field.VariableName = createVariable(paramMap, "f"+fromTypes[i].Field.Name, 0)
-	}
-
-	for i := 0; i < len(toTypes); i++ {
-		toTypes[i].Field.VariableName = createVariable(paramMap, "t"+toTypes[i].Field.Name, 0)
-	}
-
-	result.fromTypes = fromTypes
-	result.toTypes = toTypes
+	setVariableNames(result.fromTypes, "f")
+	setVariableNames(result.toTypes, "t")
 
 	return result, nil
 }
 
-// parseFieldList parses an Abstract Syntax Tree field list for a type's fields.
-func (p *Parser) parseFieldList(fieldlist []*ast.Field, options []*options.Option) ([]models.Type, error) {
-	types := make([]models.Type, 0, len(fieldlist))
+// parseTypeField parses a *types.Tuple into a *models.Type (that points to a *models.Field).
+func parseTypeField(vars *types.Tuple, fieldoptions []*options.Option) ([]models.Type, error) {
+	types := make([]models.Type, vars.Len())
+	for i := 0; i < vars.Len(); i++ {
 
-	for _, astfield := range fieldlist {
-		field, err := p.parseTypeField(astfield, options)
-		if err != nil {
-			return nil, err
+		// create a top-level field (fieldParser parent = nil).
+		fp := fieldParser{options: fieldoptions}
+		field := fp.parseField(vars.At(i).Type())
+		if field == nil {
+			return nil, fmt.Errorf("an error occurred parsing a type field parameter %v", vars.At(i).String())
 		}
 
-		types = append(types, models.Type{Field: field})
+		types[i] = models.Type{
+			Field: field,
+		}
 	}
 
 	return types, nil
 }
 
-// parseTypeField parses a function *ast.Field into a field model.
-func (p *Parser) parseTypeField(field *ast.Field, options []*options.Option) (*models.Field, error) {
-	parsed := astParseFieldName(field)
-	if parsed.name == "" {
-		return nil, fmt.Errorf("unexpected field expression %v in the Abstract Syntax Tree", field)
+// setVariableNames sets the variable names for a list of type fields.
+func setVariableNames(types []models.Type, precedent string) {
+	paramMap := make(map[string]bool)
+	for i := 0; i < len(types); i++ {
+		types[i].Field.VariableName = createVariable(paramMap, precedent+types[i].Field.VariableName[1:], 0)
 	}
-
-	typefield, err := p.SearchForField(&FieldSearch{
-		DecFile:    p.SetupFile,
-		Import:     "file=" + p.Setpath,
-		Package:    parsed.pkg,
-		Name:       parsed.name,
-		Definition: "",
-		Options:    options,
-		Parent:     nil,
-		cache:      make(map[string]bool),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("an error occurred while searching for the top-level Field %q of package %q.\n%v", parsed.name, parsed.pkg, err)
-	}
-
-	typefield.Pointer = parsed.ptr
-
-	return typefield, nil
 }
 
 // createVariable generates a valid variable name for a 'set' of parameters.

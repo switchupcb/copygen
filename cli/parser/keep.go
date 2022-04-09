@@ -20,6 +20,8 @@ type Removed struct {
 	ConvertOptions []*options.Option
 }
 
+const convertOptionSplitAmount = 3
+
 // Keep removes ast.Nodes from an ast.File that won't be kept in a generated output file.
 // modifies the given ast.File (what was kept) and returns what was removed.
 func Keep(astFile *ast.File) (Removed, error) {
@@ -114,7 +116,7 @@ func assignConvertOptions(x *ast.FuncDecl) ([]*ast.Comment, []*options.Option, e
 			splitcomments := strings.Fields(text[2:])
 
 			// determine if the comment is a convert option.
-			if len(splitcomments) == 3 {
+			if len(splitcomments) == convertOptionSplitAmount {
 				category := splitcomments[0]
 				value := strings.Join(splitcomments[1:], " ")
 				if category == options.CategoryConvert {

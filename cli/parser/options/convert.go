@@ -13,17 +13,17 @@ const CategoryConvert = "convert"
 func ParseConvert(option, value string) (*Option, error) {
 	splitoption, err := splitOption(option, CategoryConvert, "<option>:<whitespaces><regex><whitespaces><regex>")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w", err)
 	}
 
 	funcRe, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred compiling the regex for the first field in the %s option: %q\n%v", CategoryConvert, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the first field in the %s option: %q\n%w", CategoryConvert, option, err)
 	}
 
 	fieldRe, err := regexp.Compile("^" + splitoption[1] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred compiling the regex for the second field in the %s option: %q\n%v", CategoryConvert, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the second field in the %s option: %q\n%w", CategoryConvert, option, err)
 	}
 
 	return &Option{
@@ -37,7 +37,8 @@ func ParseConvert(option, value string) (*Option, error) {
 func SetConvert(field *models.Field, options []*Option) {
 	// A convert option can only be set to a field once, so use the last one
 	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == CategoryConvert && options[i].Regex[1].MatchString(field.FullName("")) {
+		if options[i].Category == CategoryConvert &&
+			options[i].Regex[1].MatchString(field.FullNameWithoutContainer("")) {
 			if value, ok := options[i].Value.(string); ok {
 				field.Options.Convert = value
 				break

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"go/ast"
 	"strings"
 
@@ -14,7 +15,7 @@ import (
 type CommentOptionMap map[string]*options.Option
 
 // MapCommentsToOptions parses a list of ast.Comments into a CommentOptionMap.
-func MapOptions(comments []*ast.Comment) (CommentOptionMap, error) {
+func MapCommentsToOptions(comments []*ast.Comment) (CommentOptionMap, error) {
 	optionmap := make(CommentOptionMap, len(comments))
 
 	for _, comment := range comments {
@@ -46,7 +47,7 @@ func assignFunctionOption(category, option string) (*options.Option, error) {
 	case options.CategoryDeepCopy:
 		opt, err := options.ParseDeepcopy(option)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w", err)
 		}
 
 		return opt, nil
@@ -54,7 +55,7 @@ func assignFunctionOption(category, option string) (*options.Option, error) {
 	case options.CategoryDepth:
 		opt, err := options.ParseDepth(option)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w", err)
 		}
 
 		return opt, nil
@@ -62,7 +63,7 @@ func assignFunctionOption(category, option string) (*options.Option, error) {
 	case options.CategoryMap:
 		opt, err := options.ParseMap(option)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w", err)
 		}
 
 		return opt, nil

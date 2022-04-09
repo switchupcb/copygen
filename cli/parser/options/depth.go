@@ -14,17 +14,17 @@ const CategoryDepth = "depth"
 func ParseDepth(option string) (*Option, error) {
 	splitoption, err := splitOption(option, CategoryDepth, "<option>:<whitespaces><regex><whitespaces><int>")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w", err)
 	}
 
 	re, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred compiling the regex for a %s option: %q\n%v", CategoryDepth, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for a %s option: %q\n%w", CategoryDepth, option, err)
 	}
 
 	depth, err := strconv.Atoi(splitoption[1])
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred parsing the integer depth value of a %s option: %q\n%v", CategoryDepth, option, err)
+		return nil, fmt.Errorf("an error occurred parsing the integer depth value of a %s option: %q\n%w", CategoryDepth, option, err)
 	}
 
 	return &Option{
@@ -38,7 +38,8 @@ func ParseDepth(option string) (*Option, error) {
 func SetDepth(field *models.Field, options []*Option) {
 	// A depth option can only be set to a field once, so use the last one
 	for i := len(options) - 1; i > -1; i-- {
-		if options[i].Category == CategoryDepth && options[i].Regex[0].MatchString(field.FullName("")) {
+		if options[i].Category == CategoryDepth &&
+			options[i].Regex[0].MatchString(field.FullNameWithoutContainer("")) {
 			if value, ok := options[i].Value.(int); ok {
 				// Automatch all is on by default; if a user specifies 0 depth-level, guarantee it.
 				if value == 0 {

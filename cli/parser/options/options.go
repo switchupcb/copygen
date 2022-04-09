@@ -20,7 +20,7 @@ type Option struct {
 	Category string
 }
 
-// splitOption splits an option string and validates it.
+// splitOption splits an option with a specified format and validates it.
 func splitOption(option, category, format string) ([]string, error) {
 	splitoption := strings.Fields(option)
 

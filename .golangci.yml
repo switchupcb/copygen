@@ -7,24 +7,25 @@ linters:
   disable:
     - unused # The repository has no Application Life Cycle Management. Run manually prior to a release.
     - deadcode # The repository has no Application Life Cycle Management. Run manually prior to a release.
+    - gomnd # Run manually prior to a release.
     - gomoddirectives # The repository uses go modules in its interpreter functionality from a temporary tagged fork.
 
-    - varnamelen # temporary prior to new parser implementation
-    - cyclop # temporary prior to new parser implementation
-    - gocognit # temporary prior to new parser implementation
-
-    - wrapcheck # enable
-    - goerr113 # enable
+    - gocognit # temporary prior to new matcher implementation
+    - goerr113 # temporary prior to new release
     - errorlint # enable
-    - exhaustivestruct # enable
-    - gomnd # enable
-    - forcetypeassert # enable
 
     - lll
     - nlreturn
     - whitespace
     - wsl
     - forbidigo
+    - gochecknoglobals # No data race conditions
+    - gofumpt # too many false positives
+    - exhaustivestruct # exhausting
+    - varnamelen # for loops
+    - cyclop # can't handle switch statement
+    - funlen # can't handle switch statement
+
 
     - golint # deprecated
     - scopelint # deprecated
@@ -38,6 +39,3 @@ linters-settings:
     disable:
       - shadow
       # - fieldalignment
-
-  funlen:
-    lines: 80

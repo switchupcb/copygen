@@ -75,7 +75,7 @@ Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fiel
 
 ### Parser
 
-A `setup` file's abstract syntax tree is traversed once, but involves three processes.
+A `setup` file's abstract syntax tree is traversed once, but involves four processes.
 
 #### Keep
 
@@ -90,9 +90,17 @@ The `setup` file is parsed using an Abstract Syntax Tree. This tree contains the
 
 Method **1** is slightly more efficient _(since **convert** `ast.Comments` are only referenced once; not stored)_, but only used because **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. In contrast, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
 
+#### Imports
+
+The `go/types` package will provide everything else; _**except**_ for alias import names. In order to assign aliased or non-aliased import names to `models.Field`, the imports of the `setup` file are mapped to a package path.
+
 #### Copygen Interface
 
 The `type Copygen interface` is parsed to setup the `models.Function` and `models.Field` objects used in the `Matcher` and `Generator`.
+- [go/types Contents (Types, A -> B)](https://go.googlesource.com/example/+/HEAD/gotypes#contents)
+- [go/packages Package Object](https://pkg.go.dev/golang.org/x/tools/go/packages#Package)
+- [go/types Func (Signature)](https://pkg.go.dev/go/types#Func)
+- [go/types Types](https://pkg.go.dev/go/types#pkg-types)
 
 ## CI/CD
 
@@ -109,4 +117,6 @@ For information on testing, read [Integration Tests](examples/tests/).
 # Roadmap
 
 Focus on these features:
+   - Generate (Template): Copy logic for all types
    - Generator: deepcopy + example
+   - more examples in `tests`
