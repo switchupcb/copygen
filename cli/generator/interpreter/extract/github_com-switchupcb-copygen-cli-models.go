@@ -3,19 +3,15 @@
 package extract
 
 import (
-	"github.com/switchupcb/copygen/cli/models"
 	"reflect"
+	
+	"github.com/switchupcb/copygen/cli/models"
+	"github.com/switchupcb/copygen/cli/models/debug"
+
 )
 
 func init() {
 	Symbols["github.com/switchupcb/copygen/cli/models/models"] = map[string]reflect.Value{
-		// function, constant and variable definitions
-		"CountFields":         reflect.ValueOf(models.CountFields),
-		"PrintFieldGraph":     reflect.ValueOf(models.PrintFieldGraph),
-		"PrintFieldRelation":  reflect.ValueOf(models.PrintFieldRelation),
-		"PrintFieldTree":      reflect.ValueOf(models.PrintFieldTree),
-		"PrintFunctionFields": reflect.ValueOf(models.PrintFunctionFields),
-
 		// type definitions
 		"Field":            reflect.ValueOf((*models.Field)(nil)),
 		"FieldOptions":     reflect.ValueOf((*models.FieldOptions)(nil)),
@@ -24,5 +20,14 @@ func init() {
 		"Generator":        reflect.ValueOf((*models.Generator)(nil)),
 		"GeneratorOptions": reflect.ValueOf((*models.GeneratorOptions)(nil)),
 		"Type":             reflect.ValueOf((*models.Type)(nil)),
+	}
+
+	Symbols["github.com/switchupcb/copygen/cli/models/models/debug"] = map[string]reflect.Value{
+		// function, constant and variable definitions
+		"CountFields":         reflect.ValueOf(debug.CountFields),
+		"PrintFieldGraph":     reflect.ValueOf(debug.PrintFieldGraph),
+		"PrintFieldRelation":  reflect.ValueOf(debug.PrintFieldRelation),
+		"PrintFieldTree":      reflect.ValueOf(debug.PrintFieldTree),
+		"PrintFunctionFields": reflect.ValueOf(debug.PrintFunctionFields),
 	}
 }
