@@ -30,10 +30,10 @@ func Function(function *models.Function) string {
 	fn += generateSignature(function) + "\n"
 
 	// body
-	fn += generateBody(function) + "\n"
+	fn += generateBody(function)
 
 	// return
-	fn += generateReturn(function) + "\n"
+	fn += generateReturn(function)
 
 	// end of function
 	fn += "}"
@@ -100,26 +100,30 @@ func generateParameters(function *models.Function) string {
 func generateBody(function *models.Function) string {
 	var body string
 
-	// Assign fields to ToType(s)
+	// Assign fields to ToType(s).
 	for _, toType := range function.To {
 		body += "// " + toType.Field.Name + " fields\n"
 
 		for _, toField := range toType.Field.Fields {
-			body += toField.FullVariableName("")
-			body += " = "
+			body += toField.FullVariableName("") + " = "
 			fromField := toField.From
 
-			if fromField.Options.Convert != "" {
+			switch {
+			case fromField.Options.Convert != "":
 				body += fromField.Options.Convert + "(" + fromField.FullVariableName("") + ")\n"
-			} else {
+			case toField.Definition != fromField.Definition:
+				// match alias types to respective basic types.
+				if toField.Package != "" {
+					body += toField.Package + "."
+				}
+				body += toField.Definition + "(" + fromField.FullVariableName("") + ")" + "\n"
+			default:
 				body += fromField.FullVariableName("") + "\n"
 			}
 		}
-
-		body += "\n"
 	}
 
-	return body
+	return body[:len(body)-1]
 }
 
 // generateReturn generates a return statement for the function.

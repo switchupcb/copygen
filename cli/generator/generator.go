@@ -75,12 +75,12 @@ func generate(gen *models.Generator) (string, error) {
 
 		// generate code using a .go template.
 		if ext == ".go" {
-			return generateCode(gen)
+			return GenerateCode(gen)
 		}
 
 		// generate code using a .tmpl template.
 		if ext == ".tmpl" {
-			return generateTemplate(gen)
+			return GenerateTemplate(gen)
 		}
 
 		return "", fmt.Errorf("the provided template is not a `.go` or `.tmpl` file: %v", gen.Tempath)
@@ -90,8 +90,8 @@ func generate(gen *models.Generator) (string, error) {
 	return template.Generate(gen)
 }
 
-// generateCode generates code using the default .go template.
-func generateCode(gen *models.Generator) (string, error) {
+// GenerateCode generates code using the default .go template.
+func GenerateCode(gen *models.Generator) (string, error) {
 	// use an interpreted function (from a template file).
 	v, err := interpreter.InterpretFunction(gen.Tempath, GenerateFunction)
 	if err != nil {
@@ -118,8 +118,8 @@ var (
 	}
 )
 
-// generateTemplate generates code using a text/template file (.tmpl).
-func generateTemplate(gen *models.Generator) (string, error) {
+// GenerateTemplate generates code using a text/template file (.tmpl).
+func GenerateTemplate(gen *models.Generator) (string, error) {
 	file, err := os.ReadFile(gen.Tempath)
 	if err != nil {
 		return "", fmt.Errorf("the specified .tmpl filepath doesn't exist: %v\n%w", gen.Tempath, err)

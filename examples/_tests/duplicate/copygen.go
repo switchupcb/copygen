@@ -10,11 +10,13 @@ import (
 )
 
 // ModelsToDomain copies a Account, User to a Account.
-func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
+func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
 	// Account fields
 	tA.ID = fA.ID
 	tA.Name = fA.Name
-	tA.Email = fA.Email
 	tA.User.UserID = fU.UserID
 	tA.User.Username = fU.Username
+	tA.Email = fA.Email
+	tA.SuperString = string(fA.SuperString)
+	tA.ReversedString = domain.ReversedString(fA.ReversedString)
 }
