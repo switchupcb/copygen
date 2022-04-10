@@ -1,6 +1,6 @@
-# Example: Manual
+# Example: Text Template
 
-The manual example uses manual mapping to match three models.
+The `text template` example uses a `.tmpl` template to match three models.
 
 `./domain/domain.go`
 
@@ -47,19 +47,28 @@ generated:
   setup: ./setup.go
   output: ../copygen.go
 
-# Templates and custom options aren't used for this example.
+  # Define the optional custom templates used to generate the file (.go, .tmpl supported).
+  template: ../template/generate.tmpl
+
+# Custom options aren't used in this example.
 ```
 
 ## Go
 
-Map the from field `models.Account.ID` to to-fields with the regex pattern `domain.Account.ID`, `models.Account.Name`  to to-fields with the regex pattern `domain.Account.Name`, and `models.User.UserID` to to-fields with the regex pattern `domain.Account.UserID`.
-
 ```go
+// Package copygen contains the setup information for copygen generated code.
+package copygen
+
+import (
+	c "strconv"
+
+	"github.com/switchupcb/copygen/examples/tmpl/domain"
+	"github.com/switchupcb/copygen/examples/tmpl/models"
+)
+
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	// map models.Account.ID domain.Account.ID
-	// map models.Account.Name domain.Account.Name
-	// map models.User.UserID domain.Account.UserID
+	// custom see table in the README for options
 	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 
@@ -98,12 +107,13 @@ func Itoa(i int) string {
 }
 
 // ModelsToDomain copies a Account, User to a Account.
-func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
+func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) error {
 	// Account fields
 	tA.Name = fA.Name
 	tA.UserID = Itoa(fU.UserID)
 	tA.ID = fA.ID
 
+	return nil
 }
 
 ```

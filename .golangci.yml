@@ -37,4 +37,6 @@ linters-settings:
     disable:
       - shadow
       # - fieldalignment
-    
+  wrapcheck:
+    ignorePackageGlobs:
+      - github.com/switchupcb/copygen/cli/generator/*

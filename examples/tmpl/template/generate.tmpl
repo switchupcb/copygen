@@ -1,0 +1,29 @@
+{{- define "JoinFields"}}
+	{{- range $key, $Type := . -}}
+		{{- if ne $key 0}}, {{end -}}
+		{{- $Type.Field.Name -}}
+	{{- end -}}
+{{end -}}
+{{- define "JoinParameters"}}
+    {{- range $key, $Type := . -}}
+		{{- if ne $key 0}}, {{end}}{{- $Type.Field.VariableName}} {{$Type.ParameterName}}
+	{{- end -}}
+{{end -}}
+
+{{ .Keep | bytesToString }}
+{{range $fkey, $function := .Functions -}}
+// {{$function.Name}} copies a {{template "JoinFields" $function.From}} to a {{template "JoinFields" $function.To}}.
+func {{$function.Name}}( {{template "JoinParameters" $function.To}}, {{template "JoinParameters" $function.From}}) {
+	{{- range $tkey, $toType := $function.To }}
+	// {{$toType.Field.Name}} fields
+		{{- range $fkey, $toField := $toType.Field.Fields }}
+        	{{$toField.FullVariableName ""}} = {{""}}
+				{{- if ne $toField.From.Options.Convert "" -}}
+					{{$toField.From.Options.Convert}}({{$toField.From.FullVariableName ""}})
+				{{- else -}}
+					{{$toField.From.FullVariableName ""}}
+				{{- end}}
+		{{- end -}}
+	{{- end -}}	
+}
+{{end}}

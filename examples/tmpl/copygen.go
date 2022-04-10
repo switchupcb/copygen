@@ -7,8 +7,8 @@ package copygen
 import (
 	c "strconv"
 
-	"github.com/switchupcb/copygen/examples/manual/domain"
-	"github.com/switchupcb/copygen/examples/manual/models"
+	"github.com/switchupcb/copygen/examples/tmpl/domain"
+	"github.com/switchupcb/copygen/examples/tmpl/models"
 )
 
 /* Define the function and field this converter is applied to using regex. */
@@ -23,5 +23,4 @@ func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	tA.Name = fA.Name
 	tA.UserID = Itoa(fU.UserID)
 	tA.ID = fA.ID
-
 }

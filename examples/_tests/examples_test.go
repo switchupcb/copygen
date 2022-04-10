@@ -11,19 +11,8 @@ import (
 	"github.com/switchupcb/copygen/cli"
 )
 
-// normalizeLineBreaks normalizes line breaks for file comparison.
-func normalizeLineBreaks(d []byte) []byte {
-	// replace CRLF \r\n with LF \n
-	d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
-	// replace CF \r with LF \n
-	d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
-	return d
-}
-
-// TestExamples tests calls cli.Run() in a similar manner to calling the CLI,
-// checking for a valid output.
-func TestExamples(t *testing.T) {
-	tests := []struct {
+var (
+	tests = []struct {
 		name     string
 		ymlpath  string // ymlpath represents the path to an example's .yml file.
 		wantpath string // wantpath represents the path to a verified example's output file.
@@ -59,16 +48,27 @@ func TestExamples(t *testing.T) {
 		},
 		{
 			name:     "alias",
-			ymlpath:  "examples/tests/alias/setup/setup.yml",
-			wantpath: "examples/tests/alias/copygen.go",
+			ymlpath:  "examples/_tests/alias/setup/setup.yml",
+			wantpath: "examples/_tests/alias/copygen.go",
 		},
 		{
 			name:     "cyclic",
-			ymlpath:  "examples/tests/cyclic/setup/setup.yml",
-			wantpath: "examples/tests/cyclic/copygen.go",
+			ymlpath:  "examples/_tests/cyclic/setup/setup.yml",
+			wantpath: "examples/_tests/cyclic/copygen.go",
+		},
+
+		// .tmpl
+		{
+			name:     "main (tmpl)",
+			ymlpath:  "examples/tmpl/setup/setup.yml",
+			wantpath: "examples/tmpl/copygen.go",
 		},
 	}
+)
 
+// TestExamples tests calls cli.Run() in a similar manner to calling the CLI,
+// checking for a valid output.
+func TestExamples(t *testing.T) {
 	// go test uses the package directory as the current working directory.
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -99,5 +99,15 @@ func TestExamples(t *testing.T) {
 			fmt.Println(code)
 			t.Fatalf("Run(%v) output not equivalent to %v", test.name, test.wantpath)
 		}
+		fmt.Println("Passed:", test.name)
 	}
+}
+
+// normalizeLineBreaks normalizes line breaks for file comparison.
+func normalizeLineBreaks(d []byte) []byte {
+	// replace CRLF \r\n with LF \n
+	d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
+	// replace CF \r with LF \n
+	d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
+	return d
 }

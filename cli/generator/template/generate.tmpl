@@ -10,10 +10,10 @@
 	{{- end -}}
 {{end -}}
 
-{{.Keep| SliceBytesToString}}
+{{ .Keep | bytesToString }}
 {{range $fkey, $function := .Functions -}}
 // {{$function.Name}} copies a {{template "JoinFields" $function.From}} to a {{template "JoinFields" $function.To}}.
-func {{$function.Name}}( {{template "JoinParameters" $function.To}}, {{template "JoinParameters" $function.From}} ) {
+func {{$function.Name}}( {{template "JoinParameters" $function.To}}, {{template "JoinParameters" $function.From}}) {
 	{{- range $tkey, $toType := $function.To }}
 	// {{$toType.Field.Name}} fields
 		{{- range $fkey, $toField := $toType.Field.Fields }}

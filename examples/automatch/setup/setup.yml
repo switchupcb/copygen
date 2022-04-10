@@ -2,7 +2,9 @@
 generated:
   setup: ./setup.go
   output: ../copygen.go
-  # template: .Define the optional custom templates used to generate the file.
+
+  # Define the optional custom templates used to generate the file (.go, .tmpl supported).
+  # template: ./generate.go
 
 # Define custom options for customization.
 # custom:
