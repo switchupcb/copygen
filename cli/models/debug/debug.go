@@ -1,11 +1,13 @@
-package models
+package debug
 
 import (
 	"fmt"
+
+	"github.com/switchupcb/copygen/cli/models"
 )
 
 // PrintFunctionFields prints all of a functions fields to standard output.
-func PrintFunctionFields(function *Function) {
+func PrintFunctionFields(function *models.Function) {
 	for i := 0; i < len(function.From); i++ {
 		PrintFieldGraph(function.From[i].Field, "\t")
 	}
@@ -17,7 +19,7 @@ func PrintFunctionFields(function *Function) {
 }
 
 // PrintFieldGraph prints a list of fields with the related fields.
-func PrintFieldGraph(field *Field, tabs string) {
+func PrintFieldGraph(field *models.Field, tabs string) {
 	fmt.Printf("%v%v\n", tabs, field)
 
 	for i := 0; i < len(field.Fields); i++ {
@@ -28,7 +30,7 @@ func PrintFieldGraph(field *Field, tabs string) {
 }
 
 // PrintFieldTree prints a tree of fields for a given type to standard output.
-func PrintFieldTree(typename string, fields []*Field, tabs string) {
+func PrintFieldTree(typename string, fields []*models.Field, tabs string) {
 	if tabs == "" {
 		fmt.Println(tabs + "type " + typename)
 	}
@@ -44,7 +46,7 @@ func PrintFieldTree(typename string, fields []*Field, tabs string) {
 }
 
 // PrintFieldRelation prints the relationship between to and from fields.
-func PrintFieldRelation(toFields, fromFields []*Field) {
+func PrintFieldRelation(toFields, fromFields []*models.Field) {
 	for i := 0; i < len(toFields); i++ {
 		for j := 0; j < len(fromFields); j++ {
 			printFieldRelation(toFields[i], fromFields[j])
@@ -53,7 +55,7 @@ func PrintFieldRelation(toFields, fromFields []*Field) {
 }
 
 // printFieldRelation prints the relationship between two fields.
-func printFieldRelation(toField, fromField *Field) {
+func printFieldRelation(toField, fromField *models.Field) {
 	switch {
 	case toField.From == fromField && fromField.To == toField:
 		fmt.Printf("To Field %v and From Field %v are related to each other.\n", toField, fromField)
@@ -84,7 +86,7 @@ func printFieldRelation(toField, fromField *Field) {
 }
 
 // CountFields returns the number of fields in a field slice.
-func CountFields(fields []*Field) int {
+func CountFields(fields []*models.Field) int {
 	if len(fields) == 0 {
 		return 0
 	}

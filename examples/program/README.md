@@ -94,7 +94,7 @@ The easiest way to customize the generator is by using [templates](../../README.
 
 ## Debug
 
-The [`debug.go`](https://pkg.go.dev/github.com/switchupcb/copygen/cli/models#pkg-functions) file provides helper functions during debugging. To view an Abstract Syntax Tree, use a [GoAst Viewer](https://yuroyoro.github.io/goast-viewer/index.html).
+The [`debug.go`](https://pkg.go.dev/github.com/switchupcb/copygen/cli/models/debug#pkg-functions) file provides helper functions during debugging. To view an Abstract Syntax Tree, use a [GoAst Viewer](https://yuroyoro.github.io/goast-viewer/index.html).
 
 #### PrintFunctionFields
 
