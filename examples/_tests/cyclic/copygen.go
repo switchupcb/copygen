@@ -5,8 +5,8 @@
 package copygen
 
 import (
-	"github.com/switchupcb/copygen/examples/tests/cyclic/domain"
-	"github.com/switchupcb/copygen/examples/tests/cyclic/models"
+	"github.com/switchupcb/copygen/examples/_tests/cyclic/domain"
+	"github.com/switchupcb/copygen/examples/_tests/cyclic/models"
 )
 
 // ModelsToDomain copies a Account, User to a Account.

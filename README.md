@@ -13,7 +13,7 @@ Copygen is a command-line **code generator** that generates type-to-type and fie
 | Topic                           | Categories                                                                         |
 | :------------------------------ | :--------------------------------------------------------------------------------- |
 | [Usage](#Usage)                 | [Types](#types), [Setup](#setup), [Command Line](#command-line), [Output](#output) |
-| [Customization](#customization) | [Custom Types](#custom-types), [Templates](#templates)                             |
+| [Customization](#customization) | [Custom Objects](#custom-objects), [Templates](#templates)                         |
 | [Matcher](#matcher)             | [Automatch](#automatch), [Depth](#depth)                                           |
 | [Usecases](#usecases)           | [When to Use](#when-to-use-copygen), [Custom Generation](#custom-generation)       |
 | [License](#license)             | [What can I do?](#what-can-i-do), [License Exception](#license-exception)          |
@@ -22,14 +22,15 @@ Copygen is a command-line **code generator** that generates type-to-type and fie
 
 Each example has a **README**.
 
-| Example                          | Description                            |
-| :------------------------------- | :------------------------------------- |
-| main                             | The default example.                   |
-| [manual](examples/manual/)       | Uses the manual map feature.           |
-| [automatch](examples/automatch/) | Uses the automatch feature with depth. |
-| [error](examples/error/)         | Uses templates to return an error.     |
-| deepcopy _(Roadmap Feature)_     | Uses the deepcopy option.              |
-| [program](examples/program/)     | Uses Copygen programmatically.         |
+| Example                          | Description                              |
+| :------------------------------- | :--------------------------------------- |
+| main                             | The default example.                     |
+| [manual](examples/manual/)       | Uses the manual map feature.             |
+| [automatch](examples/automatch/) | Uses the automatch feature with depth.   |
+| deepcopy _(Roadmap Feature)_     | Uses the deepcopy option.                |
+| [error](examples/error/)         | Uses `.go` templates to return an error. |
+| [tmpl](examples/tmpl/)           | Uses `.tmpl` templates.                  |
+| [program](examples/program/)     | Uses Copygen programmatically.           |
 
 This [example](examples/main/) uses three type-structs to generate the `ModelsToDomain()` function using a Command Line Interface.
 
@@ -88,7 +89,7 @@ generated:
   setup: ./setup.go
   output: ../copygen.go
 
-  # Define the optional custom templates used to generate the file.
+  # Define the optional custom templates used to generate the file (.go, .tmpl supported).
   template: ./generate.go
 
 # Define custom options (which are passed to generator options) for customization.
@@ -204,7 +205,7 @@ func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 
 Copygen's method of input and output allows you to generate code not limited to copying fields.
 
-#### Custom Types
+### Custom Objects
 
 Custom types external to your application can be created for use in the `setup.go` file. When a file is generated, all types _(structs, interfaces, funcs)_ are copied **EXCEPT** the `type Copygen interface`.
 
@@ -222,18 +223,27 @@ func New() {
 }
 ```
 
-#### Templates
+### Shallow Copy vs. Deep Copy
 
-Templates can be created using **Go** to customize the algorithm that generates code. The `copygen` generator uses the [`package template Generate(*models.Generator) (string, error)`](cli/generator/template/generate.go) to generate code. As a result, **this function is required** for your templates to work. View the [models.Generator](cli/models/generator.go) type for context on the parameters passed to each function. Generator options are parsed from the YML configuration file. Function options are parsed from `custom` options. Any other option represents a field option. Templates are interpreted by our [temporary yaegi fork](https://github.com/switchupcb/yaegi). The [error example](examples/error/) modifies the `.yml` in order to use **custom template functions** that `return error`. 
+The library generates a [shallow copy](https://en.m.wikipedia.org/wiki/Object_copying#Shallow_copy) function by default. An easy way to deep-copy fields with the same return type is by using `new()` as or in a converter function **or** by using a custom template.
+
+### Templates
+
+Copygen supports three methods of code generation: `.go`, `.tmpl`, and `programmatic`. View the [models.Generator](cli/models/generator.go) type for context on the parameters passed to each function. Generator options are parsed from the YML configuration file. Function options are parsed from `custom` options. Any other option represents a `FieldOption`.
+
+#### .go
+
+Use `.go` files to customize the code generation algorithm. The `copygen` generator uses the [`package template Generate(*models.Generator) (string, error)`](cli/generator/template/generate.go) to generate code. As a result, **this function is required** for your `.go` templates to work. The [error example](examples/error/) modifies the `.yml` in order to use **custom `.go` template functions** that `return error`. The [`template/generate.go`](/cli//generator/template/generate.go) file provides the default code generation algorithm for generating code; string concatenation is used for readability. If this function becomes too slow, replace string concatenation with `strings.Builder`.
 
 _Use of non-extracted Go Module Imports in [`generate.go` template files](cli/generator/template/generate.go) are unsupported at the current time._
 
-##### Shallow Copy vs. Deep Copy
-The library generates a [shallow copy](https://en.m.wikipedia.org/wiki/Object_copying#Shallow_copy) function by default. An easy way to deep-copy fields with the same return type is by using `new()` as or in a converter function **or** by using a custom template.
+#### .tmpl
 
-##### String Builder
+Use `.tmpl` _([`text/templates`](https://pkg.go.dev/text/template))_ to customize the code generation algorithm. The [tmpl example](examples/tmpl/) uses a `.tmpl` file to generate code. The [`template/template.tmpl`](/cli//generator/template/generate.tmpl) file provides the default code generation algorithm for generating code.
 
-The provided template for code generation uses string concatenation for readability. If this function becomes too slow, replace string concatenation with `strings.Builder`.
+#### programmatic
+
+Use `copygen` as a third-party module in your application. For more information, read the [program example](/examples/program/README.md).
 
 ## Matcher
 

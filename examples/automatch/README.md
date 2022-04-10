@@ -1,6 +1,6 @@
 # Example: Automatch
 
-The automatch examples uses the automatcher to match three models with varying level of depth:
+The automatch example uses the automatcher to match three models with varying level of depth:
 ```go
 // 0
 type Account // domain

@@ -1,3 +1,4 @@
+// Package interpreter interprets template code at runtime.
 package interpreter
 
 import (

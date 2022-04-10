@@ -31,6 +31,52 @@ The command-line interface _(cli)_ consists of 5 packages.
 
 _Read [program](examples/program/README.md) for an overview of the application's code._
 
+
+### Parser
+
+A `setup` file's abstract syntax tree is traversed once, but involves four processes.
+
+#### Keep
+
+The `setup` file is parsed using an Abstract Syntax Tree. This tree contains the `type Copygen Interface` but also code that must be **kept** in the generated `output` file. For example, the package declaration, file imports, convert functions, and [custom types](README.md#custom-types) all exist _outside_ of the `type Copygen Interface`. Instead of storing these declarations and attempting to regenerate them, we simply discard declarations — from the `setup` file's AST — that won't be kept: In this case, the `type Copygen Interface` and `ast.Comments` (that refer to `Options`).
+
+#### Options
+
+**Convert** options are defined **outside** of the `type Copygen Interface` and may apply to multiple functions. As a result, all `ast.Comments` must be parsed before `models.Function` and `models.Field` objects can be created. In order to do this, the `type Copygen Interface` is stored, but **NOT** analyzed until the `setup` file is traversed. This leaves two ways to parse `ast.Comments` into `Options`.
+
+1. Parse **Convert** `ast.Comments` into `Options` during `setup` file traversal, and **field** `ast.Comments` into `Options` _(defined above Copygen functions)_ while analyzing the `type Copygen Interface`.
+2. Parse `ast.Comments` that were removed from the AST into `Options`.
+
+Method **1** is slightly more efficient _(since **convert** `ast.Comments` are only referenced once; not stored)_, but only used because **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. In contrast, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
+
+#### Imports
+
+The `go/types` package will provide everything else; _**except**_ for alias import names. In order to assign aliased or non-aliased import names to `models.Field`, the imports of the `setup` file are mapped to a package path.
+
+#### Copygen Interface
+
+The `type Copygen interface` is parsed to setup the `models.Function` and `models.Field` objects used in the `Matcher` and `Generator`.
+- [go/types Contents (Types, A -> B)](https://go.googlesource.com/example/+/HEAD/gotypes#contents)
+- [go/packages Package Object](https://pkg.go.dev/golang.org/x/tools/go/packages#Package)
+- [go/types Func (Signature)](https://pkg.go.dev/go/types#Func)
+- [go/types Types](https://pkg.go.dev/go/types#pkg-types)
+
+### Generator
+
+Copygen supports three methods of generation for end-users _(developers)_: `.go`, `.tmpl`, and `programmatic`.
+
+#### .go
+
+`.go` code generation allows users to generate code using the programming language they are familiar with. `.go` code generation works by allowing the end-user to specify **where** _the `.go` file containing the code generation algorithm_ is, then running the file _at runtime_. In order to do this, we must use an **interpreter**. Templates are interpreted by our [temporary yaegi fork](https://github.com/switchupcb/yaegi). `models` objects are extracted via reflection and loaded into the interpreter. Then, the interpreter interprets the provided `.go` template file _(specified by the user)_ to run the `Generate()` function.
+
+#### .tmpl
+
+`.tmpl` code generation allows users to generate code using [`text/templates`](https://pkg.go.dev/text/template). `.tmpl` code generation works by allowing the end-user to specify **where** _the `.tmpl` file containing the code generation algorithm_ is, then parsing and executing the file _at runtime_.
+
+#### programmatic
+
+`programmatic` code generation allows users to generate code by using `copygen` as a third-party module. For more information, read the [program example README](/examples/program/README.md).
+
 ## Specification
 
 ### From vs. To
@@ -71,36 +117,7 @@ The same reasoning applies to `for i := 0; i < count; i++` loops.
 
 Using the `*models.Field` definition for a `models.Field`'s `Parent` field can be considered an anti-pattern. In the program, a `models.Type` specifically refers to the types in a function signature _(i.e `func(models.Account, models.User) *domain.Account`)_. While these types **are** fields _(which may contain other fields)_ , their actual `Type` properties are not relevant to `models.Field`. As a result, `models.Field` objects are pointed directly to maintain simplicity.
 
-Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation`: `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program and more room for extension.
-
-### Parser
-
-A `setup` file's abstract syntax tree is traversed once, but involves four processes.
-
-#### Keep
-
-The `setup` file is parsed using an Abstract Syntax Tree. This tree contains the `type Copygen Interface` but also code that must be **kept** in the generated `output` file. For example, the package declaration, file imports, convert functions, and [custom types](README.md#custom-types) all exist _outside_ of the `type Copygen Interface`. Instead of storing these declarations and attempting to regenerate them, we simply discard declarations — from the `setup` file's AST — that won't be kept: In this case, the `type Copygen Interface` and `ast.Comments` (that refer to `Options`).
-
-#### Options
-
-**Convert** options are defined **outside** of the `type Copygen Interface` and may apply to multiple functions. As a result, all `ast.Comments` must be parsed before `models.Function` and `models.Field` objects can be created. In order to do this, the `type Copygen Interface` is stored, but **NOT** analyzed until the `setup` file is traversed. This leaves two ways to parse `ast.Comments` into `Options`.
-
-1. Parse **Convert** `ast.Comments` into `Options` during `setup` file traversal, and **field** `ast.Comments` into `Options` _(defined above Copygen functions)_ while analyzing the `type Copygen Interface`.
-2. Parse `ast.Comments` that were removed from the AST into `Options`.
-
-Method **1** is slightly more efficient _(since **convert** `ast.Comments` are only referenced once; not stored)_, but only used because **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. In contrast, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
-
-#### Imports
-
-The `go/types` package will provide everything else; _**except**_ for alias import names. In order to assign aliased or non-aliased import names to `models.Field`, the imports of the `setup` file are mapped to a package path.
-
-#### Copygen Interface
-
-The `type Copygen interface` is parsed to setup the `models.Function` and `models.Field` objects used in the `Matcher` and `Generator`.
-- [go/types Contents (Types, A -> B)](https://go.googlesource.com/example/+/HEAD/gotypes#contents)
-- [go/packages Package Object](https://pkg.go.dev/golang.org/x/tools/go/packages#Package)
-- [go/types Func (Signature)](https://pkg.go.dev/go/types#Func)
-- [go/types Types](https://pkg.go.dev/go/types#pkg-types)
+Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation`: `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program and more room for extension. 
 
 ## CI/CD
 
@@ -119,10 +136,11 @@ If you receive `File is not ... with -...`, use `golangci-lint run --disable-all
 
 ### Tests
 
-For information on testing, read [Integration Tests](examples/tests/).
+For information on testing, read [Integration Tests](examples/_tests/).
 
 # Roadmap
 
 Focus on these features:
-   - Generate (Template): copy logic for all types + examples (in `tests`)
+   - Generate Templates: logic for all types + examples (in `tests`)
    - Generator: deepcopy + example
+   - CICD: workflow that ensures consistency between `generator/template` and `examples` template files.
