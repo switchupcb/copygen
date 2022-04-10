@@ -13,12 +13,12 @@ import (
 func LoadYML(filepath string) (*models.Generator, error) {
 	file, err := os.ReadFile(filepath)
 	if err != nil {
-		return nil, fmt.Errorf("the specified .yml filepath doesn't exist: %v\n%v", filepath, err)
+		return nil, fmt.Errorf("the specified .yml filepath doesn't exist: %v\n%w", filepath, err)
 	}
 
 	var yml YML
 	if err := yaml.Unmarshal(file, &yml); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("an error occurred unmarshalling the .yml file\n%w", err)
 	}
 
 	gen := ParseYML(yml)

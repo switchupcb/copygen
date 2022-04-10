@@ -3,13 +3,10 @@ package models
 
 // Account represents the data model for account.
 type Account struct {
-	ID                int
-	Name              string
-	Password          string
-	Email             string
-	FieldTypeA        SomeStructType // Mustn't be auto matched
-	FieldSuperString  SuperString    // Can be auto matched with domain.Account.FieldSuperString cause SuperString is based on basic type `string`
-	FieldReversedType string
+	ID       int
+	Name     string
+	Password string
+	Email    string
 }
 
 // User represents the data model for a user.
@@ -31,9 +28,3 @@ type UserData struct {
 type Data struct {
 	ID int
 }
-
-type SomeStructType struct {
-	FieldB string
-}
-
-type SuperString string

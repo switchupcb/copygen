@@ -1,6 +1,6 @@
 # Example: Manual
 
-The manual examples uses manual mapping to match three models.
+The manual example uses manual mapping to match three models.
 
 `./domain/domain.go`
 
@@ -57,10 +57,10 @@ Map the from field `models.Account.ID` to to-fields with the regex pattern `doma
 ```go
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	// map models.Account.ID *domain.Account.ID
-	// map models.Account.Name *domain.Account.Name
-	// map models.User.UserID *domain.Account.UserID
-	ModelsToDomain(models.Account, models.User) *domain.Account
+	// map models.Account.ID domain.Account.ID
+	// map models.Account.Name domain.Account.Name
+	// map models.User.UserID domain.Account.UserID
+	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 
 /* Define the function and field this converter is applied to using regex. */
@@ -70,6 +70,8 @@ func Itoa(i int) string {
 	return c.Itoa(i)
 }
 ```
+
+_Use pointers to avoid allocations._
 
 ## Output
 
@@ -96,12 +98,11 @@ func Itoa(i int) string {
 }
 
 // ModelsToDomain copies a Account, User to a Account.
-func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
+func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	// Account fields
-	tA.Name = fA.Name
-	tA.UserID = Itoa(fU.UserID)
 	tA.ID = fA.ID
-
+	tA.UserID = Itoa(fU.UserID)
+	tA.Name = fA.Name
 }
 
 ```

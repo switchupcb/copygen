@@ -5,16 +5,18 @@
 package copygen
 
 import (
-	"github.com/switchupcb/copygen/examples/tests/cyclic/domain"
-	"github.com/switchupcb/copygen/examples/tests/cyclic/models"
+	"github.com/switchupcb/copygen/examples/automatch/domain"
+	"github.com/switchupcb/copygen/examples/automatch/models"
 )
 
 // ModelsToDomain copies a Account, User to a Account.
 func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
 	// Account fields
-	tA.Info.Username = fA.Info.Username
-	tA.Info.UserID = fA.Info.UserID
-	tA.Name = fA.Name
 	tA.ID = fA.ID
-
+	tA.Name = fA.Name
+	tA.User.UserID = fU.UserID
+	tA.User.Username = fU.Username
+	tA.Email = fA.Email
+	tA.SuperString = string(fA.SuperString)
+	tA.ReversedString = domain.ReversedString(fA.ReversedString)
 }

@@ -2,11 +2,11 @@
 package copygen
 
 import (
-	"github.com/switchupcb/copygen/examples/tests/cyclic/domain"
-	"github.com/switchupcb/copygen/examples/tests/cyclic/models"
+	service "github.com/switchupcb/copygen/examples/main/domain"
+	data "github.com/switchupcb/copygen/examples/main/models"
 )
 
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	ModelsToDomain(models.Account, models.User) *domain.Account
+	ModelsToDomain(*data.Account, *data.User) *service.Account
 }

@@ -5,41 +5,38 @@ run:
 linters:
   enable-all: true
   disable:
-    - deadcode # The repository has no Application Life Cycle Management. Run manually prior to a release.
     - unused # The repository has no Application Life Cycle Management. Run manually prior to a release.
+    - deadcode # The repository has no Application Life Cycle Management. Run manually prior to a release.
+    - gomnd # Run manually prior to a release.
     - gomoddirectives # The repository uses go modules in its interpreter functionality from a temporary tagged fork.
-    - cyclop
-    - errorlint
-    - exhaustivestruct
-    - forbidigo
-    - funlen
-    - goerr113
-    - gomnd
-    - gocognit
+
+    - gocognit # temporary prior to new matcher implementation
+    - cyclop # temporary prior to new matcher implementation
+
     - lll
-    - maligned
     - nlreturn
-    - tagliatelle
-    - wrapcheck
+    - whitespace
+    - wsl
+    - forbidigo
+    - gochecknoglobals # No data race conditions
+    - gofumpt # too many false positives
+    - exhaustivestruct # exhausting
+    - varnamelen # for loops
+    - funlen # can't handle switch statement
+    - goerr113 # errors used once
+
     - golint # deprecated
     - scopelint # deprecated
     - interfacer # deprecated
+    - maligned # deprecated
 
   fast: false
 linters-settings:
-  gocritic:
-    enabled-tags:
-      - style
-      - experimental
-      - performance
-      - diagnostic
-      - opinionated
-
   govet:
     enable-all: true
     disable:
       - shadow
       # - fieldalignment
-
-  funlen:
-    lines: 80
+  wrapcheck:
+    ignorePackageGlobs:
+      - github.com/switchupcb/copygen/cli/generator/*

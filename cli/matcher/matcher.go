@@ -2,9 +2,6 @@
 package matcher
 
 import (
-	"path"
-	"strconv"
-
 	"github.com/switchupcb/copygen/cli/models"
 )
 
@@ -25,30 +22,10 @@ func Match(gen *models.Generator) error {
 							continue
 						}
 
-						// don't compare top-level fields that have subfields
-						// this allows type such as `type T int` but not `type User struct` to be matched.
+						// don't compare top-level fields that have subfields.
+						// allows type such as `type T int` but not `type User struct` to be matched.
 						if (toFields[i].Parent != nil || len(toFields[i].Fields) == 0) && (fromFields[j].Parent != nil || len(fromFields[j].Fields) == 0) {
-							if function.Options.Manual {
-								if fromFields[j].Options.Map != "" {
-									manualmatch(toFields[i], fromFields[j])
-								}
-							} else {
-								automatch(toFields[i], fromFields[j])
-							}
-						}
-						// fill imports if required
-						if toFields[i].From == fromFields[j] {
-							if toFields[i].Import != "" {
-								if gen.ImportsByPath[toFields[i].Import] == "" {
-									k := 0
-									bn := path.Base(toFields[i].Import)
-									for k = 0; gen.ImportsByName[bn+strconv.Itoa(k)] != ""; k++ {
-									}
-									gen.ImportsByName[bn+strconv.Itoa(k)] = toFields[i].Import
-									gen.ImportsByPath[toFields[i].Import] = bn + strconv.Itoa(k)
-								}
-								toFields[i].Package = gen.ImportsByPath[toFields[i].Import]
-							}
+							match(function, toFields[i], fromFields[j])
 						}
 					}
 				}
@@ -56,35 +33,34 @@ func Match(gen *models.Generator) error {
 		}
 	}
 
-	// don't return unpointed fields.
-	for _, function := range gen.Functions {
-		for _, fromType := range function.From {
-			fromType.Field.Fields = RelatedFields(fromType.Field.Fields, nil)
-		}
-
-		for _, toType := range function.To {
-			toType.Field.Fields = RelatedFields(toType.Field.Fields, nil)
-		}
-	}
-
+	RemoveUnpointedFields(gen)
 	return nil
+}
+
+// match determines which matcher to use for two fields,
+// then matches them.
+func match(function models.Function, toField *models.Field, fromField *models.Field) {
+	if function.Options.Manual {
+		manualmatch(toField, fromField)
+	} else {
+		automatch(toField, fromField)
+	}
 }
 
 // automatch automatically matches the fields of a fromType to a toType by name.
 // automatch is used when no `map` options apply to a field.
 func automatch(toField, fromField *models.Field) {
-	if toField.Name == fromField.Name {
-		if (toField.Definition == fromField.Definition && toField.Import == fromField.Import) || fromField.Options.Convert != "" || toField.OrigDefinition == fromField.OrigDefinition {
-			fromField.To = toField
-			toField.From = fromField
-		}
+	if toField.Name == fromField.Name &&
+		(toField.Definition == fromField.Definition || fromField.Options.Convert != "") {
+		fromField.To = toField
+		toField.From = fromField
 	}
 }
 
 // manualmatch uses a manual matcher to map a from-field to a to-field.
 // manualmatch is used when a map option is specified.
 func manualmatch(toField, fromField *models.Field) {
-	if toField.FullName("") == fromField.Options.Map {
+	if fromField.Options.Map != "" && toField.FullName("") == fromField.Options.Map {
 		fromField.To = toField
 		toField.From = fromField
 	}

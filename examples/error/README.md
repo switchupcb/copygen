@@ -47,7 +47,7 @@ generated:
   setup: ./setup.go
   output: ../copygen.go
 
-  # Define the optional custom templates used to generate the file.
+  # Define the optional custom templates used to generate the file (.go, .tmpl supported).
   template: ../template/generate.go
 
 # Define custom options (which are passed to generator options) for customization.
@@ -73,7 +73,7 @@ import (
 // Copygen defines the functions that will be generated.
 type Copygen interface {
 	// custom see table in the README for options
-	ModelsToDomain(models.Account, models.User) *domain.Account
+	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 
 /* Define the function and field this converter is applied to using regex. */
@@ -83,6 +83,8 @@ func Itoa(i int) string {
 	return c.Itoa(i)
 }
 ```
+
+_Use pointers to avoid allocations._
 
 ## Output
 
@@ -109,11 +111,11 @@ func Itoa(i int) string {
 }
 
 // ModelsToDomain copies a Account, User to a Account.
-func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) error {
+func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) error {
 	// Account fields
-	tA.Name = fA.Name
-	tA.UserID = Itoa(fU.UserID)
 	tA.ID = fA.ID
+	tA.UserID = Itoa(fU.UserID)
+	tA.Name = fA.Name
 
 	return nil
 }

@@ -1,6 +1,6 @@
 # Example: Automatch
 
-The automatch examples uses the automatcher to match three models with varying level of depth:
+The automatch example uses the automatcher to match three models with varying level of depth:
 ```go
 // 0
 type Account // domain
@@ -52,9 +52,11 @@ Specify a depth-level of two for the subfields of `domain.Account`. Specify a de
 type Copygen interface {
 	// depth domain.Account 2
 	// depth models.User 1
-	ModelsToDomain(models.Account, models.User) *domain.Account
+	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 ```
+
+_Use pointers to avoid allocations._
 
 ## Output
 
@@ -73,13 +75,12 @@ import (
 )
 
 // ModelsToDomain copies a Account, User to a Account.
-func ModelsToDomain(tA *domain.Account, fA models.Account, fU models.User) {
+func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	// Account fields
-	tA.User.Username = fU.Username
-	tA.User.UserID = fU.UserID
-	tA.Email = fA.Email
+  tA.ID = fA.ID
 	tA.Name = fA.Name
-	tA.ID = fA.ID
-
+	tA.Email = fA.Email
+	tA.User.UserID = fU.UserID
+	tA.User.Username = fU.Username
 }
 ```

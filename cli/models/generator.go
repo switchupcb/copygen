@@ -1,28 +1,14 @@
 package models
 
-import (
-	"go/ast"
-	"go/token"
-)
-
 // Generator represents a code generator.
 type Generator struct {
-	Functions       []Function        // The functions to generate.
-	AlreadyImported map[string]bool   // Map of imports to its alias.
-	ImportsByName   map[string]string // Map of imports to its alias.
-	ImportsByPath   map[string]string // Map of imports to its alias.
-	Options         GeneratorOptions  // The custom options for the generator.
-	Loadpath        string            // The filepath the loader file is located in.
-	Setpath         string            // The filepath the setup file is located in.
-	Outpath         string            // The filepath the generated code is output to.
-	Tempath         string            // The filepath for the template used to generate code.
-	Keep            []byte            // The code that is kept from the setup file.
-
-	// The fileset of the parser.
-	Fileset *token.FileSet
-
-	// The setup file as an Abstract Syntax Tree.
-	SetupFile *ast.File
+	Functions []Function       // The functions to generate.
+	Options   GeneratorOptions // The custom options for the generator.
+	Loadpath  string           // The filepath the loader file is located in.
+	Setpath   string           // The filepath the setup file is located in.
+	Outpath   string           // The filepath the generated code is output to.
+	Tempath   string           // The filepath for the template used to generate code.
+	Keep      []byte           // The code that is kept from the setup file.
 }
 
 // GeneratorOptions represent options for a Generator.
