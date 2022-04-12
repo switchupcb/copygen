@@ -40,8 +40,13 @@ func ParseMap(option string) (*Option, error) {
 
 // SetMap sets a field's deepcopy option.
 func SetMap(field *models.Field, option Option) {
-	// A map option can only be set to a field once.
+	// a map option can only be set to a field once.
 	if field.Options.Map != "" {
+		return
+	}
+
+	// only one matching method may be specified for a field.
+	if field.Options.Automatch {
 		return
 	}
 

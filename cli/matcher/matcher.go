@@ -37,10 +37,9 @@ func Match(gen *models.Generator) error {
 	return nil
 }
 
-// match determines which matcher to use for two fields,
-// then matches them.
+// match determines which matcher to use for two fields, then matches them.
 func match(function models.Function, toField *models.Field, fromField *models.Field) {
-	if function.Options.Manual {
+	if function.Options.Manual && !toField.Options.Automatch && !fromField.Options.Automatch {
 		manualmatch(toField, fromField)
 	} else {
 		automatch(toField, fromField)

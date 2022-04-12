@@ -192,6 +192,9 @@ func setFieldOptions(field *models.Field, fieldoptions []*options.Option) {
 		case options.CategoryMap:
 			options.SetMap(field, *option)
 
+		case options.CategoryAutomatch:
+			options.SetAutomatch(field, *option)
+
 		}
 	}
 }

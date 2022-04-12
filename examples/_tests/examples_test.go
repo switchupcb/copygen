@@ -58,6 +58,11 @@ var (
 			wantpath: "examples/_tests/alias/copygen.go",
 		},
 		{
+			name:     "automap",
+			ymlpath:  "examples/_tests/automap/setup/setup.yml",
+			wantpath: "examples/_tests/automap/copygen.go",
+		},
+		{
 			name:     "cyclic",
 			ymlpath:  "examples/_tests/cyclic/setup/setup.yml",
 			wantpath: "examples/_tests/cyclic/copygen.go",
@@ -112,7 +117,7 @@ func testExample(t *testing.T, test test) {
 		t.Fatalf("Run(%v) output not equivalent to %v", test.name, test.wantpath)
 	}
 
-	fmt.Println("Passed:", test.name)
+	fmt.Println("PASSED:", test.name)
 
 	tmplcode, err := programmaticTemplateRun(env)
 	if err != nil {

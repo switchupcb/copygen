@@ -90,6 +90,8 @@ func (p *Parser) getNodeOptions(x ast.Node) ([]*options.Option, bool) {
 		for _, comment := range commentGroup.List {
 			if p.CommentOptionMap[comment.Text] != nil {
 				nodeOptions = append(nodeOptions, p.CommentOptionMap[comment.Text])
+
+				// specifying a map disables automatching.
 				if p.CommentOptionMap[comment.Text].Category == options.CategoryMap {
 					manual = true
 				}

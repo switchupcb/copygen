@@ -69,6 +69,9 @@ type FieldOptions struct {
 	// The level at which sub-fields are discovered.
 	Depth int
 
+	// Whether the field should be explicitly automatched.
+	Automatch bool
+
 	// Whether the field should be deepcopied.
 	Deepcopy bool
 }

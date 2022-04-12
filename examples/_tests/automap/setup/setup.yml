@@ -1,0 +1,11 @@
+# Define where the code will be generated.
+generated:
+  setup: ./setup.go
+  output: ../copygen.go
+
+  # Define the optional custom templates used to generate the file (.go, .tmpl supported).
+  # template: ./generate.go
+
+# Define custom options (which are passed to generator options) for customization.
+# custom:
+#   option: The possibilities are endless.

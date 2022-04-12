@@ -90,7 +90,8 @@ Read the [documentation](https://pkg.go.dev/github.com/switchupcb/copygen/cli/ma
 
 ### Generator
 
-The easiest way to customize the generator is by using [templates](../../README.md#templates).
+The generator package exports three methods of code generation by default. The easiest way to customize the generator is by using [templates](../../README.md#templates). For more information, read the [documentation](https://pkg.go.dev/github.com/switchupcb/copygen/cli/generator#section-documentation).
+
 
 ## Debug
 
