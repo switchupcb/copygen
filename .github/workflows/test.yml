@@ -1,17 +1,21 @@
-name: "Integration Tests"
+name: Integration Tests
 
 on:
   push:
     branches:
-     - main
+      - main
   pull_request:
     branches:
-     - main
-
+      - main
 jobs:
   Integration:
     name: test
-    runs-on: ubuntu-latest
+
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+
     steps:
       - name: Checkout repository code
         uses: actions/checkout@v2
