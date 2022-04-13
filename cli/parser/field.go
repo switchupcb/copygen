@@ -99,7 +99,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 				}
 
 				// sets the definition, container, and fields.
-				fp.cyclic[subfield.Import+subfield.Package+subfield.Name] = true
+				fp.cyclic[subfield.Import+subfield.Package+subfield.Name+fp.field.Definition] = true
 				subfield = subfieldParser.parseField(x.Field(i).Type())
 			}
 
@@ -138,8 +138,9 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 		}
 	}
 
-	setFieldOptions(fp.field, fp.options)
-	fp.cyclic[fp.field.Import+fp.field.Package+fp.field.Name] = true
+	options.SetFieldOptions(fp.field, fp.options)
+	filterFieldDepth(fp.field, fp.field.Options.Depth, 0)
+	fp.cyclic[fp.field.Import+fp.field.Package+fp.field.Name+fp.field.Definition] = true
 	return fp.field
 }
 
@@ -190,31 +191,19 @@ func setTags(field *models.Field, rawtag string) {
 	}
 }
 
-// setFieldOptions sets a field's (and its subfields) options.
-func setFieldOptions(field *models.Field, fieldoptions []*options.Option) {
-	for _, option := range fieldoptions {
+// filterFieldDepth filters a field's fields according to it's depth level.
+func filterFieldDepth(field *models.Field, maxdepth, curdepth int) {
+	if maxdepth == 0 {
+		return
+	}
 
-		switch option.Category {
+	if maxdepth < 0 || maxdepth <= curdepth {
+		field.Fields = make([]*models.Field, 0)
+		return
+	}
 
-		case options.CategoryAutomatch:
-			options.SetAutomatch(field, *option)
-
-		case options.CategoryMap:
-			options.SetMap(field, *option)
-
-		case options.CategoryTag:
-			options.SetTag(field, *option)
-
-		case options.CategoryConvert:
-			options.SetConvert(field, *option)
-
-		case options.CategoryDepth:
-			options.SetDepth(field, *option)
-
-		case options.CategoryDeepcopy:
-			options.SetDeepcopy(field, *option)
-
-		}
+	for _, f := range field.Fields {
+		filterFieldDepth(f, maxdepth+f.Options.Depth, curdepth+1)
 	}
 }
 

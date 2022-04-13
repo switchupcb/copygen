@@ -1,6 +1,7 @@
 # Example: Automatch
 
 The automatch example uses the automatcher to match three models with varying level of depth:
+
 ```go
 // 0
 type Account // domain
@@ -8,29 +9,35 @@ type Account // domain
     ID      int
     Name    string
     Email   string
-            // 2
     User    domain.DomainUser
+                // 2
                 UserID   int
-                Username string    
+                Username string
+                Password  Password
+                            // 3
+                            Hash string
+                            Salt string
 // 0
 type User    // models
     // 1
     UserID    int
     Username  string
-              // 2
     UserData  models.UserData
+                  // 2
                   Options map[string]interface{}
-                  // 3
                   Data    models.Data
-                        ID      int
+                            // 3
+                            ID      int
 // 0            
 type Account // models
     // 1
     ID       int
     Name     string
-    Password string
     Email    string
+    Password string
 ```
+
+_Password will not be copied by specifying a depth level._
 
 ## YML
 

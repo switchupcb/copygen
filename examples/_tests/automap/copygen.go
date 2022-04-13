@@ -5,17 +5,9 @@
 package copygen
 
 import (
-	c "strconv"
-
 	"github.com/switchupcb/copygen/examples/automatch/domain"
 	"github.com/switchupcb/copygen/examples/automatch/models"
 )
-
-/* Define the function and field this converter is applied to using regex. */
-// Itoa converts an integer to an ascii value.
-func Itoa(i int) string {
-	return c.Itoa(i)
-}
 
 // ModelsToDomain copies a models.Account, models.User to a domain.Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
@@ -23,6 +15,7 @@ func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	tA.ID = fA.ID
 	tA.Name = fA.Name
 	tA.Email = fA.Email
-	tA.User.UserID = Itoa(fU.UserID)
+	tA.User.UserID = fU.UserID
 	tA.User.Username = fU.Username
+	tA.User.Password.Password = fA.Password
 }

@@ -102,7 +102,7 @@ for _, field := range fields {
    // fromField.To still points to the original field.
    // fromField.From points to a field which is NOT the copied field (but has the same values).
    if field == fromField.To {
-      // Never Happens
+      // never happens
       ...
    }
 }

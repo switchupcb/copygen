@@ -5,8 +5,8 @@ package models
 type Account struct {
 	ID       int
 	Name     string
-	Password string
 	Email    string
+	Password string
 }
 
 // User represents the data model for a user.

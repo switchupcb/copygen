@@ -3,6 +3,8 @@ package options
 
 import (
 	"regexp"
+
+	"github.com/switchupcb/copygen/cli/models"
 )
 
 // Option represents an option applied to functions and fields.
@@ -50,4 +52,32 @@ func NewFieldOption(category, text string) (*Option, error) {
 		return nil, err
 	}
 	return option, nil
+}
+
+// SetFieldOptions sets a field's (and its subfields) options.
+func SetFieldOptions(field *models.Field, fieldoptions []*Option) {
+	for _, option := range fieldoptions {
+
+		switch option.Category {
+
+		case CategoryAutomatch:
+			SetAutomatch(field, *option)
+
+		case CategoryMap:
+			SetMap(field, *option)
+
+		case CategoryTag:
+			SetTag(field, *option)
+
+		case CategoryConvert:
+			SetConvert(field, *option)
+
+		case CategoryDepth:
+			SetDepth(field, *option)
+
+		case CategoryDeepcopy:
+			SetDeepcopy(field, *option)
+
+		}
+	}
 }

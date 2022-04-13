@@ -2,8 +2,6 @@
 package copygen
 
 import (
-	c "strconv"
-
 	"github.com/switchupcb/copygen/examples/automatch/domain"
 	"github.com/switchupcb/copygen/examples/automatch/models"
 )
@@ -14,11 +12,4 @@ type Copygen interface {
 	// map models.Account.Name domain.Account.Name
 	// automatch domain.Account.*
 	ModelsToDomain(*models.Account, *models.User) *domain.Account
-}
-
-/* Define the function and field this converter is applied to using regex. */
-// convert .* models.User.UserID
-// Itoa converts an integer to an ascii value.
-func Itoa(i int) string {
-	return c.Itoa(i)
 }
