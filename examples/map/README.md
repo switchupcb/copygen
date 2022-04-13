@@ -10,10 +10,11 @@ package domain
 
 // Account represents a user account.
 type Account struct {
-	ID     int
-	UserID int
-	Name   string
-	Other  string // The other field is not used.
+	ID       string
+	Name     string
+	Email    string
+	Password string // The password field will not be copied.
+	Other    string // The other field is not used.
 }
 ```
 
@@ -34,7 +35,7 @@ type Account struct {
 // A User represents the data model for a user.
 type User struct {
 	UserID   int
-	Name     int
+	Name     string
 	UserData string
 }
 ```
@@ -52,14 +53,14 @@ generated:
 
 ## Go
 
-Map the from field `models.Account.ID` to to-fields with the regex pattern `domain.Account.ID`, `models.Account.Name`  to to-fields with the regex pattern `domain.Account.Name`, and `models.User.UserID` to to-fields with the regex pattern `domain.Account.UserID`.
+Map the from-field `models.User.UserID` to to-fields with the regex pattern `domain.Account.ID`. Map the from-field `models.Account.Name` to to-fields with the regex pattern `domain.Account.Name`. Map the from-field `models.Account.Email` to to-fields with the regex pattern `domain.Account.Email`.
 
 ```go
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	// map models.Account.ID domain.Account.ID
+	// map models.User.UserID domain.Account.ID
 	// map models.Account.Name domain.Account.Name
-	// map models.User.UserID domain.Account.UserID
+	// map models.Account.Email domain.Account.Email
 	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 
@@ -87,8 +88,8 @@ package copygen
 import (
 	c "strconv"
 
-	"github.com/switchupcb/copygen/examples/map/domain"
-	"github.com/switchupcb/copygen/examples/map/models"
+	"github.com/switchupcb/copygen/examples/main/domain"
+	"github.com/switchupcb/copygen/examples/main/models"
 )
 
 /* Define the function and field this converter is applied to using regex. */
@@ -97,12 +98,11 @@ func Itoa(i int) string {
 	return c.Itoa(i)
 }
 
-// ModelsToDomain copies a Account, User to a Account.
+// ModelsToDomain copies a models.Account, models.User to a domain.Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
-	// Account fields
+	// domain.Account fields
 	tA.ID = fA.ID
 	tA.UserID = Itoa(fU.UserID)
 	tA.Name = fA.Name
 }
-
 ```

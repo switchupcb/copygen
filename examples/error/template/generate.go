@@ -1,4 +1,3 @@
-/* NOTE: The following template was copied from "github.com/switchupcb/copygen/cli/generator/templates/generate.go" and modified. */
 // DO NOT CHANGE PACKAGE
 
 // Package template provides a template used by copygen to generate custom code.
@@ -8,7 +7,7 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// Generate provides generated code.
+// Generate generates code.
 // GENERATOR FUNCTION.
 // EDITABLE.
 // DO NOT REMOVE.
@@ -31,10 +30,10 @@ func Function(function *models.Function) string {
 	fn += generateSignature(function) + "\n"
 
 	// body
-	fn += generateBody(function) + "\n"
+	fn += generateBody(function)
 
 	// return
-	fn += generateReturn(function) + "\n"
+	fn += generateReturn(function)
 
 	// end of function
 	if fn[len(fn)-1:] != "\n" {
@@ -50,7 +49,7 @@ func generateComment(function *models.Function) string {
 	var toComment string
 
 	for _, toType := range function.To {
-		toComment += toType.Field.Name + ", "
+		toComment += toType.Field.FullNameWithoutContainer("") + ", "
 	}
 
 	if toComment != "" {
@@ -60,7 +59,7 @@ func generateComment(function *models.Function) string {
 
 	var fromComment string
 	for _, fromType := range function.From {
-		fromComment += fromType.Field.Name + ", "
+		fromComment += fromType.Field.FullNameWithoutContainer("") + ", "
 	}
 
 	if fromComment != "" {
@@ -104,9 +103,9 @@ func generateParameters(function *models.Function) string {
 func generateBody(function *models.Function) string {
 	var body string
 
-	// Assign fields to ToType(s)
+	// Assign fields to ToType(s).
 	for _, toType := range function.To {
-		body += "// " + toType.Field.Name + " fields\n"
+		body += "// " + toType.Field.FullNameWithoutContainer("") + " fields\n"
 
 		for _, toField := range toType.Field.Fields {
 			body += toField.FullVariableName("")

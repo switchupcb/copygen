@@ -17,9 +17,9 @@ func Itoa(i int) string {
 	return c.Itoa(i)
 }
 
-// ModelsToDomain copies a Account, User to a Account.
+// ModelsToDomain copies a models.Account, models.User to a domain.Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) error {
-	// Account fields
+	// domain.Account fields
 	tA.ID = fA.ID
 	tA.UserID = Itoa(fU.UserID)
 	tA.Name = fA.Name

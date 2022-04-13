@@ -46,7 +46,9 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	case *types.Named:
 		setFieldImportAndPackage(fp.field, x.Obj().Pkg().Path(), x.Obj().Pkg().Name())
 		setFieldVariableName(fp.field, "."+x.Obj().Name())
-		fp.field.Name = x.Obj().Name()
+		if fp.field.Name == "" {
+			fp.field.Name = x.Obj().Name()
+		}
 		return fp.parseField(x.Underlying())
 
 	// Simple Composite Types

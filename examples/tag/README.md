@@ -1,6 +1,7 @@
-# Example: Automatch
+# Example: Tag
 
 The example uses the `tag` option to match three models.
+
 `./domain/domain.go`
 
 ```go
@@ -9,10 +10,11 @@ package domain
 
 // Account represents a user account.
 type Account struct {
-  UserID   int    `api:"id"`
+	ID       int    `api:"user_id"`
 	Name     string `api:"name"`
 	Email    string `other:"email"`
-	Username string `api:"username,omitempty" other:"tag"`
+	Username string `api:"username" other:"tag"`
+	Password string // The password field will not be copied.
 }
 ```
 
@@ -27,13 +29,13 @@ type Account struct {
 	ID       int    `api:"id"`
 	Name     string `api:"name"`
 	Password string
-	Email    string
+	Email    string `other:"email"`
 }
 
 // User represents the data model for a user.
 type User struct {
-	UserID   int
-	Username string `api:"username"`
+	UserID   int    `api:"user_id"`
+	Username string `api:"username,omitempty"`
 }
 ```
 
@@ -74,24 +76,15 @@ _Use pointers to avoid allocations._
 package copygen
 
 import (
-	c "strconv"
-
 	"github.com/switchupcb/copygen/examples/tag/domain"
 	"github.com/switchupcb/copygen/examples/tag/models"
 )
 
-/* Define the function and field this converter is applied to using regex. */
-// Itoa converts an integer to an ascii value.
-func Itoa(i int) string {
-	return c.Itoa(i)
-}
-
-// ModelsToDomain copies a Account, User to a Account.
+// ModelsToDomain copies a models.Account, models.User to a domain.Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
-	// Account fields
-	tA.ID = fA.ID
-	tA.UserID = Itoa(fU.UserID)
+	// domain.Account fields
+	tA.ID = fU.UserID
 	tA.Name = fA.Name
+	tA.Username = fU.Username
 }
-
 ```

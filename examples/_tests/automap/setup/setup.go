@@ -12,7 +12,7 @@ import (
 type Copygen interface {
 	// map models.Account.ID domain.Account.ID
 	// map models.Account.Name domain.Account.Name
-	// automatch models.User.*
+	// automatch domain.Account.*
 	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 

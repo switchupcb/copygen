@@ -9,9 +9,9 @@ import (
 	"github.com/switchupcb/copygen/examples/tag/models"
 )
 
-// ModelsToDomain copies a Account, User to a Account.
+// ModelsToDomain copies a models.Account, models.User to a domain.Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
-	// Account fields
+	// domain.Account fields
 	tA.ID = fU.UserID
 	tA.Name = fA.Name
 	tA.Username = fU.Username

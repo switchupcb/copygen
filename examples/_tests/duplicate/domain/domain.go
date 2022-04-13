@@ -9,7 +9,7 @@ type Account struct {
 	Name           string
 	User           DomainUser // The fields of DomainUser operate at depth level 1.
 	Email          string
-	DuplicateName  Duplicate
+	DuplicateName  Duplicate // Should not match with DuplicateField.
 	SuperString    string
 	ReversedString ReversedString
 }
@@ -21,5 +21,5 @@ type DomainUser struct {
 }
 
 type Duplicate struct {
-	A string
+	A int
 }

@@ -159,7 +159,7 @@ func (f *Field) FullNameWithoutContainer(name string) string {
 			name = f.Name + "." + name
 		}
 
-		return f.Parent.FullName(name)[len(f.Parent.Container):]
+		return f.Parent.FullNameWithoutContainer(name)
 	}
 
 	if name != "" {

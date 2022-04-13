@@ -9,7 +9,7 @@ type Account struct {
 	Name           string
 	Password       string
 	Email          string
-	DuplicateName  Duplicate
+	DuplicateField Duplicate // Should not match with DuplicateName.
 	SuperString    SuperString
 	ReversedString string
 }

@@ -136,7 +136,7 @@ func testExample(t *testing.T, test test) {
 		// t.Fatalf("Run(%v [tmpl]) output not equivalent to %v", test.name, test.wantpath)
 	}
 
-	fmt.Println("Passed:", test.name, "(tmpl)")
+	fmt.Println("PASSED:", test.name, "(tmpl)")
 }
 
 // programmaticTemplateRun runs copygen programmatically,

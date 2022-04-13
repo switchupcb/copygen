@@ -90,22 +90,26 @@ func getNodeComments(x ast.Node) []*ast.Comment {
 
 // astRemoveComments removes ast.Comments from an *ast.File.
 func astRemoveComments(file *ast.File, comments []*ast.Comment) {
-	var lastComment *ast.Comment
 
-	for _, fileCommentGroup := range file.Comments {
-		for j, fileComment := range fileCommentGroup.List {
-			for k, comment := range comments {
+	// remove comments starting from the bottom of the file.
+	for i := len(file.Comments) - 1; i > -1; i-- {
+		fileCommentGroup := file.Comments[i]
+
+		// remove comments from the bottom of each comment group.
+		for j := len(fileCommentGroup.List) - 1; j > -1; j-- {
+			fileComment := fileCommentGroup.List[j]
+
+			for k := len(comments) - 1; k > -1; k-- {
+				comment := comments[k]
+
+				// remove the comment.
 				if fileComment == comment {
 					// reslice the commentGroup to remove the comment.
-					if len(fileCommentGroup.List) == 2 {
-						fileCommentGroup.List = append(fileCommentGroup.List[:j], fileCommentGroup.List[j+1:]...)
-					} else {
-						fileCommentGroup.List = make([]*ast.Comment, 0)
-					}
+					fileCommentGroup.List = append(fileCommentGroup.List[:j], fileCommentGroup.List[j+1:]...)
 
 					// prevent free-floating comments.
-					if lastComment.End()+2 == comment.Slash {
-						lastComment.Slash = comment.Slash
+					if j != 0 && fileCommentGroup.List[j-1].End()+2 == comment.Slash {
+						fileCommentGroup.List[j-1].Slash = comment.Slash
 					}
 
 					// prevent the comment from being compared again.
@@ -114,8 +118,6 @@ func astRemoveComments(file *ast.File, comments []*ast.Comment) {
 					break
 				}
 			}
-
-			lastComment = fileComment
 		}
 	}
 }

@@ -25,8 +25,9 @@ Each example has a **README**.
 | Example                          | Description                              |
 | :------------------------------- | :--------------------------------------- |
 | main                             | The default example.                     |
-| [manual](examples/manual/)       | Uses the manual map feature.             |
 | [automatch](examples/automatch/) | Uses the automatch feature with depth.   |
+| [map](examples/map/)             | Uses the manual map feature.             |
+| [tag](examples/tag/)             | Uses the manual tag feature.             |
 | deepcopy _(Roadmap)_             | Uses the deepcopy option.                |
 | [error](examples/error/)         | Uses `.go` templates to return an error. |
 | [tmpl](examples/tmpl/)           | Uses `.tmpl` templates.                  |
@@ -123,11 +124,11 @@ You can specify options for your Copygen functions using comments: Do **NOT** pu
 | Option              | Use                                                      | Description                                                                                                                                                                        | Example                                                                      |
 | :------------------ | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
 | `map from to`       | Map fields manually.                                     | Copygen uses its [automatcher](#automatch) by default. <br /> Override this to `map` fields to and from each other. <br /> Regex is supported for from-fields.                     | `map .* package.Type.Field` <br /> `map models.Account.ID domain.Account.ID` |
-| `tag field key`     | Map fields manually using tags.                          | Copygen uses its [automatcher](#automatch) by default. <br /> Override this using `tag` with _regex_ and a tag key.                                                              | `tag package.Type.Field key` <br /> `tag .* api` _(all fields)_              |
+| `tag field key`     | Map fields manually using tags.                          | Copygen uses its [automatcher](#automatch) by default. <br /> Override this using `tag` with _regex_ and a tag key.                                                                | `tag package.Type.Field key` <br /> `tag .* api` _(all fields)_              |
 | `depth field level` | Use a specific field depth.                              | Copygen uses full-field [depth](#depth) by default. <br /> Override this using `depth` with _regex_ and a [depth-level](#depth) integer.                                           | `depth .* 2` <br /> `depth models.Account.* 1`                               |
 | `deepcopy field`    | Deepcopy from-fields.                                    | Copygen shallow copies fields by default. <br /> Override this using `deepcopy` with _regex_. <br /> For more info, view [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy). | `deepcopy package.Type.Field` <br /> `deepcopy .*` _(all fields)_            |
 | `automatch field`   | Use the automatcher selectively or with `map` and `tag`. | Using `map` or `tag` disables the default automatcher. <br /> Enable it using `automatch` with _regex_. <br />                                                                     | `automatch package.Type.Field` <br /> `automatch models.User.*`              |
-| `custom option`     | Specify custom options.                                  | Use custom options with [templates](#templates). <br /> `custom` options are **function** options. <br /> Returns `map[string][]string` _(trim-spaced)_.             | `ignore true` <br /> `swap false`                                            |
+| `custom option`     | Specify custom options.                                  | Use custom options with [templates](#templates). <br /> `custom` options are **function** options. <br /> Returns `map[string][]string` _(trim-spaced)_.                           | `ignore true` <br /> `swap false`                                            |
 
 _[View a reference on Regex.](https://cheatography.com/davechild/cheat-sheets/regular-expressions/)_
 
@@ -193,9 +194,9 @@ func Itoa(i int) string {
 	return c.Itoa(i)
 }
 
-// ModelsToDomain copies a Account, User to a Account.
+// ModelsToDomain copies a models.Account, models.User to a domain.Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
-	// Account fields
+	// domain.Account fields
 	tA.ID = fA.ID
 	tA.UserID = Itoa(fU.UserID)
 	tA.Name = fA.Name

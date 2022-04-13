@@ -7,4 +7,5 @@ type Account struct {
 	Name     string `api:"name"`
 	Email    string `other:"email"`
 	Username string `api:"username" other:"tag"`
+	Password string // The password field will not be copied.
 }

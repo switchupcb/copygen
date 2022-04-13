@@ -41,7 +41,7 @@ func Match(gen *models.Generator) error {
 func match(function models.Function, toField *models.Field, fromField *models.Field) {
 	if function.Options.Manual {
 		switch {
-		case toField.Options.Automatch:
+		case toField.Options.Automatch || fromField.Options.Automatch:
 			automatch(toField, fromField)
 
 		case toField.Options.Tag != "":

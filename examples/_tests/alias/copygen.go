@@ -9,9 +9,9 @@ import (
 	data "github.com/switchupcb/copygen/examples/main/models"
 )
 
-// ModelsToDomain copies a Account, User to a Account.
+// ModelsToDomain copies a data.Account, data.User to a service.Account.
 func ModelsToDomain(tA *service.Account, fA *data.Account, fU *data.User) {
-	// Account fields
+	// service.Account fields
 	tA.ID = fA.ID
 	tA.Name = fA.Name
 }

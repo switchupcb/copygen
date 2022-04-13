@@ -6,6 +6,6 @@ type Account struct {
 	ID       string
 	Name     string
 	Email    string
-	Password string
+	Password string // The password field will not be copied.
 	Other    string // The other field is not used.
 }

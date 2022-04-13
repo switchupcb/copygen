@@ -49,7 +49,7 @@ func generateComment(function *models.Function) string {
 	var toComment string
 
 	for _, toType := range function.To {
-		toComment += toType.Field.Name + ", "
+		toComment += toType.Field.FullNameWithoutContainer("") + ", "
 	}
 
 	if toComment != "" {
@@ -59,7 +59,7 @@ func generateComment(function *models.Function) string {
 
 	var fromComment string
 	for _, fromType := range function.From {
-		fromComment += fromType.Field.Name + ", "
+		fromComment += fromType.Field.FullNameWithoutContainer("") + ", "
 	}
 
 	if fromComment != "" {
@@ -105,7 +105,7 @@ func generateBody(function *models.Function) string {
 
 	// Assign fields to ToType(s).
 	for _, toType := range function.To {
-		body += "// " + toType.Field.Name + " fields\n"
+		body += "// " + toType.Field.FullNameWithoutContainer("") + " fields\n"
 
 		for _, toField := range toType.Field.Fields {
 			body += toField.FullVariableName("") + " = "

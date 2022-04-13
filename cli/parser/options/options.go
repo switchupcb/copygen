@@ -14,7 +14,6 @@ type Option struct {
 	Value interface{}
 
 	// The category the option falls under.
-	// There are currently five: convert, depth, deepcopy, map, custom
 	Category string
 }
 
