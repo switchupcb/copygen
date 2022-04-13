@@ -42,8 +42,8 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 		method := copygen.Method(i)
 
 		// create the models.Type objects
-		fieldoptions, manual := getNodeOptions(astcopygen.Methods.List[i])
-		fieldoptions = append(fieldoptions, convertOptions...)
+		fieldoptions, manual := getNodeOptions(astcopygen.Methods.List[i], p.Options.CommentOptionMap)
+		fieldoptions = append(fieldoptions, p.Options.ConvertOptions...)
 		parsed, err := parseTypes(method, fieldoptions)
 		if err != nil {
 			return nil, fmt.Errorf("an error occurred while parsing the types of function %q.\n%w", method.Name(), err)
@@ -77,8 +77,8 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 
 // getNodeOptions gets an ast.Node options from its comments.
 // To reduce overhead, it also returns whether a manual matcher is used.
-func getNodeOptions(x ast.Node) ([]*options.Option, bool) {
-	nodeOptions := make([]*options.Option, 0, len(commentOptionMap))
+func getNodeOptions(x ast.Node, commentoptionmap map[string]*options.Option) ([]*options.Option, bool) {
+	nodeOptions := make([]*options.Option, 0, len(commentoptionmap))
 	var manual bool
 
 	ast.Inspect(x, func(node ast.Node) bool {
@@ -88,11 +88,11 @@ func getNodeOptions(x ast.Node) ([]*options.Option, bool) {
 		}
 
 		for _, comment := range commentGroup.List {
-			if commentOptionMap[comment.Text] != nil {
-				nodeOptions = append(nodeOptions, commentOptionMap[comment.Text])
+			if commentoptionmap[comment.Text] != nil {
+				nodeOptions = append(nodeOptions, commentoptionmap[comment.Text])
 
 				// specifying a match option disables automatching by default.
-				if options.IsMatchOptionCategory(commentOptionMap[comment.Text].Category) {
+				if options.IsMatchOptionCategory(commentoptionmap[comment.Text].Category) {
 					manual = true
 				}
 			}

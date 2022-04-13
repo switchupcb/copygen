@@ -111,18 +111,15 @@ func GenerateCode(gen *models.Generator) (string, error) {
 	return content, nil
 }
 
-var (
-	// funcMap represents a funcMap for text/templates.
-	funcMap = tmpl.FuncMap{
-		"bytesToString": func(b []byte) string { return string(b) },
-	}
-)
-
 // GenerateTemplate generates code using a text/template file (.tmpl).
 func GenerateTemplate(gen *models.Generator) (string, error) {
 	file, err := os.ReadFile(gen.Tempath)
 	if err != nil {
 		return "", fmt.Errorf("the specified .tmpl filepath doesn't exist: %v\n%w", gen.Tempath, err)
+	}
+
+	funcMap := tmpl.FuncMap{
+		"bytesToString": func(b []byte) string { return string(b) },
 	}
 
 	t, err := tmpl.New("").Funcs(funcMap).Parse(string(file))

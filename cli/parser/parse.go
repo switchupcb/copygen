@@ -17,8 +17,9 @@ import (
 
 // Parser represents a parser that parses Abstract Syntax Tree data into models.
 type Parser struct {
-	Config Config
-	Pkgs   []*packages.Package
+	Config  Config
+	Options Options
+	Pkgs    []*packages.Package
 }
 
 // Config represents a Parser's configuration.
@@ -33,16 +34,17 @@ type Config struct {
 	Setpath string
 }
 
-// parserLoadMode represents the load mode required for sufficient information during package load.
-const parserLoadMode = packages.NeedName + packages.NeedImports + packages.NeedDeps + packages.NeedTypes + packages.NeedSyntax + packages.NeedTypesInfo
-
-var (
-	// convertOptions represents a global list of convert options (for convert functions).
-	convertOptions []*options.Option
-
+// Options represents a parser's options.
+type Options struct {
 	// commentOptionMap represents a map of comments (as text) to an option.
-	commentOptionMap = make(map[string]*options.Option)
+	CommentOptionMap map[string]*options.Option
 
+	// convertOptions represents a global list of convert options (for convert functions).
+	ConvertOptions []*options.Option
+}
+
+// GLOBAL VARIABLES.
+var (
 	// aliasImportMap represents a global map of package paths to aliased import variables names (defined in the setup file).
 	aliasImportMap map[string]string
 
@@ -50,6 +52,9 @@ var (
 	// to a field that is defined in the setup file's package.
 	ignorepkgpath string
 )
+
+// parserLoadMode represents the load mode required for sufficient information during package load.
+const parserLoadMode = packages.NeedName + packages.NeedImports + packages.NeedDeps + packages.NeedTypes + packages.NeedSyntax + packages.NeedTypesInfo
 
 // Parse parses a generator's setup file.
 func Parse(gen *models.Generator) error {
@@ -59,7 +64,7 @@ func Parse(gen *models.Generator) error {
 	}
 
 	// Write the Keep (and set options in the process).
-	if err := Keep(p.Config.SetupFile); err != nil {
+	if err := p.Keep(p.Config.SetupFile); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
@@ -109,9 +114,14 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("%w", err)
 	}
 
+	// reset global variables
+	ignorepkgpath = ""
+	aliasImportMap = nil
+
 	return nil
 }
 
+// setupParser sets up a new parser.
 func setupParser(gen *models.Generator) (*Parser, error) {
 	// determine the actual filepath of the setup.go file.
 	absfilepath, err := filepath.Abs(filepath.Join(filepath.Dir(gen.Loadpath), gen.Setpath))

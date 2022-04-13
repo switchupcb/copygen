@@ -71,7 +71,7 @@ type Account struct {
 // A User represents the data model for a user.
 type User struct {
 	UserID   int
-	Name     int
+	Name     string
 	UserData string
 }
 ```

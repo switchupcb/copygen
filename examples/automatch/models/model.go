@@ -13,18 +13,16 @@ type Account struct {
 type User struct {
 	UserID   int
 	Username string
-	UserData UserData
+	UserData UserData // The fields of UserData operate at depth level 2.
 }
 
 // UserData represents data owned by the user.
-// The fields of UserData operate at depth level 1.
 type UserData struct {
 	Options map[string]interface{}
-	Data    Data
+	Data    Data // The fields of Data operate at depth level 3.
 }
 
 // Data represents a piece of data.
-// The fields of UserData operate at depth level 2.
 type Data struct {
 	ID int
 }

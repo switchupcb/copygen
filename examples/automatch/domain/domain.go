@@ -6,14 +6,14 @@ type Account struct {
 	ID    int
 	Name  string
 	Email string
-	User  DomainUser // The fields of DomainUser operate at depth level 1.
+	User  DomainUser // The fields of DomainUser operate at depth level 2.
 }
 
 // DomainUser represents a user in relation to business logic.
 type DomainUser struct {
 	UserID   int
 	Username string
-	Password Password // The fields of Password operate at depth level 2.
+	Password Password // The fields of Password operate at depth level 3.
 }
 
 // Password represents a password in relation to business logic.

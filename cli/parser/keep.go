@@ -12,7 +12,7 @@ import (
 const convertOptionSplitAmount = 3
 
 // Keep removes ast.Nodes from an ast.File that will be kept in a generated output file.
-func Keep(astFile *ast.File) error {
+func (p *Parser) Keep(astFile *ast.File) error {
 	var trash []*ast.Comment
 
 	for i := len(astFile.Decls) - 1; i > -1; i-- {
@@ -28,22 +28,21 @@ func Keep(astFile *ast.File) error {
 
 				// remove the `type Copygen interface` function ast.Comments.
 				comments := getNodeComments(declaration)
-				trash = append(trash, comments...)
-				err := assignFieldOption(commentOptionMap, comments)
+				err := p.assignFieldOption(comments)
 				if err != nil {
 					return fmt.Errorf("%w", err)
 				}
+				trash = append(trash, comments...)
 			}
 
 		case *ast.FuncDecl:
-			comments, options, err := assignConvertOptions(declaration)
+			comments, err := p.assignConvertOptions(declaration)
 			if err != nil {
 				return fmt.Errorf("%w", err)
 			}
 
 			// remove convert option ast.Comments.
 			trash = append(trash, comments...)
-			convertOptions = append(convertOptions, options...)
 		}
 	}
 
@@ -124,10 +123,14 @@ func astRemoveComments(file *ast.File, comments []*ast.Comment) {
 
 // assignFieldOption parses a list of ast.Comments into options
 // and places them in a map[text]Option.
-func assignFieldOption(optionmap map[string]*options.Option, comments []*ast.Comment) error {
+func (p *Parser) assignFieldOption(comments []*ast.Comment) error {
+	if p.Options.CommentOptionMap == nil {
+		p.Options.CommentOptionMap = make(map[string]*options.Option, len(comments))
+	}
+
 	for _, comment := range comments {
 		text := comment.Text
-		if optionmap[text] != nil {
+		if p.Options.CommentOptionMap[text] != nil {
 			continue
 		}
 
@@ -145,7 +148,7 @@ func assignFieldOption(optionmap map[string]*options.Option, comments []*ast.Com
 				return fmt.Errorf("%w", err)
 			}
 
-			optionmap[text] = option
+			p.Options.CommentOptionMap[text] = option
 		}
 	}
 
@@ -154,10 +157,9 @@ func assignFieldOption(optionmap map[string]*options.Option, comments []*ast.Com
 
 // assignConvertOptions initializes convert options.
 // Used in the context of functions other than the type Copygen interface.
-func assignConvertOptions(x *ast.FuncDecl) ([]*ast.Comment, []*options.Option, error) {
+func (p *Parser) assignConvertOptions(x *ast.FuncDecl) ([]*ast.Comment, error) {
 	var (
 		convertComments []*ast.Comment
-		convertOptions  []*options.Option
 		assignErr       error
 	)
 
@@ -182,7 +184,7 @@ func assignConvertOptions(x *ast.FuncDecl) ([]*ast.Comment, []*options.Option, e
 						return false
 					}
 
-					convertOptions = append(convertOptions, option)
+					p.Options.ConvertOptions = append(p.Options.ConvertOptions, option)
 					convertComments = append(convertComments, comment)
 				}
 			}
@@ -191,5 +193,5 @@ func assignConvertOptions(x *ast.FuncDecl) ([]*ast.Comment, []*options.Option, e
 		return true
 	})
 
-	return convertComments, convertOptions, assignErr
+	return convertComments, assignErr
 }

@@ -89,7 +89,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 			setTags(subfield, x.Tag(i))
 
 			// a cyclic subfield (with the same type as its parent) is never fully assigned.
-			if !fp.cyclic[subfield.Import+subfield.Package+subfield.Name] {
+			if !fp.cyclic[x.Field(i).String()] {
 				subfieldParser := &fieldParser{
 					field:     subfield,
 					parent:    nil,
@@ -99,7 +99,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 				}
 
 				// sets the definition, container, and fields.
-				fp.cyclic[subfield.Import+subfield.Package+subfield.Name+fp.field.Definition] = true
+				fp.cyclic[x.Field(i).String()] = true
 				subfield = subfieldParser.parseField(x.Field(i).Type())
 			}
 
@@ -140,7 +140,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 
 	options.SetFieldOptions(fp.field, fp.options)
 	filterFieldDepth(fp.field, fp.field.Options.Depth, 0)
-	fp.cyclic[fp.field.Import+fp.field.Package+fp.field.Name+fp.field.Definition] = true
+	fp.cyclic[typ.String()] = true
 	return fp.field
 }
 
