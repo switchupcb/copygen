@@ -46,9 +46,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	case *types.Named:
 		setFieldImportAndPackage(fp.field, x.Obj().Pkg().Path(), x.Obj().Pkg().Name())
 		setFieldVariableName(fp.field, "."+x.Obj().Name())
-		if fp.field.Name == "" {
-			fp.field.Name = x.Obj().Name()
-		}
+		setFieldName(fp.field, x.Obj().Name())
 		return fp.parseField(x.Underlying())
 
 	// Simple Composite Types
@@ -80,7 +78,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	// Struct Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#struct-types
 	case *types.Struct:
-		fp.field.Definition = "struct"
+		fp.field.Collection = "struct"
 		for i := 0; i < x.NumFields(); i++ {
 			subfield := &models.Field{
 				VariableName: "." + x.Field(i).Name(),
@@ -117,7 +115,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	// Interface Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#interface-types
 	case *types.Interface:
-		fp.field.Definition = "interface"
+		fp.field.Collection = "interface"
 		for i := 0; i < x.NumMethods(); i++ {
 			subfield := &models.Field{
 				VariableName: "." + x.Method(i).Name(),
@@ -152,18 +150,13 @@ func setFieldVariableName(field *models.Field, varname string) {
 	}
 }
 
-// alphastring only returns alphabetic characters (English) in a string.
-func alphastring(s string) string {
-	bytes := []byte(s)
-	i := 0
-	for _, b := range bytes {
-		if ('a' <= b && b <= 'z') || ('A' <= b && b <= 'Z') || b == ' ' {
-			bytes[i] = b
-			i++
-		}
+// setFieldName sets a field's name.
+func setFieldName(field *models.Field, name string) {
+	if field.Name == "" {
+		field.Name = name
+	} else {
+		field.Definition = name
 	}
-
-	return string(bytes[:i])
 }
 
 // setFieldImportAndPackage sets the import and package of a field.
@@ -223,4 +216,18 @@ func setFieldOptions(field *models.Field, fieldoptions []*options.Option) {
 
 		}
 	}
+}
+
+// alphastring only returns alphabetic characters (English) in a string.
+func alphastring(s string) string {
+	bytes := []byte(s)
+	i := 0
+	for _, b := range bytes {
+		if ('a' <= b && b <= 'z') || ('A' <= b && b <= 'Z') || b == ' ' {
+			bytes[i] = b
+			i++
+		}
+	}
+
+	return string(bytes[:i])
 }

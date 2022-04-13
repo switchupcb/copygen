@@ -15,16 +15,13 @@ type Field struct {
 	// Field variable names are defined by their specifier (i.e '.UserID' in 'domain.Account.UserID').
 	VariableName string
 
-	// The package the field is defined in (i.e `log` in `log.Logger`).
+	// Import represents the file that field was imported from.
+	Import string
+
+	// Package represents the package the field is defined in (i.e `log` in `log.Logger`).
 	Package string
 
-	// The name of the field (i.e `ID` in `ID int`).
-	Name string
-
-	// The type definition of the field (i.e `int` in `ID int`, `Logger` in `log.Logger`).
-	Definition string
-
-	// The container type that contains the field's definition in string format.
+	// Container represents the container that contains the field's definition (in string format).
 	//
 	// This can be any of the following examples or `nil``.
 	// pointer(s): **
@@ -34,12 +31,21 @@ type Field struct {
 	// chan: chan
 	Container string
 
+	// Name represents the name of the field (i.e `ID` in `ID int`).
+	Name string
+
+	// Definition represents the type definition of the field (i.e `int` in `ID int`, `Logger` in `log.Logger`).
+	Definition string
+
+	// Collection represents the type of collection that this field represents.
+	//
+	// a "struct" collection contain subfields with any other type.
+	// an "interface" collection contains `func` subfields.
+	Collection string
+
 	// The tags defined in a struct field (i.e `json:"tag,omitempty"`)
 	// map[tag]map[name][]options (i.e map[json]map[tag]["omitempty"])
 	Tags map[string]map[string][]string
-
-	// The file the field was imported from.
-	Import string
 
 	// The type or field that contains this field.
 	Parent *Field
