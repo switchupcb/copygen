@@ -34,8 +34,9 @@ type Field struct {
 	// chan: chan
 	Container string
 
-	// The tag defined in a struct field (i.e `json:"tag"`)
-	Tag string
+	// The tags defined in a struct field (i.e `json:"tag,omitempty"`)
+	// map[tag]map[name][]options (i.e map[json]map[tag]["omitempty"])
+	Tags map[string]map[string][]string
 
 	// The file the field was imported from.
 	Import string
@@ -65,6 +66,9 @@ type FieldOptions struct {
 
 	// The field to map this field to, if any.
 	Map string
+
+	// The tag to map this field with, if any.
+	Tag string
 
 	// The level at which sub-fields are discovered.
 	Depth int

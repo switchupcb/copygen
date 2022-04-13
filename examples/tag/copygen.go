@@ -5,20 +5,14 @@
 package copygen
 
 import (
-	c "strconv"
-
-	"github.com/switchupcb/copygen/examples/main/domain"
-	"github.com/switchupcb/copygen/examples/main/models"
+	"github.com/switchupcb/copygen/examples/tag/domain"
+	"github.com/switchupcb/copygen/examples/tag/models"
 )
-
-func Itoa(i int) string {
-	return c.Itoa(i)
-}
 
 // ModelsToDomain copies a Account, User to a Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	// Account fields
-	tA.ID = fA.ID
-	tA.UserID = Itoa(fU.UserID)
+	tA.ID = fU.UserID
 	tA.Name = fA.Name
+	tA.Username = fU.Username
 }

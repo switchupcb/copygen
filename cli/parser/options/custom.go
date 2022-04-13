@@ -5,7 +5,10 @@ import (
 	"strings"
 )
 
-const CategoryCustom = "custom"
+const (
+	CategoryCustom = "custom"
+	FormatCustom   = "<option><whitespaces><value>"
+)
 
 // ParseCustom parses a custom option.
 func ParseCustom(option string) (*Option, error) {
@@ -14,7 +17,7 @@ func ParseCustom(option string) (*Option, error) {
 	if len(splitoption) == 0 {
 		return nil, fmt.Errorf("there is an unspecified %s option at an unknown line", CategoryCustom)
 	} else if len(splitoption) == 1 {
-		return nil, fmt.Errorf("there is a misconfigured %s option: %q.\nIs it in format %s?", CategoryCustom, option, "<option><whitespaces><value>")
+		return nil, fmt.Errorf("there is a misconfigured %s option: %q.\nIs it in format %s?", CategoryCustom, option, FormatCustom)
 	}
 
 	return &Option{
@@ -29,11 +32,11 @@ func MapCustomOption(optionmap map[string][]string, option *Option) error {
 		optionmap = make(map[string][]string)
 	}
 
-	switch option.Category {
-	case CategoryConvert, CategoryDeepcopy, CategoryDepth, CategoryMap:
-	default:
-		if v, ok := option.Value.(string); ok {
-			optionmap[option.Category] = append(optionmap[option.Category], v)
+	if option.Category == CategoryCustom {
+		if customoptionvalue, ok := option.Value.(map[string]string); ok {
+			for k, v := range customoptionvalue {
+				optionmap[k] = append(optionmap[k], v)
+			}
 		} else {
 			return fmt.Errorf("failed to map custom option: %v", option.Value)
 		}

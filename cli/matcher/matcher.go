@@ -39,15 +39,24 @@ func Match(gen *models.Generator) error {
 
 // match determines which matcher to use for two fields, then matches them.
 func match(function models.Function, toField *models.Field, fromField *models.Field) {
-	if function.Options.Manual && !toField.Options.Automatch && !fromField.Options.Automatch {
-		manualmatch(toField, fromField)
+	if function.Options.Manual {
+		switch {
+		case toField.Options.Automatch:
+			automatch(toField, fromField)
+
+		case toField.Options.Tag != "":
+			tagmatch(toField, fromField)
+
+		default:
+			mapmatch(toField, fromField)
+		}
 	} else {
 		automatch(toField, fromField)
 	}
 }
 
-// automatch automatically matches the fields of a fromType to a toType by name.
-// automatch is used when no `map` options apply to a field.
+// automatch automatically matches the fields of a fromType to a toType by name and definition.
+// automatch is used when no `map` or `tag` options apply to a field.
 func automatch(toField, fromField *models.Field) {
 	if toField.Name == fromField.Name &&
 		(toField.Definition == fromField.Definition || fromField.Options.Convert != "") {
@@ -56,10 +65,19 @@ func automatch(toField, fromField *models.Field) {
 	}
 }
 
-// manualmatch uses a manual matcher to map a from-field to a to-field.
-// manualmatch is used when a map option is specified.
-func manualmatch(toField, fromField *models.Field) {
-	if fromField.Options.Map != "" && toField.FullName("") == fromField.Options.Map {
+// mapmatch manually maps a from-field to a to-field.
+// mapmatch is used when a map option is specified.
+func mapmatch(toField, fromField *models.Field) {
+	if fromField.Options.Map != "" && toField.FullNameWithoutContainer("") == fromField.Options.Map {
+		fromField.To = toField
+		toField.From = fromField
+	}
+}
+
+// tagmatch manually maps a from-field to a to-field using tags.
+// tagmatch is used when a tag option is specified.
+func tagmatch(toField, fromField *models.Field) {
+	if toField.Options.Tag != "" && toField.Options.Tag == fromField.Options.Tag {
 		fromField.To = toField
 		toField.From = fromField
 	}

@@ -42,7 +42,7 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 		method := copygen.Method(i)
 
 		// create the models.Type objects
-		fieldoptions, manual := p.getNodeOptions(astcopygen.Methods.List[i])
+		fieldoptions, manual := getNodeOptions(astcopygen.Methods.List[i])
 		fieldoptions = append(fieldoptions, convertOptions...)
 		parsed, err := parseTypes(method, fieldoptions)
 		if err != nil {
@@ -54,7 +54,7 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 		for _, option := range fieldoptions {
 			err := options.MapCustomOption(customoptionmap, option)
 			if err != nil {
-				fmt.Printf("WARNING: %v", err)
+				fmt.Printf("WARNING: %v\n", err)
 			}
 		}
 
@@ -77,8 +77,8 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 
 // getNodeOptions gets an ast.Node options from its comments.
 // To reduce overhead, it also returns whether a manual matcher is used.
-func (p *Parser) getNodeOptions(x ast.Node) ([]*options.Option, bool) {
-	nodeOptions := make([]*options.Option, 0, len(p.CommentOptionMap))
+func getNodeOptions(x ast.Node) ([]*options.Option, bool) {
+	nodeOptions := make([]*options.Option, 0, len(commentOptionMap))
 	var manual bool
 
 	ast.Inspect(x, func(node ast.Node) bool {
@@ -88,11 +88,11 @@ func (p *Parser) getNodeOptions(x ast.Node) ([]*options.Option, bool) {
 		}
 
 		for _, comment := range commentGroup.List {
-			if p.CommentOptionMap[comment.Text] != nil {
-				nodeOptions = append(nodeOptions, p.CommentOptionMap[comment.Text])
+			if commentOptionMap[comment.Text] != nil {
+				nodeOptions = append(nodeOptions, commentOptionMap[comment.Text])
 
-				// specifying a map disables automatching.
-				if p.CommentOptionMap[comment.Text].Category == options.CategoryMap {
+				// specifying a match option disables automatching by default.
+				if options.IsMatchOptionCategory(commentOptionMap[comment.Text].Category) {
 					manual = true
 				}
 			}

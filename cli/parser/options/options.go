@@ -17,3 +17,38 @@ type Option struct {
 	// There are currently five: convert, depth, deepcopy, map, custom
 	Category string
 }
+
+// NewFieldOption creates a new field-oriented option from the given category and text.
+func NewFieldOption(category, text string) (*Option, error) {
+	var option *Option
+	var err error
+
+	switch category {
+	case CategoryAutomatch:
+		option, err = ParseAutomatch(text)
+
+	case CategoryMap:
+		option, err = ParseMap(text)
+
+	case CategoryTag:
+		option, err = ParseTag(text)
+
+	case CategoryDeepcopy:
+		option, err = ParseDeepcopy(text)
+
+	case CategoryDepth:
+		option, err = ParseDepth(text)
+
+	default:
+		option = &Option{
+			Category: CategoryCustom,
+			Regex:    nil,
+			Value:    map[string]string{category: text},
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return option, nil
+}

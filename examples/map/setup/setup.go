@@ -4,15 +4,15 @@ package copygen
 import (
 	c "strconv"
 
-	"github.com/switchupcb/copygen/examples/manual/domain"
-	"github.com/switchupcb/copygen/examples/manual/models"
+	"github.com/switchupcb/copygen/examples/map/domain"
+	"github.com/switchupcb/copygen/examples/map/models"
 )
 
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	// map models.Account.ID domain.Account.ID
+	// map models.User.UserID domain.Account.ID
 	// map models.Account.Name domain.Account.Name
-	// map models.User.UserID domain.Account.UserID
+	// map models.Account.Email domain.Account.Email
 	ModelsToDomain(*models.Account, *models.User) *domain.Account
 }
 

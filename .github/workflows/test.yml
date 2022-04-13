@@ -10,7 +10,7 @@ on:
 
 jobs:
   Integration:
-    name: lint
+    name: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository code

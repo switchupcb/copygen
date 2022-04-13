@@ -7,12 +7,10 @@ package copygen
 import (
 	c "strconv"
 
-	"github.com/switchupcb/copygen/examples/manual/domain"
-	"github.com/switchupcb/copygen/examples/manual/models"
+	"github.com/switchupcb/copygen/examples/map/domain"
+	"github.com/switchupcb/copygen/examples/map/models"
 )
 
-/* Define the function and field this converter is applied to using regex. */
-// Itoa converts an integer to an ascii value.
 func Itoa(i int) string {
 	return c.Itoa(i)
 }
@@ -20,7 +18,7 @@ func Itoa(i int) string {
 // ModelsToDomain copies a Account, User to a Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	// Account fields
-	tA.ID = fA.ID
-	tA.UserID = Itoa(fU.UserID)
+	tA.ID = Itoa(fU.UserID)
 	tA.Name = fA.Name
+	tA.Email = fA.Email
 }

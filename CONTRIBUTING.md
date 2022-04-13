@@ -42,12 +42,9 @@ The `setup` file is parsed using an Abstract Syntax Tree. This tree contains the
 
 #### Options
 
-**Convert** options are defined **outside** of the `type Copygen Interface` and may apply to multiple functions. As a result, all `ast.Comments` must be parsed before `models.Function` and `models.Field` objects can be created. In order to do this, the `type Copygen Interface` is stored, but **NOT** analyzed until the `setup` file is traversed. This leaves two ways to parse `ast.Comments` into `Options`.
+**Convert** options are defined **outside** of the `type Copygen Interface` and may apply to multiple functions. As a result, all `ast.Comments` must be parsed before `models.Function` and `models.Field` objects can be created. In order to do this, the `type Copygen Interface` is stored, but **NOT** analyzed until the `setup` file is traversed. 
 
-1. Parse **Convert** `ast.Comments` into `Options` during `setup` file traversal, and **field** `ast.Comments` into `Options` _(defined above Copygen functions)_ while analyzing the `type Copygen Interface`.
-2. Parse `ast.Comments` that were removed from the AST into `Options`.
-
-Method **1** is slightly more efficient _(since **convert** `ast.Comments` are only referenced once; not stored)_, but only used because **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. In contrast, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
+There are multiple ways to parse `ast.Comments` into `Options`, but **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. As a result, the most readable, efficient, and least error prone method of parsing `ast.Comments` into `Options `is simply to parse them when discovered; and assign them from a `CommentOptionMap` later. In addition, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
 
 #### Imports
 

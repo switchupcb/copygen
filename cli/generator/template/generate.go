@@ -36,6 +36,9 @@ func Function(function *models.Function) string {
 	fn += generateReturn(function)
 
 	// end of function
+	if fn[len(fn)-1:] != "\n" {
+		fn += "\n"
+	}
 	fn += "}"
 
 	return fn
@@ -123,7 +126,7 @@ func generateBody(function *models.Function) string {
 		}
 	}
 
-	return body[:len(body)-1]
+	return body
 }
 
 // generateReturn generates a return statement for the function.

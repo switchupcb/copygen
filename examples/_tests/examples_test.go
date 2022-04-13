@@ -48,9 +48,14 @@ var (
 			wantpath: "examples/error/copygen.go",
 		},
 		{
-			name:     "manual",
-			ymlpath:  "examples/manual/setup/setup.yml",
-			wantpath: "examples/manual/copygen.go",
+			name:     "map",
+			ymlpath:  "examples/map/setup/setup.yml",
+			wantpath: "examples/map/copygen.go",
+		},
+		{
+			name:     "tag",
+			ymlpath:  "examples/tag/setup/setup.yml",
+			wantpath: "examples/tag/copygen.go",
 		},
 		{
 			name:     "alias",

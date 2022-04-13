@@ -1,7 +1,6 @@
-# Example: Manual
+# Example: Automatch
 
-The manual example uses manual mapping to match three models.
-
+The example uses the `tag` option to match three models.
 `./domain/domain.go`
 
 ```go
@@ -10,10 +9,10 @@ package domain
 
 // Account represents a user account.
 type Account struct {
-	ID     int
-	UserID int
-	Name   string
-	Other  string // The other field is not used.
+  UserID   int    `api:"id"`
+	Name     string `api:"name"`
+	Email    string `other:"email"`
+	Username string `api:"username,omitempty" other:"tag"`
 }
 ```
 
@@ -25,17 +24,16 @@ package models
 
 // Account represents the data model for account.
 type Account struct {
-	ID       int
-	Name     string
+	ID       int    `api:"id"`
+	Name     string `api:"name"`
 	Password string
 	Email    string
 }
 
-// A User represents the data model for a user.
+// User represents the data model for a user.
 type User struct {
 	UserID   int
-	Name     int
-	UserData string
+	Username string `api:"username"`
 }
 ```
 
@@ -52,22 +50,13 @@ generated:
 
 ## Go
 
-Map the from field `models.Account.ID` to to-fields with the regex pattern `domain.Account.ID`, `models.Account.Name`  to to-fields with the regex pattern `domain.Account.Name`, and `models.User.UserID` to to-fields with the regex pattern `domain.Account.UserID`.
+Match all fields _(.*)_ according to their respective `api` tag.
 
 ```go
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	// map models.Account.ID domain.Account.ID
-	// map models.Account.Name domain.Account.Name
-	// map models.User.UserID domain.Account.UserID
+	// tag .* api
 	ModelsToDomain(*models.Account, *models.User) *domain.Account
-}
-
-/* Define the function and field this converter is applied to using regex. */
-// convert .* models.User.UserID
-// Itoa converts an integer to an ascii value.
-func Itoa(i int) string {
-	return c.Itoa(i)
 }
 ```
 
@@ -87,8 +76,8 @@ package copygen
 import (
 	c "strconv"
 
-	"github.com/switchupcb/copygen/examples/main/domain"
-	"github.com/switchupcb/copygen/examples/main/models"
+	"github.com/switchupcb/copygen/examples/tag/domain"
+	"github.com/switchupcb/copygen/examples/tag/models"
 )
 
 /* Define the function and field this converter is applied to using regex. */

@@ -101,7 +101,7 @@ _The main example ignores the template fields._
 
 #### setup.go
 
-Create an interface in the specified setup file with a `type Copygen interface`. In each function, specify _the types you want to copy from_ as parameters, and _the type you want to copy to_ as return values. _This part is inspired by **goverter**._
+Create an interface in the specified setup file with a `type Copygen interface`. In each function, specify _the types you want to copy from_ as parameters, and _the type you want to copy to_ as return values. _This interface is inspired by **goverter**._
 
 ```go
 /* Specify the name of the generated file's package. */
@@ -118,15 +118,16 @@ _Copygen uses no allocation **with pointers** because Go is pass-by-value. Speci
 
 #### options
 
-You can specify options for your Copygen functions using comments. Do **NOT** put empty lines between comments that pertain to one function. **Options are evaluated in order of declaration.**
+You can specify options for your Copygen functions using comments: Do **NOT** put empty lines between comments that pertain to one function. **Options are evaluated in order of declaration.**
 
-| Option              | Use                             | Description                                                                                                                                                                        | Example                                                                      |
-| :------------------ | :------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
-| `map from to`       | Map fields manually.            | Copygen uses its [automatcher](#automatch) by default. <br /> Override this to `map` fields to and from each other. <br /> Regex is supported for from-fields.                     | `map .* package.Type.Field` <br /> `map models.Account.ID domain.Account.ID` |
-| `depth field level` | Use a specific field depth.     | Copygen uses the full-field [depth](#depth) by default. <br /> Override this using `depth` with _regex_ and a [depth-level](#depth) integer.                                       | `depth .* 2` <br /> `depth models.Account.* 1`                               |
-| `deepcopy field`    | Deepcopy from-fields.           | Copygen shallow copies fields by default. <br /> Override this using `deepcopy` with _regex_. <br /> For more info, view [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy). | `deepcopy package.Type.Field` <br /> `deepcopy .*` _(all fields)_            |
-| `automatch field`   | Use the automatcher with `map`. | Using `map` disables the default automatcher. <br /> Override this using `automatch` with _regex_. <br />                                                                          | `automatch package.Type.Field` <br /> `automatch models.User.*`              |
-| `custom option`     | Specify custom options.         | Use custom options with [templates](#templates). <br /> `custom` options are passed to a **function's** options. <br /> Returns `map[string][]string` _(trim-spaced)_.             | `ignore true` <br /> `swap false`                                            |
+| Option              | Use                                                      | Description                                                                                                                                                                        | Example                                                                      |
+| :------------------ | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| `map from to`       | Map fields manually.                                     | Copygen uses its [automatcher](#automatch) by default. <br /> Override this to `map` fields to and from each other. <br /> Regex is supported for from-fields.                     | `map .* package.Type.Field` <br /> `map models.Account.ID domain.Account.ID` |
+| `tag field key`     | Map fields manually using tags.                          | Copygen uses its [automatcher](#automatch) by default. <br /> Override this using `tag` with _regex_ and a tag key.                                                              | `tag package.Type.Field key` <br /> `tag .* api` _(all fields)_              |
+| `depth field level` | Use a specific field depth.                              | Copygen uses full-field [depth](#depth) by default. <br /> Override this using `depth` with _regex_ and a [depth-level](#depth) integer.                                           | `depth .* 2` <br /> `depth models.Account.* 1`                               |
+| `deepcopy field`    | Deepcopy from-fields.                                    | Copygen shallow copies fields by default. <br /> Override this using `deepcopy` with _regex_. <br /> For more info, view [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy). | `deepcopy package.Type.Field` <br /> `deepcopy .*` _(all fields)_            |
+| `automatch field`   | Use the automatcher selectively or with `map` and `tag`. | Using `map` or `tag` disables the default automatcher. <br /> Enable it using `automatch` with _regex_. <br />                                                                     | `automatch package.Type.Field` <br /> `automatch models.User.*`              |
+| `custom option`     | Specify custom options.                                  | Use custom options with [templates](#templates). <br /> `custom` options are **function** options. <br /> Returns `map[string][]string` _(trim-spaced)_.             | `ignore true` <br /> `swap false`                                            |
 
 _[View a reference on Regex.](https://cheatography.com/davechild/cheat-sheets/regular-expressions/)_
 
@@ -255,7 +256,7 @@ When fields aren't specified using [options](#options), Copygen will attempt to 
 
 ### Manual
 
-Using the `map` or `tag` _(coming soon)_ option disables the automatcher, which allows you to manually match fields. In order to re-enable the automatcher, use the `automatch` option. Options are evaluated in order of declaration, so using `automatch .*` **after** declaring `map` and `tag` options provides an easy way to re-enable the _automatcher_ for remaining fields.
+Using the `map` or `tag` option disables the automatcher, which allows you to manually match fields. In order to re-enable the automatcher, use the `automatch` option. Options are evaluated in order of declaration, so using `automatch .*` **after** declaring `map` and `tag` options provides an easy way to re-enable the _automatcher_ for remaining fields.
 
 #### Depth
 

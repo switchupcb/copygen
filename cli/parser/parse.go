@@ -15,24 +15,10 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-var (
-	// convertOptions represents a global list of convert options (for convert functions).
-	convertOptions []*options.Option
-
-	// aliasImportMap represents a global map of package paths to aliased import variables names (defined in the setup file).
-	aliasImportMap map[string]string
-
-	// ignorepkgpath is used to prevent the field parser from assigning a package name
-	// to a field that is defined in the setup file's package.
-	ignorepkgpath string
-)
-
 // Parser represents a parser that parses Abstract Syntax Tree data into models.
 type Parser struct {
-	// CommentOptionMap represents a map of function (field-specific) options to comments.
-	CommentOptionMap CommentOptionMap
-	Config           Config
-	Pkgs             []*packages.Package
+	Config Config
+	Pkgs   []*packages.Package
 }
 
 // Config represents a Parser's configuration.
@@ -50,6 +36,21 @@ type Config struct {
 // parserLoadMode represents the load mode required for sufficient information during package load.
 const parserLoadMode = packages.NeedName + packages.NeedImports + packages.NeedDeps + packages.NeedTypes + packages.NeedSyntax + packages.NeedTypesInfo
 
+var (
+	// convertOptions represents a global list of convert options (for convert functions).
+	convertOptions []*options.Option
+
+	// commentOptionMap represents a map of comments (as text) to an option.
+	commentOptionMap = make(map[string]*options.Option)
+
+	// aliasImportMap represents a global map of package paths to aliased import variables names (defined in the setup file).
+	aliasImportMap map[string]string
+
+	// ignorepkgpath is used to prevent the field parser from assigning a package name
+	// to a field that is defined in the setup file's package.
+	ignorepkgpath string
+)
+
 // Parse parses a generator's setup file.
 func Parse(gen *models.Generator) error {
 	p, err := setupParser(gen)
@@ -57,14 +58,9 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("%w", err)
 	}
 
-	// Write the Keep.
-	removed, err := Keep(p.Config.SetupFile)
-	if err != nil {
+	// Write the Keep (and set options in the process).
+	if err := Keep(p.Config.SetupFile); err != nil {
 		return fmt.Errorf("%w", err)
-	}
-
-	if removed.Copygen == nil {
-		return fmt.Errorf("the \"type Copygen interface\" could not be found in the setup file")
 	}
 
 	buf := new(bytes.Buffer)
@@ -75,14 +71,8 @@ func Parse(gen *models.Generator) error {
 
 	gen.Keep = buf.Bytes()
 
-	// Parse ast.Comments into Options.
-	convertOptions = removed.ConvertOptions
-	p.CommentOptionMap, err = MapCommentsToOptions(removed.Comments)
-	if err != nil {
-		return fmt.Errorf("an error occurred while parsing comments for options\n%w", err)
-	}
-
-	// Set up an import map for aliased import variable names.
+	// Analyze the `type Copygen Interface` to create models.Function and models.Field objects.
+	// set up an import map for aliased import variable names.
 	aliasImportMap = make(map[string]string, len(p.Config.SetupFile.Imports))
 	for _, imp := range p.Config.SetupFile.Imports {
 		if imp.Name != nil {
@@ -90,7 +80,6 @@ func Parse(gen *models.Generator) error {
 		}
 	}
 
-	// Analyze the `type Copygen Interface` to create models.Function and models.Field objects.
 	// load package types from the setup file (NOTE: loads a different *ast(s)).
 	cfg := &packages.Config{Mode: parserLoadMode}
 	p.Pkgs, err = packages.Load(cfg, "file="+p.Config.Setpath)
@@ -99,8 +88,24 @@ func Parse(gen *models.Generator) error {
 	}
 	ignorepkgpath = p.Pkgs[0].PkgPath
 
+	// find a new instance of a copygen ast since the old one has its comments removed.
+	var newCopygen *ast.InterfaceType
+	for _, decl := range p.Pkgs[0].Syntax[0].Decls {
+		switch declaration := decl.(type) {
+		case *ast.GenDecl:
+			if it, ok := assertCopygenInterface(declaration); ok {
+				newCopygen = it
+				break
+			}
+		}
+	}
+
+	if newCopygen == nil {
+		return fmt.Errorf("the \"type Copygen interface\" could not be found in the setup file")
+	}
+
 	// create the models.Function objects.
-	if gen.Functions, err = p.parseFunctions(removed.Copygen); err != nil {
+	if gen.Functions, err = p.parseFunctions(newCopygen); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 

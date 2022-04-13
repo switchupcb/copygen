@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/types"
 
+	"github.com/fatih/structtag"
 	"github.com/switchupcb/copygen/cli/models"
 	"github.com/switchupcb/copygen/cli/parser/options"
 )
@@ -82,10 +83,10 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 			subfield := &models.Field{
 				VariableName: "." + x.Field(i).Name(),
 				Name:         x.Field(i).Name(),
-				Tag:          x.Tag(i),
 				Parent:       fp.field,
 			}
 			setFieldImportAndPackage(subfield, x.Field(i).Pkg().Path(), x.Field(i).Pkg().Name())
+			setTags(subfield, x.Tag(i))
 
 			// a cyclic subfield (with the same type as its parent) is never fully assigned.
 			if !fp.cyclic[subfield.Import+subfield.Package+subfield.Name] {
@@ -175,10 +176,39 @@ func setFieldImportAndPackage(field *models.Field, path string, varname string) 
 	}
 }
 
+// setTags sets the tags for a field.
+func setTags(field *models.Field, rawtag string) {
+	// rawtag represents tags as they are defined (i.e `api:"id", json:"tag"`).
+	tags, err := structtag.Parse(rawtag)
+	if err != nil {
+		fmt.Printf("WARNING: could not parse tag for field %v\n%v", field.FullName(""), err)
+	}
+
+	if field.Tags == nil {
+		field.Tags = make(map[string]map[string][]string, tags.Len())
+	}
+
+	for _, tag := range tags.Tags() {
+		field.Tags[tag.Key] = map[string][]string{
+			tag.Name: tag.Options,
+		}
+	}
+}
+
 // setFieldOptions sets a field's (and its subfields) options.
 func setFieldOptions(field *models.Field, fieldoptions []*options.Option) {
 	for _, option := range fieldoptions {
+
 		switch option.Category {
+
+		case options.CategoryAutomatch:
+			options.SetAutomatch(field, *option)
+
+		case options.CategoryMap:
+			options.SetMap(field, *option)
+
+		case options.CategoryTag:
+			options.SetTag(field, *option)
 
 		case options.CategoryConvert:
 			options.SetConvert(field, *option)
@@ -188,12 +218,6 @@ func setFieldOptions(field *models.Field, fieldoptions []*options.Option) {
 
 		case options.CategoryDeepcopy:
 			options.SetDeepcopy(field, *option)
-
-		case options.CategoryMap:
-			options.SetMap(field, *option)
-
-		case options.CategoryAutomatch:
-			options.SetAutomatch(field, *option)
 
 		}
 	}

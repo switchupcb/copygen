@@ -42,7 +42,7 @@ func ParseConvert(option, value string) (*Option, error) {
 	}, nil
 }
 
-// SetConvert sets a field's depth option.
+// SetConvert sets a field's convert option.
 func SetConvert(field *models.Field, option Option) {
 	// A convert option can only be set to a field once.
 	if field.Options.Convert != "" {
