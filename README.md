@@ -159,7 +159,7 @@ go install github.com/switchupcb/copygen@main
 
 Install a specific version by specifying a tag.
 ```
-go install github.com/switchupcb/copygen@v0.2.4
+go install github.com/switchupcb/copygen@v0.3.0
 ```
 
 Run the executable with given options.
