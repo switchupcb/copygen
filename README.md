@@ -17,6 +17,7 @@ Copygen is a command-line **code generator** that generates type-to-type and fie
 | [Matcher](#matcher)             | [Automatch](#automatch), [Manual](#manual), [Depth](#depth)                        |
 | [Usecases](#usecases)           | [When to Use](#when-to-use-copygen), [Custom Generation](#custom-generation)       |
 | [License](#license)             | [What can I do?](#what-can-i-do), [License Exception](#license-exception)          |
+| [Contribution](#contributing)   | [Support](#support), [Sponsors](#sponsors), [Careers](#careers)                    |
 
 ## Usage
 
@@ -326,3 +327,15 @@ A license exception allows you to modify and/or use Copygen programmatically **w
 ## Contributing
 
 You can contribute to this repository by viewing the [Project Structure, Code Specifications, CI/CD, and Roadmap](CONTRIBUTING.md).
+
+### Support
+
+Support SwitchUpCB: [switchupcb.com/support](https://switchupcb.com/support).
+
+### Sponsors
+
+Interested in sponsoring this project? [Contact us now.](mailto:software@switchupcb.com?subject=Copygen%20Sponsorship%20Inquiry)
+
+### Careers
+
+I'm in search of a job at this time. [Contact me.](https://switchupcb.com/contact)
