@@ -6,9 +6,20 @@ import (
 	"github.com/switchupcb/copygen/cli/models"
 )
 
-// PrintFunctionFields prints all of a functions fields to standard output.
+// PrintGeneratorFields prints all of a generator's function's fields to standard output.
+func PrintGeneratorFields(gen *models.Generator) {
+	for i := 0; i < len(gen.Functions); i++ {
+		fmt.Println(gen.Functions[i].Name, "{")
+		PrintFunctionFields(&gen.Functions[i])
+		fmt.Println("}")
+		fmt.Println()
+	}
+}
+
+// PrintFunctionFields prints all of a function's fields to standard output.
 func PrintFunctionFields(function *models.Function) {
 	for i := 0; i < len(function.From); i++ {
+		fmt.Println(function.From[i])
 		PrintFieldGraph(function.From[i].Field, "\t")
 	}
 
@@ -58,11 +69,11 @@ func PrintFieldRelation(toFields, fromFields []*models.Field) {
 func printFieldRelation(toField, fromField *models.Field) {
 	switch {
 	case toField.From == fromField && fromField.To == toField:
-		fmt.Printf("To Field %v and From Field %v are related to each other.\n", toField, fromField)
+		fmt.Printf("%v and %v are related to each other.\n", toField, fromField)
 	case toField.From == fromField:
-		fmt.Printf("To Field %v is related to From Field %v.\n", toField, fromField)
+		fmt.Printf("%v is related to %v.\n", toField, fromField)
 	case fromField.To == toField:
-		fmt.Printf("From Field %v is related to To Field %v.\n", toField, fromField)
+		fmt.Printf("%v is related to %v.\n", toField, fromField)
 	default:
 		switch {
 		case len(toField.Fields) != 0 && len(fromField.Fields) != 0:
@@ -80,12 +91,12 @@ func printFieldRelation(toField, fromField *models.Field) {
 				printFieldRelation(toField, fromField.Fields[i])
 			}
 		default:
-			fmt.Printf("To Field %v is not related to From Field %v.\n", toField, fromField)
+			fmt.Printf("%v is not related to %v.\n", toField, fromField)
 		}
 	}
 }
 
-// CountFields returns the number of fields in a field slice.
+// CountFields returns the number of fields (including subfields) in a field slice.
 func CountFields(fields []*models.Field) int {
 	if len(fields) == 0 {
 		return 0

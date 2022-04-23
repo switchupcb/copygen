@@ -4,12 +4,13 @@ import "fmt"
 
 // Type represents a field that isn't contained.
 type Type struct {
-	Field *Field // The field information for the type.
+	// Field represents field information for the type.
+	Field *Field
 }
 
-// ParameterName gets the parameter name of the type.
-func (t Type) ParameterName() string {
-	return t.Field.Container + t.Field.Package + "." + t.Field.Name
+// Name gets the name of the type field.
+func (t Type) Name() string {
+	return t.Field.FullName("")
 }
 
 func (t Type) String() string {

@@ -15,6 +15,7 @@ type Account // domain
                 Username string
                 Password  Password
                             // 3
+                            Password string
                             Hash string
                             Salt string
 // 0
@@ -81,9 +82,9 @@ import (
 	"github.com/switchupcb/copygen/examples/automatch/models"
 )
 
-// ModelsToDomain copies a models.Account, models.User to a domain.Account.
+// ModelsToDomain copies a *models.Account, *models.User to a *domain.Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
-	// domain.Account fields
+	// *domain.Account fields
 	tA.ID = fA.ID
 	tA.Name = fA.Name
 	tA.Email = fA.Email

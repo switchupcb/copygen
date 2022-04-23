@@ -6,7 +6,7 @@
 {{end -}}
 {{- define "JoinParameters"}}
     {{- range $key, $Type := . -}}
-		{{- if ne $key 0}}, {{end}}{{- $Type.Field.VariableName}} {{$Type.ParameterName}}
+		{{- if ne $key 0}}, {{end}}{{- $Type.Field.VariableName}} {{$Type.Name}}
 	{{- end -}}
 {{end -}}
 

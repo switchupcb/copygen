@@ -44,9 +44,9 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	// Named Types (Alias)
 	// https://go.googlesource.com/example/+/HEAD/gotypes#named-types
 	case *types.Named:
-		setFieldImportAndPackage(fp.field, x.Obj().Pkg().Path(), x.Obj().Pkg().Name())
+		setFieldImportAndPackage(fp.field, x.Obj().Pkg())
 		setFieldVariableName(fp.field, "."+x.Obj().Name())
-		setFieldName(fp.field, x.Obj().Name())
+		fp.field.Definition = x.Obj().Name()
 		return fp.parseField(x.Underlying())
 
 	// Simple Composite Types
@@ -85,7 +85,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 				Name:         x.Field(i).Name(),
 				Parent:       fp.field,
 			}
-			setFieldImportAndPackage(subfield, x.Field(i).Pkg().Path(), x.Field(i).Pkg().Name())
+			setFieldImportAndPackage(subfield, x.Field(i).Pkg())
 			setTags(subfield, x.Tag(i))
 
 			// a cyclic subfield (with the same type as its parent) is never fully assigned.
@@ -122,7 +122,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 				Name:         x.Method(i).Name(),
 				Parent:       fp.field,
 			}
-			setFieldImportAndPackage(subfield, x.Method(i).Pkg().Path(), x.Method(i).Pkg().Name())
+			setFieldImportAndPackage(subfield, x.Method(i).Pkg())
 
 			subfieldParser := &fieldParser{
 				field:     subfield,
@@ -161,13 +161,17 @@ func setFieldName(field *models.Field, name string) {
 }
 
 // setFieldImportAndPackage sets the import and package of a field.
-func setFieldImportAndPackage(field *models.Field, path string, varname string) {
-	field.Import = path
-	if ignorepkgpath != path {
-		if _, ok := aliasImportMap[path]; ok {
-			field.Package = aliasImportMap[path]
+func setFieldImportAndPackage(field *models.Field, pkg *types.Package) {
+	if pkg == nil {
+		return
+	}
+
+	field.Import = pkg.Path()
+	if ignorepkgpath != field.Import {
+		if _, ok := aliasImportMap[field.Import]; ok {
+			field.Package = aliasImportMap[field.Import]
 		} else {
-			field.Package = varname
+			field.Package = pkg.Name()
 		}
 	}
 }

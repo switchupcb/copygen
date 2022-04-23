@@ -28,8 +28,8 @@ package models
 type Account struct {
 	ID       int
 	Name     string
-	Password string
 	Email    string
+	Password string
 }
 
 // A User represents the data model for a user.
@@ -88,8 +88,8 @@ package copygen
 import (
 	c "strconv"
 
-	"github.com/switchupcb/copygen/examples/main/domain"
-	"github.com/switchupcb/copygen/examples/main/models"
+	"github.com/switchupcb/copygen/examples/map/domain"
+	"github.com/switchupcb/copygen/examples/map/models"
 )
 
 /* Define the function and field this converter is applied to using regex. */
@@ -98,11 +98,11 @@ func Itoa(i int) string {
 	return c.Itoa(i)
 }
 
-// ModelsToDomain copies a models.Account, models.User to a domain.Account.
+// ModelsToDomain copies a *models.Account, *models.User to a *domain.Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
-	// domain.Account fields
-	tA.ID = fA.ID
-	tA.UserID = Itoa(fU.UserID)
+	// *domain.Account fields
+	tA.ID = Itoa(fU.UserID)
 	tA.Name = fA.Name
+	tA.Email = fA.Email
 }
 ```

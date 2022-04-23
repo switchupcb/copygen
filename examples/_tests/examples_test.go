@@ -33,7 +33,11 @@ var (
 			ymlpath:  "examples/automatch/setup/setup.yml",
 			wantpath: "examples/automatch/copygen.go",
 		},
-
+		{
+			name:     "basic",
+			ymlpath:  "examples/basic/setup/setup.yml",
+			wantpath: "examples/basic/copygen.go",
+		},
 		/*
 			{
 				name:     "deepcopy",
@@ -41,7 +45,6 @@ var (
 				wantpath: "examples/deepcopy/copygen.go",
 			},
 		*/
-
 		{
 			name:     "error",
 			ymlpath:  "examples/error/setup/setup.yml",
@@ -72,13 +75,13 @@ var (
 			ymlpath:  "examples/_tests/cyclic/setup/setup.yml",
 			wantpath: "examples/_tests/cyclic/copygen.go",
 		},
-
-		// requires implementation of alias functions (i.e string(Custom))
-		// {
-		// 	name:     "duplicate",
-		// 	ymlpath:  "examples/_tests/duplicate/setup/setup.yml",
-		// 	wantpath: "examples/_tests/duplicate/copygen.go",
-		// },
+		/*
+			{
+				name:     "duplicate",
+				ymlpath:  "examples/_tests/duplicate/setup/setup.yml",
+				wantpath: "examples/_tests/duplicate/copygen.go",
+			},
+		*/
 	}
 )
 

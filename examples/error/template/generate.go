@@ -82,13 +82,13 @@ func generateParameters(function *models.Function) string {
 	// Generate To-Type parameters
 	for _, toType := range function.To {
 		parameters += toType.Field.VariableName + " "
-		parameters += toType.ParameterName() + ", "
+		parameters += toType.Name() + ", "
 	}
 
 	// Generate From-Type parameters
 	for _, fromType := range function.From {
 		parameters += fromType.Field.VariableName + " "
-		parameters += fromType.ParameterName() + ", "
+		parameters += fromType.Name() + ", "
 	}
 
 	if parameters == "" {

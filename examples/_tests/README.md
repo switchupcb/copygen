@@ -3,10 +3,12 @@
 The examples in this folder are used for testing.
 
 
-| Test   | Description                                                 |
-| :----- | :---------------------------------------------------------- |
-| Alias  | Uses an alias import (for a copied struct).                 |
-| Cyclic | Uses a nested struct (containing a field of the same type). |
+| Test      | Description                                                       |
+| :-------- | :---------------------------------------------------------------- |
+| Alias     | Uses an alias import (for a copied struct).                       |
+| Automap   | Uses the `automatch` option with a manual matcher option (`map`). |
+| Cyclic    | Uses a nested struct (containing a field of the same type).       |
+| Duplicate | Defines two structs with duplicate definitions, but not names.    |
 
 ## Integration Tests
 

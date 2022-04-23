@@ -4,6 +4,8 @@
 package template
 
 import (
+	"strings"
+
 	"github.com/switchupcb/copygen/cli/models"
 )
 
@@ -12,62 +14,49 @@ import (
 // EDITABLE.
 // DO NOT REMOVE.
 func Generate(gen *models.Generator) (string, error) {
-	content := string(gen.Keep) + "\n"
+	var content strings.Builder
 
+	content.WriteString(string(gen.Keep) + "\n")
 	for i := range gen.Functions {
-		content += Function(&gen.Functions[i]) + "\n"
+		content.WriteString(Function(&gen.Functions[i]) + "\n")
 	}
 
-	return content, nil
+	return content.String(), nil
 }
 
 // Function provides generated code for a function.
 func Function(function *models.Function) string {
-	// comment
-	fn := generateComment(function) + "\n"
-
-	// signature
-	fn += generateSignature(function) + "\n"
-
-	// body
-	fn += generateBody(function)
-
-	// return
-	fn += generateReturn(function)
-
-	// end of function
-	if fn[len(fn)-1:] != "\n" {
-		fn += "\n"
-	}
-	fn += "}"
-
-	return fn
+	var fn strings.Builder
+	fn.WriteString(generateComment(function) + "\n")
+	fn.WriteString(generateSignature(function) + "\n")
+	fn.WriteString(generateBody(function))
+	fn.WriteString(generateReturn(function))
+	return fn.String()
 }
 
 // generateComment generates a function comment.
 func generateComment(function *models.Function) string {
-	var toComment string
+	var toComment strings.Builder
+	for i, toType := range function.To {
+		if i+1 == len(function.To) {
+			toComment.WriteString(toType.Name())
+			break
+		}
 
-	for _, toType := range function.To {
-		toComment += toType.Field.FullNameWithoutContainer("") + ", "
+		toComment.WriteString(toType.Name() + ", ")
 	}
 
-	if toComment != "" {
-		// remove last ", "
-		toComment = toComment[:len(toComment)-2]
+	var fromComment strings.Builder
+	for i, fromType := range function.From {
+		if i+1 == len(function.From) {
+			fromComment.WriteString(fromType.Name())
+			break
+		}
+
+		fromComment.WriteString(fromType.Name() + ", ")
 	}
 
-	var fromComment string
-	for _, fromType := range function.From {
-		fromComment += fromType.Field.FullNameWithoutContainer("") + ", "
-	}
-
-	if fromComment != "" {
-		// remove last ", "
-		fromComment = fromComment[:len(fromComment)-2]
-	}
-
-	return "// " + function.Name + " copies a " + fromComment + " to a " + toComment + "."
+	return "// " + function.Name + " copies a " + fromComment.String() + " to a " + toComment.String() + "."
 }
 
 // generateSignature generates a function's signature.
@@ -77,59 +66,58 @@ func generateSignature(function *models.Function) string {
 
 // generateParameters generates the parameters of a function.
 func generateParameters(function *models.Function) string {
-	var parameters string
-
-	// Generate To-Type parameters
+	var parameters strings.Builder
 	for _, toType := range function.To {
-		parameters += toType.Field.VariableName + " "
-		parameters += toType.ParameterName() + ", "
+		parameters.WriteString(toType.Field.VariableName + " " + toType.Name() + ", ")
 	}
 
-	// Generate From-Type parameters
-	for _, fromType := range function.From {
-		parameters += fromType.Field.VariableName + " "
-		parameters += fromType.ParameterName() + ", "
+	for i, fromType := range function.From {
+		if i+1 == len(function.From) {
+			parameters.WriteString(fromType.Field.VariableName + " " + fromType.Name())
+			break
+		}
+
+		parameters.WriteString(fromType.Field.VariableName + " " + fromType.Name() + ", ")
 	}
 
-	if parameters == "" {
-		return parameters
-	}
-
-	// remove last ", "
-	return parameters[:len(parameters)-2]
+	return parameters.String()
 }
 
 // generateBody generates the body of a function.
 func generateBody(function *models.Function) string {
-	var body string
+	var body strings.Builder
 
 	// Assign fields to ToType(s).
-	for _, toType := range function.To {
-		body += "// " + toType.Field.FullNameWithoutContainer("") + " fields\n"
+	for i, toType := range function.To {
+		body.WriteString("// " + toType.Name() + " fields\n")
 
 		for _, toField := range toType.Field.Fields {
-			body += toField.FullVariableName("") + " = "
-			fromField := toField.From
+			body.WriteString(toField.FullVariableName("") + " = ")
 
+			fromField := toField.From
 			switch {
 			case fromField.Options.Convert != "":
-				body += fromField.Options.Convert + "(" + fromField.FullVariableName("") + ")\n"
+				body.WriteString(fromField.Options.Convert + "(" + fromField.FullVariableName("") + ")\n")
 			case toField.Definition != fromField.Definition:
 				// match alias types to respective basic types.
 				if toField.Package != "" {
-					body += toField.Package + "."
+					body.WriteString(toField.Package + ".")
 				}
-				body += toField.Definition + "(" + fromField.FullVariableName("") + ")" + "\n"
+				body.WriteString(toField.Definition + "(" + fromField.FullVariableName("") + ")" + "\n")
 			default:
-				body += fromField.FullVariableName("") + "\n"
+				body.WriteString(fromField.FullVariableName("") + "\n")
 			}
+		}
+
+		if i+1 != len(function.To) {
+			body.WriteString("\n")
 		}
 	}
 
-	return body
+	return body.String()
 }
 
 // generateReturn generates a return statement for the function.
 func generateReturn(function *models.Function) string {
-	return ""
+	return "}"
 }

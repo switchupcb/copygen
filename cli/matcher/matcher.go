@@ -10,7 +10,7 @@ func Match(gen *models.Generator) error {
 	for _, function := range gen.Functions {
 		for _, toType := range function.To {
 			for _, fromType := range function.From {
-				// The top-level types are pointed if applicable (i.e domain.Account).
+				// top-level types can be pointed (i.e domain.Account).
 				toFields := toType.Field.AllFields(nil)
 				fromFields := fromType.Field.AllFields(nil)
 
@@ -22,11 +22,7 @@ func Match(gen *models.Generator) error {
 							continue
 						}
 
-						// don't compare top-level fields that have subfields.
-						// allows type such as `type T int` but not `type User struct` to be matched.
-						if (toFields[i].Parent != nil || len(toFields[i].Fields) == 0) && (fromFields[j].Parent != nil || len(fromFields[j].Fields) == 0) {
-							match(function, toFields[i], fromFields[j])
-						}
+						match(function, toFields[i], fromFields[j])
 					}
 				}
 			}

@@ -58,6 +58,7 @@ func parseTypeField(vars *types.Tuple, fieldoptions []*options.Option) ([]models
 			return nil, fmt.Errorf("an error occurred parsing a type field parameter %v", vars.At(i).String())
 		}
 
+		field.Name = vars.At(i).Name()
 		types[i] = models.Type{
 			Field: field,
 		}

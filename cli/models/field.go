@@ -88,12 +88,12 @@ type FieldOptions struct {
 
 // isStruct returns whether the field is a struct.
 func (f *Field) IsStruct() bool {
-	return f.Definition == "struct"
+	return f.Collection == "struct"
 }
 
 // isInterface returns whether the field is an interface.
 func (f *Field) IsInterface() bool {
-	return f.Definition == "interface"
+	return f.Collection == "interface"
 }
 
 // IsNoContainer returns whether the field has no container.
@@ -134,34 +134,16 @@ func (f *Field) IsType() bool {
 	return f.Parent == nil
 }
 
-// FullName gets the full name of a field including its parents (i.e *domain.Account.User.ID).
-func (f *Field) FullName(name string) string {
-	if !f.IsType() {
-		// add names in reverse order
-		if name == "" {
-			name = f.Name
-		} else {
-			name = f.Name + "." + name
-		}
-
-		return f.Parent.FullName(name)
-	}
-
-	if name != "" {
-		name = "." + name
-	}
-
-	return fmt.Sprintf("%v%v.%v%v", f.Container, f.Package, f.Name, name)
-}
-
 // FullNameWithoutContainer gets the full name of a field including its parents
 // without the container (i.e domain.Account.User.ID).
 func (f *Field) FullNameWithoutContainer(name string) string {
 	if !f.IsType() {
-		// add names in reverse order
+		// names are added in reverse.
 		if name == "" {
+			// reference the field (i.e `ID`).
 			name = f.Name
 		} else {
+			// prepend the field (i.e `User` + `.` + `ID`).
 			name = f.Name + "." + name
 		}
 
@@ -172,7 +154,16 @@ func (f *Field) FullNameWithoutContainer(name string) string {
 		name = "." + name
 	}
 
-	return fmt.Sprintf("%v.%v%v", f.Package, f.Name, name)
+	if f.Package != "" {
+		return f.Package + "." + f.Definition + name
+	}
+
+	return f.Definition + name
+}
+
+// FullName gets the full name of a field including its parents (i.e *domain.Account.User.ID).
+func (f *Field) FullName(name string) string {
+	return f.Container + f.FullNameWithoutContainer("")
 }
 
 // FullVariableName gets the full variable name of a field (i.e tA.User.UserID).
@@ -198,27 +189,24 @@ func (f *Field) AllFields(fields []*Field) []*Field {
 }
 
 func (f *Field) String() string {
-	var direction, parent string
-
+	direction := "Unpointed"
 	if f.From != nil {
 		direction = "To"
 	}
 
 	if f.To != nil {
-		if direction != "" {
-			direction += " and "
+		switch direction {
+		case "To":
+			direction += " and From"
+		case "Unpointed":
+			direction = "From"
 		}
-
-		direction += "From"
 	}
 
-	if direction == "" {
-		direction = "Unpointed"
-	}
-
+	var parent string
 	if f.Parent != nil {
 		parent = f.Parent.FullName("")
 	}
 
-	return fmt.Sprintf("%v Field %q of Definition %q: Parent %q Fields[%v]", direction, f.FullName(""), f.Definition, parent, len(f.Fields))
+	return fmt.Sprintf("%v Field %q of Definition %q Fields[%v]: Parent %q", direction, f.FullName(""), f.Definition, len(f.Fields), parent)
 }

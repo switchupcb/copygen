@@ -138,7 +138,7 @@ For information on testing, read [Integration Tests](examples/_tests/).
 # Roadmap
 
 Focus on these features:
+   - Generate Templates: equivalent `.tmpl` template to `generate.go`
    - Generate Templates: logic for all types in `.go` template + examples (in `tests`)
-   - Generate Templates: stronger `.tmpl` template
-   - Generator: deepcopy + example
    - CICD: workflow that ensures consistency between `generator/template` and `examples` template files.
+   - Generator: deepcopy + example
