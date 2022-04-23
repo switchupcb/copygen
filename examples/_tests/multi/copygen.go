@@ -9,27 +9,50 @@ type Placeholder bool
 // ifcHolder represents a type that holds an interface.
 
 // ifc represents an interface type (equivalent to `error`).
-type ifc interface {
-	Error() string
+
+// funcHolder represents a type that holds a func.
+
+// Container represents a type that holds container types.
+type Container struct {
+	Arr [16]byte
+	S   []string
+	M   map[string]bool
+	C   chan int
 }
 
 type ifcHolder struct {
 	IFC ifc
 }
 
-// Array copies a bool to a bool.
-func Array(tP bool, fP bool) {
+type ifc interface {
+	Error() string
+}
+
+type funcHolder struct {
+	F func() int
+}
+
+// Array copies a [16]byte to a Container.
+func Array(tC Container, fb [16]byte) {
+	// Container fields
+	tC.Arr = fb
+}
+
+// Chan copies a chan int to a Container.
+func Chan(tC Container, fc chan int) {
+	// Container fields
+	tC.C = fc
+}
+
+// Complex copies a bool to a bool.
+func Complex(tP bool, fP bool) {
 	// bool fields
 }
 
-// Chan copies a bool to a bool.
-func Chan(tP bool, fP bool) {
-	// bool fields
-}
-
-// Func copies a bool to a bool.
-func Func(tP bool, fP bool) {
-	// bool fields
+// Func copies a func() int to a funcHolder.
+func Func(tf funcHolder, ff func() int) {
+	// funcHolder fields
+	tf.F = ff
 }
 
 // Interface copies a error to a ifcHolder.
@@ -38,12 +61,14 @@ func Interface(ti ifcHolder, fe error) {
 	ti.IFC.Error = fe.Error
 }
 
-// Map copies a bool to a bool.
-func Map(tP bool, fP bool) {
-	// bool fields
+// Map copies a map[string]bool to a Container.
+func Map(tC Container, fm map[string]bool) {
+	// Container fields
+	tC.M = fm
 }
 
-// Slice copies a bool to a bool.
-func Slice(tP bool, fP bool) {
-	// bool fields
+// Slice copies a []string to a Container.
+func Slice(tC Container, fs []string) {
+	// Container fields
+	tC.S = fs
 }

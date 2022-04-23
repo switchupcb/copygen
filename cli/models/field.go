@@ -163,11 +163,18 @@ func (f *Field) FullNameWithoutContainer(name string) string {
 		name = "." + name
 	}
 
+	var fullname string
 	if f.Package != "" {
-		return f.Package + "." + f.Definition + name
+		fullname = f.Package + "." + f.Definition + name
+	} else {
+		fullname = f.Definition + name
 	}
 
-	return f.Definition + name
+	if !f.IsNoContainer() && !f.IsPointer() {
+		return fullname[len(f.Container):]
+	}
+
+	return fullname
 }
 
 // FullName returns the full name of a field including its parents (i.e *domain.Account.User.ID).

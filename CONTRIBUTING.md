@@ -139,6 +139,6 @@ For information on testing, read [Integration Tests](examples/_tests/).
 
 Focus on these features:
    - Templates: equivalent [`.tmpl`](examples/tmpl/template/generate.tmpl) template to [`generate.go`](cli/generator/template/generate.go)
-   - Test: all supported types in [multi](examples/_tests/multi/setup/setup.go)
    - Options, Matcher, Generator: `cast` option for [direct type conversions](https://go.dev/ref/spec#Conversions) _(as opposed to a convert function)_
+   - Parser: Fix Free-Floating comments in [`multi`](examples/_tests/multi/copygen.go)
    - Generator: deepcopy
