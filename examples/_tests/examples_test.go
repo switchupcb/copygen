@@ -70,18 +70,23 @@ var (
 			ymlpath:  "examples/_tests/automap/setup/setup.yml",
 			wantpath: "examples/_tests/automap/copygen.go",
 		},
+		/*
+			{
+				name:     "cast",
+				ymlpath:  "examples/_tests/cast/setup/setup.yml",
+				wantpath: "examples/_tests/cast/copygen.go",
+			},
+		*/
 		{
 			name:     "cyclic",
 			ymlpath:  "examples/_tests/cyclic/setup/setup.yml",
 			wantpath: "examples/_tests/cyclic/copygen.go",
 		},
-		/*
-			{
-				name:     "duplicate",
-				ymlpath:  "examples/_tests/duplicate/setup/setup.yml",
-				wantpath: "examples/_tests/duplicate/copygen.go",
-			},
-		*/
+		{
+			name:     "duplicate",
+			ymlpath:  "examples/_tests/duplicate/setup/setup.yml",
+			wantpath: "examples/_tests/duplicate/copygen.go",
+		},
 	}
 )
 
@@ -165,13 +170,4 @@ func programmaticTemplateRun(env cli.Environment) (string, error) {
 	}
 
 	return code, nil
-}
-
-// normalizeLineBreaks normalizes line breaks for file comparison.
-func normalizeLineBreaks(d []byte) []byte {
-	// replace CRLF \r\n with LF \n
-	d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
-	// replace CF \r with LF \n
-	d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
-	return d
 }

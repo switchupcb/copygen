@@ -8,5 +8,7 @@ import (
 
 // Copygen defines the functions that will be generated.
 type Copygen interface {
-	ModelsToDomain(models.Account, models.User) *domain.Account
+	// cast domain.ReversedString .*
+	// cast string SuperString
+	ModelsToDomain(*models.Account) *domain.Account
 }

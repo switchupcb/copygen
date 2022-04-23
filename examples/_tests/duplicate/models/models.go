@@ -1,8 +1,6 @@
 // Package models contains data storage models (i.e database).
 package models
 
-type SuperString string
-
 // Account represents the data model for account.
 type Account struct {
 	ID             int
@@ -10,8 +8,6 @@ type Account struct {
 	Password       string
 	Email          string
 	DuplicateField Duplicate // Should not match with DuplicateName.
-	SuperString    SuperString
-	ReversedString string
 }
 
 // User represents the data model for a user.

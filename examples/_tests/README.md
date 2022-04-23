@@ -7,6 +7,7 @@ The examples in this folder are used for testing.
 | :-------- | :---------------------------------------------------------------- |
 | Alias     | Uses an alias import (for a copied struct).                       |
 | Automap   | Uses the `automatch` option with a manual matcher option (`map`). |
+| Cast      | Uses the `cast` option for direct type conversion.                |
 | Cyclic    | Uses a nested struct (containing a field of the same type).       |
 | Duplicate | Defines two structs with duplicate definitions, but not names.    |
 
