@@ -114,7 +114,7 @@ The same reasoning applies to `for i := 0; i < count; i++` loops.
 
 Using the `*models.Field` definition for a `models.Field`'s `Parent` field can be considered an anti-pattern. In the program, a `models.Type` specifically refers to the types in a function signature _(i.e `func(models.Account, models.User) *domain.Account`)_. While these types **are** fields _(which may contain other fields)_ , their actual `Type` properties are not relevant to `models.Field`. As a result, `models.Field` objects are pointed directly to maintain simplicity.
 
-Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation`: `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program and more room for extension. 
+Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation`: `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program and more room for extension.
 
 ## CI/CD
 
@@ -138,7 +138,7 @@ For information on testing, read [Integration Tests](examples/_tests/).
 # Roadmap
 
 Focus on these features:
-   - Generate Templates: equivalent `.tmpl` template to `generate.go`
-   - Generate Templates: logic for all types in `.go` template + examples (in `tests`)
-   - Options: `cast` option for [direct type conversions](https://go.dev/ref/spec#Conversions) _(as opposed to a convert function)_
-   - Generator: deepcopy + example
+   - Templates: equivalent [`.tmpl`](examples/tmpl/template/generate.tmpl) template to [`generate.go`](cli/generator/template/generate.go)
+   - Test: all supported types in [multi](examples/_tests/multi/setup/setup.go)
+   - Options, Matcher, Generator: `cast` option for [direct type conversions](https://go.dev/ref/spec#Conversions) _(as opposed to a convert function)_
+   - Generator: deepcopy

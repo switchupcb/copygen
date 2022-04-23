@@ -52,7 +52,7 @@ func parseTypeField(vars *types.Tuple, fieldoptions []*options.Option) ([]models
 	for i := 0; i < vars.Len(); i++ {
 
 		// create a top-level field (fieldParser parent = nil).
-		fp := fieldParser{options: fieldoptions, cyclic: make(map[string]bool)}
+		fp := fieldParser{options: fieldoptions, cyclic: make(map[string]*models.Field)}
 		field := fp.parseField(vars.At(i).Type())
 		if field == nil {
 			return nil, fmt.Errorf("an error occurred parsing a type field parameter %v", vars.At(i).String())

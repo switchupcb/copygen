@@ -20,47 +20,56 @@ func PrintGeneratorFields(gen *models.Generator) {
 func PrintFunctionFields(function *models.Function) {
 	for i := 0; i < len(function.From); i++ {
 		fmt.Println(function.From[i])
-		PrintFieldGraph(function.From[i].Field, "\t")
+		PrintFieldGraph(function.From[i].Field, "\t", nil)
 	}
 
 	for i := 0; i < len(function.To); i++ {
 		fmt.Println(function.To[i])
-		PrintFieldGraph(function.To[i].Field, "\t")
+		PrintFieldGraph(function.To[i].Field, "\t", nil)
 	}
 }
 
 // PrintFieldGraph prints a list of fields with the related fields.
-func PrintFieldGraph(field *models.Field, tabs string) {
-	fmt.Printf("%v%v\n", tabs, field)
+func PrintFieldGraph(field *models.Field, tabs string, cyclic map[*models.Field]bool) {
+	if cyclic == nil {
+		cyclic = make(map[*models.Field]bool)
+	}
 
-	for i := 0; i < len(field.Fields); i++ {
-		if len(field.Fields) != 0 {
-			PrintFieldGraph(field.Fields[i], tabs+"\t")
+	fmt.Printf("%v%v\n", tabs, field)
+	cyclic[field] = true
+	for _, subfield := range field.Fields {
+		if !cyclic[subfield] {
+			PrintFieldGraph(subfield, tabs+"\t", cyclic)
 		}
 	}
 }
 
-// PrintFieldTree prints a tree of fields for a given type to standard output.
-func PrintFieldTree(typename string, fields []*models.Field, tabs string) {
-	if tabs == "" {
-		fmt.Println(tabs + "type " + typename)
+// PrintFieldTree prints a tree of fields for a given type field to standard output.
+func PrintFieldTree(field *models.Field, tabs string, cyclic map[*models.Field]bool) {
+	if cyclic == nil {
+		cyclic = make(map[*models.Field]bool)
 	}
+
+	if tabs == "" {
+		fmt.Println(tabs + "type " + field.FullDefinition())
+	} else {
+		fmt.Println(tabs + field.Name + "\t" + field.FullDefinition())
+	}
+	cyclic[field] = true
 
 	tabs += "\t" // field tab
-	for i := 0; i < len(fields); i++ {
-		fmt.Println(tabs + fields[i].Name + "\t" + fields[i].Definition)
-
-		if len(fields[i].Fields) != 0 {
-			PrintFieldTree(fields[i].Definition, fields[i].Fields, tabs+"\t")
+	for _, subfield := range field.Fields {
+		if !cyclic[subfield] {
+			PrintFieldTree(subfield, tabs+"\t", cyclic)
 		}
 	}
 }
 
-// PrintFieldRelation prints the relationship between to and from fields.
+// PrintFieldRelation prints the relationship between a list of to and from fields.
 func PrintFieldRelation(toFields, fromFields []*models.Field) {
-	for i := 0; i < len(toFields); i++ {
-		for j := 0; j < len(fromFields); j++ {
-			printFieldRelation(toFields[i], fromFields[j])
+	for _, toField := range toFields {
+		for _, fromField := range fromFields {
+			printFieldRelation(toField, fromField)
 		}
 	}
 }
@@ -75,36 +84,6 @@ func printFieldRelation(toField, fromField *models.Field) {
 	case fromField.To == toField:
 		fmt.Printf("%v is related to %v.\n", toField, fromField)
 	default:
-		switch {
-		case len(toField.Fields) != 0 && len(fromField.Fields) != 0:
-			for i := 0; i < len(toField.Fields); i++ {
-				for j := 0; j < len(fromField.Fields); j++ {
-					printFieldRelation(toField.Fields[i], fromField.Fields[j])
-				}
-			}
-		case len(toField.Fields) != 0:
-			for i := 0; i < len(toField.Fields); i++ {
-				printFieldRelation(toField.Fields[i], fromField)
-			}
-		case len(fromField.Fields) != 0:
-			for i := 0; i < len(fromField.Fields); i++ {
-				printFieldRelation(toField, fromField.Fields[i])
-			}
-		default:
-			fmt.Printf("%v is not related to %v.\n", toField, fromField)
-		}
+		fmt.Printf("%v is not related to %v.\n", toField, fromField)
 	}
-}
-
-// CountFields returns the number of fields (including subfields) in a field slice.
-func CountFields(fields []*models.Field) int {
-	if len(fields) == 0 {
-		return 0
-	}
-
-	for _, field := range fields {
-		return 1 + CountFields(field.Fields)
-	}
-
-	return 0
 }

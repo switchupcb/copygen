@@ -96,7 +96,7 @@ The generator package exports three methods of code generation by default. The e
 
 The [`debug.go`](https://pkg.go.dev/github.com/switchupcb/copygen/cli/models/debug#pkg-functions) file provides helper functions during debugging. To view an Abstract Syntax Tree, use a [GoAst Viewer](https://yuroyoro.github.io/goast-viewer/index.html).
 
-#### PrintFunctionFields
+### PrintFieldGraph
 
 **Parser**
 
@@ -137,38 +137,9 @@ type *domain.Account
         To Field "domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account"
 ```
 
-_Use `PrintGeneratorFields` to call PrintFunctionFields on all of a generator's functions._
+_Use `PrintGeneratorFields` to call `PrintFunctionFields` on all of a generator's functions._
 
-#### PrintFieldGraph
-
-**Parser**
-
-```
-Unpointed Field "models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account" 
-Unpointed Field "models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account" 
-Unpointed Field "models.Account.Password" of Definition "string" Fields[0]: Parent "*models.Account" 
-Unpointed Field "models.Account.Email" of Definition "string" Fields[0]: Parent "*models.Account" 
-Unpointed Field "models.User.ID" of Definition "int" Fields[0]: Parent "*models.User" 
-Unpointed Field "models.User.Name" of Definition "int" Fields[0]: Parent "*models.User" 
-Unpointed Field "models.User.UserData" of Definition "string" Fields[0]: Parent "*models.User" 
-Unpointed Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" 
-Unpointed Field "*domain.Account.UserID" of Definition "string" Fields[0]: Parent "*domain.Account" 
-Unpointed Field "*domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account" 
-Unpointed Field "*domain.Account.Other" of Definition "string" Fields[0]: Parent "*domain.Account" 
-```
-
-**Matcher**
-
-```
-From Field "models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account" 
-From Field "models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account" 
-From Field "models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User" 
-To Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" 
-To Field "*domain.Account.UserID" of Definition "string" Fields[0]: Parent "*domain.Account" 
-To Field "*domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account" 
-```
-
-#### PrintFieldTree
+### PrintFieldTree
 
 **Parser** 
 
@@ -215,7 +186,7 @@ type Account
     Name    string
 ```
 
-#### PrintFieldRelation
+### PrintFieldRelation
 
 **Matcher (Unpointed)**
 
@@ -240,10 +211,4 @@ To Field "*domain.Account.Name" of Definition "string" Fields[0]: Parent "*domai
 To Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field "models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User".
 To Field "*domain.Account.UserID" of Definition "int" Fields[0]: Parent "*domain.Account" and From Field "models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User" are related to each other.
 To Field "*domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account" is not related to From Field "models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User".
-```
-
-#### CountFields
-
-```
-6
 ```

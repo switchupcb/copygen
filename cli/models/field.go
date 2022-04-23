@@ -134,7 +134,16 @@ func (f *Field) IsType() bool {
 	return f.Parent == nil
 }
 
-// FullNameWithoutContainer gets the full name of a field including its parents
+// FullDefinition returns the full definition of a field including its package.
+func (f *Field) FullDefinition() string {
+	if f.Package != "" {
+		return f.Package + "." + f.Definition
+	}
+
+	return f.Definition
+}
+
+// FullNameWithoutContainer returns the full name of a field including its parents
 // without the container (i.e domain.Account.User.ID).
 func (f *Field) FullNameWithoutContainer(name string) string {
 	if !f.IsType() {
@@ -161,7 +170,7 @@ func (f *Field) FullNameWithoutContainer(name string) string {
 	return f.Definition + name
 }
 
-// FullName gets the full name of a field including its parents (i.e *domain.Account.User.ID).
+// FullName returns the full name of a field including its parents (i.e *domain.Account.User.ID).
 func (f *Field) FullName(name string) string {
 	return f.Container + f.FullNameWithoutContainer("")
 }
@@ -176,12 +185,16 @@ func (f *Field) FullVariableName(name string) string {
 }
 
 // AllFields gets all the fields in the scope of a field (including itself).
-func (f *Field) AllFields(fields []*Field) []*Field {
-	fields = append(fields, f)
+func (f *Field) AllFields(fields []*Field, cyclic map[*Field]bool) []*Field {
+	if cyclic == nil {
+		cyclic = make(map[*Field]bool)
+	}
 
-	if len(f.Fields) != 0 {
-		for i := 0; i < len(f.Fields); i++ {
-			fields = f.Fields[i].AllFields(fields)
+	fields = append(fields, f)
+	cyclic[f] = true
+	for _, subfield := range f.Fields {
+		if !cyclic[subfield] {
+			fields = subfield.AllFields(fields, cyclic)
 		}
 	}
 
@@ -197,7 +210,7 @@ func (f *Field) String() string {
 	if f.To != nil {
 		switch direction {
 		case "To":
-			direction += " and From"
+			direction = "To and From"
 		case "Unpointed":
 			direction = "From"
 		}

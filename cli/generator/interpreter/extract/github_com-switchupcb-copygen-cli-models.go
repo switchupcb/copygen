@@ -24,7 +24,6 @@ func init() {
 
 	Symbols["github.com/switchupcb/copygen/cli/models/models/debug"] = map[string]reflect.Value{
 		// function, constant and variable definitions
-		"CountFields":         reflect.ValueOf(debug.CountFields),
 		"PrintFieldGraph":     reflect.ValueOf(debug.PrintFieldGraph),
 		"PrintFieldRelation":  reflect.ValueOf(debug.PrintFieldRelation),
 		"PrintFieldTree":      reflect.ValueOf(debug.PrintFieldTree),

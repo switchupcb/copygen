@@ -10,9 +10,10 @@ func Match(gen *models.Generator) error {
 	for _, function := range gen.Functions {
 		for _, toType := range function.To {
 			for _, fromType := range function.From {
+
 				// top-level types can be pointed (i.e domain.Account).
-				toFields := toType.Field.AllFields(nil)
-				fromFields := fromType.Field.AllFields(nil)
+				toFields := toType.Field.AllFields(nil, nil)
+				fromFields := fromType.Field.AllFields(nil, nil)
 
 				// each toField is compared to every fromField.
 				for i := 0; i < len(toFields); i++ {

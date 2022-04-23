@@ -18,7 +18,7 @@ type fieldParser struct {
 	parent *models.Field
 
 	// cyclic is a key value cache used to prevent cyclic fields from unnecessary duplication or stack overflow.
-	cyclic map[string]bool
+	cyclic map[string]*models.Field
 
 	// container represents a field's container.
 	container string
@@ -80,6 +80,12 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	case *types.Struct:
 		fp.field.Collection = "struct"
 		for i := 0; i < x.NumFields(); i++ {
+			if subfield, ok := fp.cyclic[x.Field(i).String()]; ok {
+				fp.field.Fields = append(fp.field.Fields, subfield)
+				continue
+			}
+
+			// parse a new field.
 			subfield := &models.Field{
 				VariableName: "." + x.Field(i).Name(),
 				Name:         x.Field(i).Name(),
@@ -87,22 +93,17 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 			}
 			setFieldImportAndPackage(subfield, x.Field(i).Pkg())
 			setTags(subfield, x.Tag(i))
-
-			// a cyclic subfield (with the same type as its parent) is never fully assigned.
-			if !fp.cyclic[x.Field(i).String()] {
-				subfieldParser := &fieldParser{
-					field:     subfield,
-					parent:    nil,
-					container: "",
-					options:   fp.options,
-					cyclic:    fp.cyclic,
-				}
-
-				// sets the definition, container, and fields.
-				fp.cyclic[x.Field(i).String()] = true
-				subfield = subfieldParser.parseField(x.Field(i).Type())
+			subfieldParser := &fieldParser{
+				field:     subfield,
+				parent:    nil,
+				container: "",
+				options:   fp.options,
+				cyclic:    fp.cyclic,
 			}
 
+			// sets the definition, container, and fields.
+			fp.cyclic[x.Field(i).String()] = subfield
+			subfield = subfieldParser.parseField(x.Field(i).Type())
 			fp.field.Fields = append(fp.field.Fields, subfield)
 		}
 
@@ -140,7 +141,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 
 	options.SetFieldOptions(fp.field, fp.options)
 	filterFieldDepth(fp.field, fp.field.Options.Depth, 0)
-	fp.cyclic[typ.String()] = true
+	fp.cyclic[typ.String()] = fp.field
 	return fp.field
 }
 
