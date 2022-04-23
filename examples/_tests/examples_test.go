@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/switchupcb/copygen/cli"
@@ -93,15 +91,7 @@ var (
 // TestExamples tests calls cli.Run() in a similar manner to calling the CLI,
 // checking for a valid output.
 func TestExamples(t *testing.T) {
-	// go test uses the package directory as the current working directory.
-	cwd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("error getting the current working directory.\n%v", err)
-	}
-	if err = os.Chdir(filepath.Join(cwd, "../../")); err != nil {
-		t.Fatalf("error changing the current working directory.\n%v", err)
-	}
-
+	checkwd(t)
 	for _, test := range tests {
 		testExample(t, test)
 	}
@@ -109,30 +99,32 @@ func TestExamples(t *testing.T) {
 
 // testExample tests an example using .go, .tmpl, and programmatic methods.
 func testExample(t *testing.T, test test) {
+	valid, err := ioutil.ReadFile(test.wantpath)
+	if err != nil {
+		t.Fatalf("error reading file in test %q.\n%v", test.name, err)
+	}
+
+	// test the .go method using CLI Run().
 	env := cli.Environment{
 		YMLPath: test.ymlpath,
 		Output:  false,
 		Write:   false,
 	}
 
-	code, err := env.Run()
+	goCode, err := env.Run()
 	if err != nil {
 		t.Fatalf("Run(%q) error: %v", test.name, err)
 	}
 
-	valid, err := ioutil.ReadFile(test.wantpath)
-	if err != nil {
-		t.Fatalf("error reading file in test %q.\n%v", test.name, err)
-	}
-
-	if !bytes.Equal(normalizeLineBreaks([]byte(code)), normalizeLineBreaks(valid)) {
-		fmt.Println(code)
+	if !bytes.Equal(normalizeLineBreaks([]byte(goCode)), normalizeLineBreaks(valid)) {
+		fmt.Println(goCode)
 		t.Fatalf("Run(%v) output not equivalent to %v", test.name, test.wantpath)
 	}
 
 	fmt.Println("PASSED:", test.name)
 
-	tmplcode, err := programmaticTemplateRun(env)
+	// test the .tmpl method using copygen programmatically.
+	tmplcode, err := templateRun(env)
 	if err != nil {
 		t.Fatalf("Run(%q [tmpl]) error: %v", test.name, err)
 	}
@@ -147,9 +139,8 @@ func testExample(t *testing.T, test test) {
 	fmt.Println("PASSED:", test.name, "(tmpl)")
 }
 
-// programmaticTemplateRun runs copygen programmatically,
-// and generates code using a template.
-func programmaticTemplateRun(env cli.Environment) (string, error) {
+// templateRun runs copygen programmatically and generates code using a template.
+func templateRun(env cli.Environment) (string, error) {
 	gen, err := config.LoadYML(env.YMLPath)
 	if err != nil {
 		return "", fmt.Errorf("%w", err)
@@ -163,7 +154,7 @@ func programmaticTemplateRun(env cli.Environment) (string, error) {
 		return "", fmt.Errorf("%w", err)
 	}
 
-	gen.Tempath = "cli/generator/template/generate.tmpl"
+	gen.Tempath = "examples/tmpl/template/generate.tmpl"
 	code, err := generator.GenerateTemplate(gen)
 	if err != nil {
 		return "", fmt.Errorf("%w", err)

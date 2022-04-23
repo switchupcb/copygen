@@ -237,13 +237,13 @@ Copygen supports three methods of code generation: `.go`, `.tmpl`, and `programm
 
 #### .go
 
-Use `.go` files to customize the code generation algorithm. The `copygen` generator uses the [`package template Generate(*models.Generator) (string, error)`](cli/generator/template/generate.go) to generate code. As a result, **this function is required** for your `.go` templates to work. The [error example](examples/error/) modifies the `.yml` in order to use **custom `.go` template functions** that `return error`. The [`template/generate.go`](/cli//generator/template/generate.go) file provides the default code generation algorithm for generating code; string concatenation is used for readability.
+Use `.go` files to customize the code generation algorithm. The `copygen` generator uses the [`package template Generate(*models.Generator) (string, error)`](cli/generator/template/generate.go) to generate code. As a result, **this function is required** for your `.go` templates to work. The [error example](examples/error/) modifies the `.yml` in order to use **custom `.go` template functions** that `return error`. The [`template/generate.go`](/cli//generator/template/generate.go) file provides the default code generation algorithm for generating code.
 
 _Use of non-extracted Go Module Imports in [`generate.go` template files](cli/generator/template/generate.go) are unsupported at the current time._
 
 #### .tmpl
 
-Use `.tmpl` _([`text/templates`](https://pkg.go.dev/text/template))_ to customize the code generation algorithm. The [tmpl example](examples/tmpl/) uses a `.tmpl` file to generate code. The [`template/template.tmpl`](/cli//generator/template/generate.tmpl) file provides the default code generation algorithm for generating code.
+Use `.tmpl` _([`text/templates`](https://pkg.go.dev/text/template))_ to customize the code generation algorithm. The [template example](examples/tmpl/) uses a [`.tmpl`](/examples/tmpl/template/generate.tmpl) file to generate code.
 
 #### programmatic
 

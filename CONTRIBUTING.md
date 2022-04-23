@@ -140,5 +140,5 @@ For information on testing, read [Integration Tests](examples/_tests/).
 Focus on these features:
    - Generate Templates: equivalent `.tmpl` template to `generate.go`
    - Generate Templates: logic for all types in `.go` template + examples (in `tests`)
-   - CICD: workflow that ensures consistency between `generator/template` and `examples` template files.
+   - Options: `cast` option for [direct type conversions](https://go.dev/ref/spec#Conversions) _(as opposed to a convert function)_
    - Generator: deepcopy + example

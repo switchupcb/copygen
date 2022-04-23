@@ -99,11 +99,7 @@ func generateBody(function *models.Function) string {
 			case fromField.Options.Convert != "":
 				body.WriteString(fromField.Options.Convert + "(" + fromField.FullVariableName("") + ")\n")
 			case toField.Definition != fromField.Definition:
-				// match alias types to respective basic types.
-				if toField.Package != "" {
-					body.WriteString(toField.Package + ".")
-				}
-				body.WriteString(toField.Definition + "(" + fromField.FullVariableName("") + ")" + "\n")
+				// casting
 			default:
 				body.WriteString(fromField.FullVariableName("") + "\n")
 			}
