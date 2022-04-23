@@ -2,8 +2,8 @@
 package copygen
 
 import (
-	"github.com/switchupcb/copygen/examples/_tests/duplicate/domain"
-	"github.com/switchupcb/copygen/examples/_tests/duplicate/models"
+	"github.com/switchupcb/copygen/examples/_tests/cast/domain"
+	"github.com/switchupcb/copygen/examples/_tests/cast/models"
 )
 
 // Copygen defines the functions that will be generated.

@@ -85,6 +85,11 @@ var (
 			ymlpath:  "examples/_tests/duplicate/setup/setup.yml",
 			wantpath: "examples/_tests/duplicate/copygen.go",
 		},
+		{
+			name:     "multi",
+			ymlpath:  "examples/_tests/multi/setup/setup.yml",
+			wantpath: "examples/_tests/multi/copygen.go",
+		},
 	}
 )
 

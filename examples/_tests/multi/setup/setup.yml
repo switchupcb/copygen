@@ -1,0 +1,4 @@
+# Define where the code will be generated.
+generated:
+  setup: ./setup.go
+  output: ../copygen.go
