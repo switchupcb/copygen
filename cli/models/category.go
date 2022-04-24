@@ -7,9 +7,9 @@ const (
 	ContainerInterface = "interface"
 )
 
-// IsNoContainer returns whether the field has no container.
-func (f *Field) IsNoContainer() bool {
-	return f.Container == ""
+// IsContainer returns whether the field has a container.
+func (f *Field) IsContainer() bool {
+	return f.Container != ""
 }
 
 // isStruct returns whether the field is a struct.
@@ -65,4 +65,9 @@ func (f *Field) IsComposite() bool {
 // IsFunc returns whether the field is a function.
 func (f *Field) IsFunc() bool {
 	return len(f.Definition) >= 4 && f.Definition[:4] == CollectionFunc
+}
+
+// IsCollection returns whether the field is a collection.
+func (f *Field) IsCollection() bool {
+	return f.IsPointer() || f.IsComposite() || f.IsFunc()
 }

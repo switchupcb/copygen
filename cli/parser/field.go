@@ -47,7 +47,11 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 		setFieldImportAndPackage(fp.field, x.Obj().Pkg())
 		setFieldVariableName(fp.field, "."+x.Obj().Name())
 		setDefinition(fp.field, x.Obj().Name())
-		return fp.parseField(x.Underlying())
+
+		// do NOT parse named types in a collection.
+		if !fp.field.IsCollection() {
+			return fp.parseField(x.Underlying())
+		}
 
 	// Simple Composite Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#simple-composite-types
@@ -209,7 +213,7 @@ func setFieldImportAndPackage(field *models.Field, pkg *types.Package) {
 		}
 	}
 
-	if field.IsComposite() || field.IsFunc() {
+	if field.IsCollection() {
 		setDefinition(field, field.Package+".")
 		field.Package = ""
 	}
@@ -227,7 +231,7 @@ func setDefinition(field *models.Field, def string) {
 	switch {
 	case field.Definition == "":
 		field.Definition = def
-	case field.IsComposite():
+	case field.IsCollection():
 		field.Definition += def
 	}
 }

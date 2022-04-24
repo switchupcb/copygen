@@ -23,8 +23,16 @@ type Copygen interface {
 	NoMatchArraySimple([16]byte) Collection
 	Array([16]byte) [16]byte
 	ArraySimple(Arr [16]byte) *Collection
-	ArrayExternal(external.Collection) *external.Collection
+	ArrayExternal([16]external.Placeholder) [16]external.Placeholder
 	ArrayComplex(Arr [16]map[byte]string) *complex.Collection
+	ArrayExternalComplex(Arr [16]map[*external.Collection]string) *complex.ComplexCollection
+
+	NoMatchSliceSimple([]string) Collection
+	Slice([]string) []string
+	SliceSimple(S []string) *Collection
+	SliceExternal([]external.Placeholder) []external.Placeholder
+	SliceComplex(S []map[string][16]int) *complex.Collection
+	SliceExternalComplex(S []map[string]func(*external.Collection) string) *complex.ComplexCollection
 }
 
 // Collection represents a type that holds collection field types.

@@ -32,10 +32,16 @@ func ArrayComplex(tC *complex.Collection, fm [16]map[byte]string) {
 	tC.Arr = fm
 }
 
-// ArrayExternal copies a external.Collection to a *external.Collection.
-func ArrayExternal(tC *external.Collection, fC external.Collection) {
-	// *external.Collection fields
-	tC = &fC
+// ArrayExternal copies a [16]external.Placeholder to a [16]external.Placeholder.
+func ArrayExternal(tg [16]external.Placeholder, fg [16]external.Placeholder) {
+	// [16]external.Placeholder fields
+	tg = fg
+}
+
+// ArrayExternalComplex copies a [16]map[*external.Collection]string to a *complex.ComplexCollection.
+func ArrayExternalComplex(tC *complex.ComplexCollection, fm [16]map[*external.Collection]string) {
+	// *complex.ComplexCollection fields
+	tC.Arr = fm
 }
 
 // ArraySimple copies a [16]byte to a *Collection.
@@ -104,4 +110,39 @@ func NoMatchBasicExternal(tP external.Placeholder, tP1 *external.Placeholder, tb
 	// *external.Placeholder fields
 
 	// bool fields
+}
+
+// NoMatchSliceSimple copies a []string to a Collection.
+func NoMatchSliceSimple(tC Collection, fs []string) {
+	// Collection fields
+}
+
+// Slice copies a []string to a []string.
+func Slice(ts []string, fs []string) {
+	// []string fields
+	ts = fs
+}
+
+// SliceComplex copies a []map[string][16]int to a *complex.Collection.
+func SliceComplex(tC *complex.Collection, fm []map[string][16]int) {
+	// *complex.Collection fields
+	tC.S = fm
+}
+
+// SliceExternal copies a []external.Placeholder to a []external.Placeholder.
+func SliceExternal(tg []external.Placeholder, fg []external.Placeholder) {
+	// []external.Placeholder fields
+	tg = fg
+}
+
+// SliceExternalComplex copies a []map[string]func(*external.Collection)string to a *complex.ComplexCollection.
+func SliceExternalComplex(tC *complex.ComplexCollection, fm []map[string]func(*external.Collection) string) {
+	// *complex.ComplexCollection fields
+	tC.S = fm
+}
+
+// SliceSimple copies a []string to a *Collection.
+func SliceSimple(tC *Collection, fs []string) {
+	// *Collection fields
+	tC.S = fs
 }
