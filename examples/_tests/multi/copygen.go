@@ -59,7 +59,7 @@ func BasicExternal(tP external.Placeholder, fP *external.Placeholder) {
 }
 
 // BasicExternalMulti copies a *external.Placeholder to a external.Placeholder, *external.Placeholder.
-func BasicExternalMulti(tP external.Placeholder, tP *external.Placeholder, fP *external.Placeholder) {
+func BasicExternalMulti(tP external.Placeholder, tP1 *external.Placeholder, fP *external.Placeholder) {
 	// external.Placeholder fields
 	tP = *fP
 
@@ -73,7 +73,7 @@ func BasicPointer(tP *Placeholder, fP Placeholder) {
 }
 
 // BasicPointerMulti copies a *Placeholder to a *Placeholder, *Placeholder, string.
-func BasicPointerMulti(tP *Placeholder, tP *Placeholder, ts string, fP *Placeholder) {
+func BasicPointerMulti(tP *Placeholder, tP1 *Placeholder, ts string, fP *Placeholder) {
 	// *Placeholder fields
 	tP = fP
 
@@ -99,7 +99,7 @@ func NoMatchBasic(tP Placeholder, fP Placeholder) {
 }
 
 // NoMatchBasicExternal copies a *Placeholder to a external.Placeholder, *external.Placeholder, bool.
-func NoMatchBasicExternal(tP external.Placeholder, tP *external.Placeholder, tb bool, fP *Placeholder) {
+func NoMatchBasicExternal(tP external.Placeholder, tP1 *external.Placeholder, tb bool, fP *Placeholder) {
 	// external.Placeholder fields
 
 	// *external.Placeholder fields

@@ -15,7 +15,7 @@ type Copygen interface {
 	Basic(bool) bool
 	BasicSimple(Placeholder) Placeholder
 	BasicPointer(Placeholder) *Placeholder
-	BasicPointerMulti(A *Placeholder) (A *Placeholder, B *Placeholder, C string) // FAIL VAR NAME
+	BasicPointerMulti(A *Placeholder) (A *Placeholder, B *Placeholder, C string)
 	BasicExternal(*external.Placeholder) external.Placeholder
 	BasicExternalMulti(*external.Placeholder) (external.Placeholder, *external.Placeholder) // FAIL
 

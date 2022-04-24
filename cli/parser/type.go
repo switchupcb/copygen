@@ -72,23 +72,25 @@ func setVariableNames(types []models.Type, precedent string) {
 	paramMap := make(map[string]bool)
 	for i := 0; i < len(types); i++ {
 		types[i].Field.VariableName = createVariable(paramMap, precedent+types[i].Field.VariableName[1:], 0)
+		paramMap[types[i].Field.VariableName] = true
 	}
 }
 
 // createVariable generates a valid variable name for a 'set' of parameters.
-func createVariable(parameters map[string]bool, typename string, occurrence int) string {
+func createVariable(parameters map[string]bool, name string, occurrence int) string {
 	if occurrence < 0 {
-		createVariable(parameters, typename, 0)
+		createVariable(parameters, name, 0)
 	}
 
-	varName := typename[:2]
+	// assume a precedent (i.e `t`) and variable (min size = 1) has been passed.
+	varname := name[:2]
 	if occurrence > 0 {
-		varName += strconv.Itoa(occurrence + 1)
+		varname = varname + strconv.Itoa(occurrence)
 	}
 
-	if _, exists := parameters[varName]; exists {
-		createVariable(parameters, typename, occurrence+1)
+	if parameters[varname] {
+		return createVariable(parameters, name, occurrence+1)
 	}
 
-	return varName
+	return varname
 }
