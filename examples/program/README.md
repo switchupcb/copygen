@@ -103,21 +103,21 @@ The [`debug.go`](https://pkg.go.dev/github.com/switchupcb/copygen/cli/models/deb
 ```
 type *models.Account
     Unpointed Field "*models.Account" of Definition "" Fields[4]: Parent ""
-        Unpointed Field "*models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account"
-        Unpointed Field "*models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account"
-        Unpointed Field "*models.Account.Password" of Definition "string" Fields[0]: Parent "*models.Account"
-        Unpointed Field "*models.Account.Email" of Definition "string" Fields[0]: Parent "*models.Account"
+        Unpointed Field ID "*models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account"
+        Unpointed Field Name "*models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account"
+        Unpointed Field Password "*models.Account.Password" of Definition "string" Fields[0]: Parent "*models.Account"
+        Unpointed Field Email "*models.Account.Email" of Definition "string" Fields[0]: Parent "*models.Account"
 type *models.User
     Unpointed Field "*models.User" of Definition "" Fields[3]: Parent ""
-        Unpointed Field "*models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User"
-        Unpointed Field "*models.User.Name" of Definition "string" Fields[0]: Parent "*models.User"
-        Unpointed Field "*models.User.UserData" of Definition "string" Fields[0]: Parent "*models.User"
+        Unpointed Field UserID "*models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User"
+        Unpointed Field Name "*models.User.Name" of Definition "string" Fields[0]: Parent "*models.User"
+        Unpointed Field UserData "*models.User.UserData" of Definition "string" Fields[0]: Parent "*models.User"
 type *domain.Account
     Unpointed Field "*domain.Account" of Definition "" Fields[4]: Parent ""
-        Unpointed Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account"
-        Unpointed Field "*domain.Account.UserID" of Definition "string" Fields[0]: Parent "*domain.Account"
-        Unpointed Field "*domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account"
-        Unpointed Field "*domain.Account.Other" of Definition "string" Fields[0]: Parent "*domain.Account"
+        Unpointed Field ID "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account"
+        Unpointed Field UserID "*domain.Account.UserID" of Definition "string" Fields[0]: Parent "*domain.Account"
+        Unpointed Field Name "*domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account"
+        Unpointed Field Other "*domain.Account.Other" of Definition "string" Fields[0]: Parent "*domain.Account"
 ```
 
 **Matcher**
@@ -125,16 +125,16 @@ type *domain.Account
 ```
 type *models.Account
     Unpointed Field "*models.Account" of Definition "" Fields[2]: Parent ""
-        From Field "models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account"
-        From Field "models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account"
+        From Field ID "models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account"
+        From Field Name "models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account"
 type *models.User
     Unpointed Field "*models.User" of Definition "" Fields[1]: Parent ""
-        From Field "models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User"
+        From Field UserID "models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User"
 type *domain.Account
     Unpointed Field "*domain.Account" of Definition "" Fields[3]: Parent ""
-        To Field "domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account"
-        To Field "domain.Account.UserID" of Definition "string" Fields[0]: Parent "*domain.Account"
-        To Field "domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account"
+        To Field ID "domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account"
+        To Field UserID "domain.Account.UserID" of Definition "string" Fields[0]: Parent "*domain.Account"
+        To Field Name "domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account"
 ```
 
 _Use `PrintGeneratorFields` to call `PrintFunctionFields` on all of a generator's functions._
@@ -188,27 +188,10 @@ type Account
 
 ### PrintFieldRelation
 
-**Matcher (Unpointed)**
-
 ```
-To Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" and From Field "models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account" are related to each other.
-To Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field "models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account".
-To Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field Unpointed Field "models.Account.Password" of Definition "string" Fields[0]: Parent "*models.Account".
-To Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field Unpointed Field "models.Account.Email" of Definition "string" Fields[0]: Parent "*models.Account".
-To Field Unpointed Field "*domain.Account.UserID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field "models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account".
+To Field ID "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" and From Field ID "models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account" are related to each other.
+To Field ID "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field Name "models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account".
+To Field ID "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field Password "models.Account.Password" of Definition "string" Fields[0]: Parent "*models.Account".
+To Field ID "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field Email "models.Account.Email" of Definition "string" Fields[0]: Parent "*models.Account".
 ...
-```
-
-**Matcher (Pointed)**
-
-```
-To Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" and From Field "models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account" are related to each other.
-To Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field "models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account".
-To Field "*domain.Account.UserID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field "models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account".
-To Field "*domain.Account.UserID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field "models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account".
-To Field "*domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account" is not related to From Field "models.Account.ID" of Definition "int" Fields[0]: Parent "*models.Account".
-To Field "*domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account" and From Field "models.Account.Name" of Definition "string" Fields[0]: Parent "*models.Account" are related to each other.
-To Field "*domain.Account.ID" of Definition "int" Fields[0]: Parent "*domain.Account" is not related to From Field "models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User".
-To Field "*domain.Account.UserID" of Definition "int" Fields[0]: Parent "*domain.Account" and From Field "models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User" are related to each other.
-To Field "*domain.Account.Name" of Definition "string" Fields[0]: Parent "*domain.Account" is not related to From Field "models.User.UserID" of Definition "int" Fields[0]: Parent "*models.User".
 ```

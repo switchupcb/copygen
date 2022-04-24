@@ -173,10 +173,15 @@ func (f *Field) String() string {
 		}
 	}
 
+	var name string
+	if f.Name != "" {
+		name = f.Name + " "
+	}
+
 	var parent string
 	if f.Parent != nil {
 		parent = f.Parent.FullName("")
 	}
 
-	return fmt.Sprintf("%v Field %q of Definition %q Fields[%v]: Parent %q", direction, f.FullName(""), f.Definition, len(f.Fields), parent)
+	return fmt.Sprintf("%v Field %v%q of Definition %q Fields[%v]: Parent %q", direction, name, f.FullName(""), f.Definition, len(f.Fields), parent)
 }
