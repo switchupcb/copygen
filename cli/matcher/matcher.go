@@ -57,6 +57,10 @@ func automatch(toField, fromField *models.Field) {
 		(toField.FullDefinition() == fromField.FullDefinition() || fromField.Options.Convert != "") {
 		fromField.To = toField
 		toField.From = fromField
+
+		// prevent parallel matching
+		fromField.Fields = make([]*models.Field, 0)
+		toField.Fields = make([]*models.Field, 0)
 	}
 }
 

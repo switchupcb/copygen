@@ -35,10 +35,6 @@ func ArrayComplex(tC *complex.Collection, fm [16]map[byte]string) {
 func ArrayExternal(tC *external.Collection, fC external.Collection) {
 	// *external.Collection fields
 	tC = &fC
-	tC.Arr = fC.Arr
-	tC.S = fC.S
-	tC.M = fC.M
-	tC.C = fC.C
 }
 
 // ArraySimple copies a [16]byte to a *Collection.
