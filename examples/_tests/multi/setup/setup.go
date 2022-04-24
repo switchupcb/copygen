@@ -6,6 +6,7 @@ import (
 	"github.com/switchupcb/copygen/examples/_tests/multi/external"
 )
 
+// Placeholder represents a basic type..
 type Placeholder bool
 
 // Copygen defines the functions that will be generated.
@@ -17,7 +18,7 @@ type Copygen interface {
 	BasicPointer(Placeholder) *Placeholder
 	BasicPointerMulti(A *Placeholder) (A *Placeholder, B *Placeholder, C string)
 	BasicExternal(*external.Placeholder) external.Placeholder
-	BasicExternalMulti(*external.Placeholder) (external.Placeholder, *external.Placeholder) // FAIL
+	BasicExternalMulti(*external.Placeholder) (external.Placeholder, *external.Placeholder)
 
 	NoMatchArraySimple([16]byte) Collection
 	Array([16]byte) [16]byte

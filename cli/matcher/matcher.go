@@ -18,12 +18,10 @@ func Match(gen *models.Generator) error {
 				// each toField is compared to every fromField.
 				for i := 0; i < len(toFields); i++ {
 					for j := 0; j < len(fromFields); j++ {
-						// therefore, don't compare pointed fields.
-						if toFields[i].From != nil || fromFields[j].To != nil {
-							continue
-						}
-
 						match(function, toFields[i], fromFields[j])
+						if toFields[i].From != nil {
+							break
+						}
 					}
 				}
 			}

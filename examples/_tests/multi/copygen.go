@@ -9,6 +9,7 @@ import (
 	"github.com/switchupcb/copygen/examples/_tests/multi/external"
 )
 
+// Placeholder represents a basic type..
 type Placeholder bool
 
 // Collection represents a type that holds collection field types.
@@ -64,6 +65,7 @@ func BasicExternalMulti(tP external.Placeholder, tP1 *external.Placeholder, fP *
 	tP = *fP
 
 	// *external.Placeholder fields
+	tP1 = fP
 }
 
 // BasicPointer copies a Placeholder to a *Placeholder.

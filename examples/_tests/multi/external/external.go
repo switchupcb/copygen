@@ -1,5 +1,6 @@
 package external
 
+// Placeholder represents a basic type.
 type Placeholder bool
 
 // Collection represents a type that holds collection field types.

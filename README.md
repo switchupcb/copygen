@@ -257,7 +257,7 @@ Copygen provides two methods of field-matching: `automatch` and `manual`.
 
 ### Automatch
 
-When fields aren't specified using [options](#options), Copygen will attempt to automatch type-fields by name and definition. **Automatch supports field-depth** (where types are located within fields) **and recursive types** (where the same type is in another type). Automatch loads types from Go modules _(in GOPATH)_: Ensure your modules are up to date by using `go get -u <insert/module/import/path>`.
+When fields aren't specified using [options](#options), Copygen will attempt to automatch type-fields by name and definition. Automatch will match one from-field to many to-fields. **Automatch supports field-depth** (where types are located within fields) **and recursive types** (where the same type is in another type). Automatch loads types from Go modules _(in GOPATH)_: Ensure your modules are up to date by using `go get -u <insert/module/import/path>`.
 
 ### Manual
 
