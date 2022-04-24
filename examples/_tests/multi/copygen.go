@@ -29,6 +29,7 @@ func Array(tb [16]byte, fb [16]byte) {
 // ArrayComplex copies a [16]map[byte]string to a *complex.Collection.
 func ArrayComplex(tC *complex.Collection, fm [16]map[byte]string) {
 	// *complex.Collection fields
+	tC.Arr = fm
 }
 
 // ArrayExternal copies a external.Collection to a *external.Collection.

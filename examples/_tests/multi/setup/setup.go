@@ -24,7 +24,7 @@ type Copygen interface {
 	Array([16]byte) [16]byte
 	ArraySimple(Arr [16]byte) *Collection
 	ArrayExternal(external.Collection) *external.Collection
-	ArrayComplex(Arr [16]map[byte]string) *complex.Collection // FAIL MATCH
+	ArrayComplex(Arr [16]map[byte]string) *complex.Collection
 }
 
 // Collection represents a type that holds collection field types.

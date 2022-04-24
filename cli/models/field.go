@@ -123,11 +123,11 @@ func (f *Field) FullVariableName(name string) string {
 
 // FullDefinition returns the full definition of a field including its package.
 func (f *Field) FullDefinition() string {
-	if f.Package != "" {
-		return f.Package + "." + f.Definition
+	if f.Package == "" || f.IsComposite() || f.IsFunc() {
+		return f.Definition
 	}
 
-	return f.Definition
+	return f.Package + "." + f.Definition
 }
 
 // FullNameWithoutContainer returns the full name of a field including its parents
