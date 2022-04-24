@@ -38,6 +38,9 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	// Basic Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#basic-types
 	case *types.Basic:
+		if fp.field.Definition == "" {
+			fp.field.Package = ""
+		}
 		setFieldVariableName(fp.field, "."+x.Name())
 		setDefinition(fp.field, x.Name())
 

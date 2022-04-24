@@ -85,7 +85,7 @@ func createVariable(parameters map[string]bool, name string, occurrence int) str
 	// assume a precedent (i.e `t`) and variable (min size = 1) has been passed.
 	varname := name[:2]
 	if occurrence > 0 {
-		varname = varname + strconv.Itoa(occurrence)
+		varname += strconv.Itoa(occurrence)
 	}
 
 	if parameters[varname] {
