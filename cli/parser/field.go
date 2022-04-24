@@ -39,46 +39,81 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	// https://go.googlesource.com/example/+/HEAD/gotypes#basic-types
 	case *types.Basic:
 		setFieldVariableName(fp.field, "."+x.Name())
-		fp.field.Definition = x.Name()
+		setDefinition(fp.field, x.Name())
 
 	// Named Types (Alias)
 	// https://go.googlesource.com/example/+/HEAD/gotypes#named-types
 	case *types.Named:
 		setFieldImportAndPackage(fp.field, x.Obj().Pkg())
 		setFieldVariableName(fp.field, "."+x.Obj().Name())
-		fp.field.Definition = x.Obj().Name()
+		setDefinition(fp.field, x.Obj().Name())
 		return fp.parseField(x.Underlying())
 
 	// Simple Composite Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#simple-composite-types
 	case *types.Pointer:
-		fp.field.Container += "*"
+		if fp.field.Definition == "" && fp.field.Pointer == "" {
+			fp.field.Pointer = models.Pointer
+		} else {
+			setDefinition(fp.field, models.CollectionPointer)
+		}
 		return fp.parseField(x.Elem())
 
 	case *types.Array:
 		setFieldVariableName(fp.field, "."+alphastring(x.String()))
-		fp.field.Definition = x.String()
-		fp.field.Container += "[" + fmt.Sprint(x.Len()) + "]"
+		setDefinition(fp.field, "["+fmt.Sprint(x.Len())+"]")
+		return fp.parseField(x.Elem())
 
 	case *types.Slice:
 		setFieldVariableName(fp.field, "."+alphastring(x.String()))
-		fp.field.Definition = x.String()
-		fp.field.Container += "[]"
+		setDefinition(fp.field, models.CollectionSlice)
+		return fp.parseField(x.Elem())
 
 	case *types.Map:
 		setFieldVariableName(fp.field, "."+alphastring(x.String()))
-		fp.field.Definition = x.String()
-		fp.field.Container += "map"
+		setDefinition(fp.field, models.CollectionMap+"[")
+		_ = fp.parseField(x.Key())
+		setDefinition(fp.field, "]")
+		return fp.parseField(x.Elem())
 
 	case *types.Chan:
 		setFieldVariableName(fp.field, "."+alphastring(x.String()))
-		fp.field.Definition = x.String()
-		fp.field.Container += "chan"
+		setDefinition(fp.field, models.CollectionChan+" ")
+		return fp.parseField(x.Elem())
+
+	// Function (without Receivers)
+	// https://go.googlesource.com/example/+/HEAD/gotypes#function-and-method-types
+	case *types.Signature:
+		setFieldVariableName(fp.field, "."+alphastring(x.String()))
+
+		// set the parameters.
+		setDefinition(fp.field, models.CollectionFunc+"(")
+		for i := 0; i < x.Params().Len(); i++ {
+			_ = fp.parseField(x.Params().At(i).Type())
+			if i+1 != x.Params().Len() {
+				setDefinition(fp.field, ", ")
+			}
+		}
+		setDefinition(fp.field, ")")
+
+		// set the results.
+		if x.Results().Len() > 1 {
+			setDefinition(fp.field, " (")
+		}
+		for i := 0; i < x.Results().Len(); i++ {
+			_ = fp.parseField(x.Results().At(i).Type())
+			if i+1 != x.Results().Len() {
+				setDefinition(fp.field, ", ")
+			}
+		}
+		if x.Results().Len() > 1 {
+			setDefinition(fp.field, ")")
+		}
 
 	// Struct Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#struct-types
 	case *types.Struct:
-		fp.field.Collection = "struct"
+		fp.field.Container = models.ContainerStruct
 		for i := 0; i < x.NumFields(); i++ {
 			if subfield, ok := fp.cyclic[x.Field(i).String()]; ok {
 				fp.field.Fields = append(fp.field.Fields, subfield)
@@ -107,24 +142,23 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 			fp.field.Fields = append(fp.field.Fields, subfield)
 		}
 
-	// Function
-	// https://go.googlesource.com/example/+/HEAD/gotypes#function-and-method-types
-	case *types.Signature:
-		setFieldVariableName(fp.field, "."+alphastring(x.String()))
-		fp.field.Definition = x.String()
-
 	// Interface Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#interface-types
 	case *types.Interface:
-		fp.field.Collection = "interface"
+		fp.field.Container = models.ContainerInterface
 		for i := 0; i < x.NumMethods(); i++ {
+			if subfield, ok := fp.cyclic[x.Method(i).String()]; ok {
+				fp.field.Fields = append(fp.field.Fields, subfield)
+				continue
+			}
+
+			// parse a new field.
 			subfield := &models.Field{
 				VariableName: "." + x.Method(i).Name(),
 				Name:         x.Method(i).Name(),
 				Parent:       fp.field,
 			}
 			setFieldImportAndPackage(subfield, x.Method(i).Pkg())
-
 			subfieldParser := &fieldParser{
 				field:     subfield,
 				parent:    nil,
@@ -134,6 +168,7 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 			}
 
 			// sets the definition, container, and fields.
+			fp.cyclic[x.Method(i).String()] = subfield
 			subfield = subfieldParser.parseField(x.Method(i).Type())
 			fp.field.Fields = append(fp.field.Fields, subfield)
 		}
@@ -145,20 +180,18 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	return fp.field
 }
 
-// setFieldVariableName sets a field's variable name.
-func setFieldVariableName(field *models.Field, varname string) {
-	if field.VariableName == "" {
-		field.VariableName = varname
+// alphastring only returns alphabetic characters (English) in a string.
+func alphastring(s string) string {
+	bytes := []byte(s)
+	i := 0
+	for _, b := range bytes {
+		if ('a' <= b && b <= 'z') || ('A' <= b && b <= 'Z') || b == ' ' {
+			bytes[i] = b
+			i++
+		}
 	}
-}
 
-// setFieldName sets a field's name.
-func setFieldName(field *models.Field, name string) {
-	if field.Name == "" {
-		field.Name = name
-	} else {
-		field.Definition = name
-	}
+	return string(bytes[:i])
 }
 
 // setFieldImportAndPackage sets the import and package of a field.
@@ -174,6 +207,28 @@ func setFieldImportAndPackage(field *models.Field, pkg *types.Package) {
 		} else {
 			field.Package = pkg.Name()
 		}
+	}
+
+	if field.IsComposite() || field.IsFunc() {
+		setDefinition(field, field.Package+".")
+		field.Package = ""
+	}
+}
+
+// setFieldVariableName sets a field's variable name.
+func setFieldVariableName(field *models.Field, varname string) {
+	if field.VariableName == "" {
+		field.VariableName = varname
+	}
+}
+
+// setDefinition sets a field's definition.
+func setDefinition(field *models.Field, def string) {
+	switch {
+	case field.Definition == "":
+		field.Definition = def
+	case field.IsComposite():
+		field.Definition += def
 	}
 }
 
@@ -210,18 +265,4 @@ func filterFieldDepth(field *models.Field, maxdepth, curdepth int) {
 	for _, f := range field.Fields {
 		filterFieldDepth(f, maxdepth+f.Options.Depth, curdepth+1)
 	}
-}
-
-// alphastring only returns alphabetic characters (English) in a string.
-func alphastring(s string) string {
-	bytes := []byte(s)
-	i := 0
-	for _, b := range bytes {
-		if ('a' <= b && b <= 'z') || ('A' <= b && b <= 'Z') || b == ' ' {
-			bytes[i] = b
-			i++
-		}
-	}
-
-	return string(bytes[:i])
 }

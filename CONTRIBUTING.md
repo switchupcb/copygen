@@ -10,7 +10,7 @@ Pull requests must pass all [CI/CD](#cicd) measures and follow the [code specifi
 
 ## Domain
 
-The domain of Copygen lies in field manipulation. The program uses provided types to determine the fields we must assign. In this context, a "Type" refers to _the types used in a function (as parameters or results)_ rather than a type used to define variables. As the `parser` and `matcher` provides all required field information, you can improve Copygen by modifying the generator.
+The domain of Copygen lies in field manipulation. The program uses provided types to determine the fields we must assign. In this context, a `Type` refers to _the types used in a function (as parameters or results)_ rather than a type used to define variables.
 
 ## Project Structure
 

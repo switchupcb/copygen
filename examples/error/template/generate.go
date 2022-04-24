@@ -89,28 +89,41 @@ func generateBody(function *models.Function) string {
 
 	// Assign fields to ToType(s).
 	for i, toType := range function.To {
-		body.WriteString("// " + toType.Name() + " fields\n")
-
-		for _, toField := range toType.Field.Fields {
-			body.WriteString(toField.FullVariableName("") + " = ")
-
-			fromField := toField.From
-			switch {
-			case fromField.Options.Convert != "":
-				body.WriteString(fromField.Options.Convert + "(" + fromField.FullVariableName("") + ")\n")
-			case toField.Definition != fromField.Definition:
-				// casting
-			default:
-				body.WriteString(fromField.FullVariableName("") + "\n")
-			}
-		}
-
+		body.WriteString(generateAssignment(toType))
 		if i+1 != len(function.To) {
 			body.WriteString("\n")
 		}
 	}
 
 	return body.String()
+}
+
+// generateAssignment generates assignments for a to-type.
+func generateAssignment(toType models.Type) string {
+	var assign strings.Builder
+	assign.WriteString("// " + toType.Name() + " fields\n")
+
+	for _, toField := range toType.Field.AllFields(nil, nil) {
+		if toField.From != nil {
+			assign.WriteString(toField.FullVariableName("") + " = ")
+
+			fromField := toField.From
+			if fromField.Options.Convert != "" {
+				assign.WriteString(fromField.Options.Convert + "(" + fromField.FullVariableName("") + ")\n")
+			} else {
+				switch {
+				case toField.Pointer == fromField.Pointer:
+					assign.WriteString(fromField.FullVariableName("") + "\n")
+				case toField.UsesPointer():
+					assign.WriteString("&" + fromField.FullVariableName("") + "\n")
+				case fromField.UsesPointer():
+					assign.WriteString("*" + fromField.FullVariableName("") + "\n")
+				}
+			}
+		}
+	}
+
+	return assign.String()
 }
 
 // generateReturn generates a return statement for the function.

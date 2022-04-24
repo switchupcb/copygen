@@ -30,7 +30,7 @@ func SetDeepcopy(field *models.Field, option Option) {
 		return
 	}
 
-	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutContainer("")) {
+	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutPointer("")) {
 		field.Options.Deepcopy = true
 	}
 }

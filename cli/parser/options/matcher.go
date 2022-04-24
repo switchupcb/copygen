@@ -53,7 +53,7 @@ func SetAutomatch(field *models.Field, option Option) {
 		return
 	}
 
-	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutContainer("")) {
+	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutPointer("")) {
 		field.Options.Automatch = true
 	}
 }
@@ -94,7 +94,7 @@ func SetMap(field *models.Field, option Option) {
 		return
 	}
 
-	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutContainer("")) {
+	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutPointer("")) {
 		if value, ok := option.Value.(string); ok {
 			field.Options.Map = value
 		}
@@ -136,7 +136,7 @@ func SetTag(field *models.Field, option Option) {
 		return
 	}
 
-	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutContainer("")) {
+	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutPointer("")) {
 		if optionvalue, ok := option.Value.(string); ok {
 			for tagcat, tagmeta := range field.Tags {
 

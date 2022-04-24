@@ -56,8 +56,7 @@ func match(function models.Function, toField *models.Field, fromField *models.Fi
 // automatch is used when no `map` or `tag` options apply to a field.
 func automatch(toField, fromField *models.Field) {
 	if toField.Name == fromField.Name &&
-		(toField.Definition == fromField.Definition || fromField.Options.Convert != "") &&
-		toField.Collection == fromField.Collection {
+		(toField.FullDefinition() == fromField.FullDefinition() || fromField.Options.Convert != "") {
 		fromField.To = toField
 		toField.From = fromField
 	}
@@ -66,7 +65,7 @@ func automatch(toField, fromField *models.Field) {
 // mapmatch manually maps a from-field to a to-field.
 // mapmatch is used when a map option is specified.
 func mapmatch(toField, fromField *models.Field) {
-	if fromField.Options.Map != "" && toField.FullNameWithoutContainer("") == fromField.Options.Map {
+	if fromField.Options.Map != "" && toField.FullNameWithoutPointer("") == fromField.Options.Map {
 		fromField.To = toField
 		toField.From = fromField
 	}

@@ -21,27 +21,23 @@ type Field struct {
 	// Package represents the package the field is defined in (i.e `log` in `log.Logger`).
 	Package string
 
-	// Container represents the container that contains the field's definition (in string format).
-	//
-	// This can be any of the following examples or `nil``.
-	// pointer(s): **
-	// array: [5]
-	// slice: []
-	// map: map
-	// chan: chan
-	Container string
-
 	// Name represents the name of the field (i.e `ID` in `ID int`).
 	Name string
 
 	// Definition represents the type definition of the field (i.e `int` in `ID int`, `Logger` in `log.Logger`).
 	Definition string
 
-	// Collection represents the type of collection that this field represents.
+	// Pointer represents the pointer of this field (i.e `*`).
+	Pointer string
+
+	// Container represents the container that this field represents.
 	//
-	// a "struct" collection contain subfields with any other type.
+	// A container (in the domain of field manipulation) refers to a
+	// category of types which indicate that a field contains multiple fields.
+	//
+	// a "struct" collection contains subfields with any other type.
 	// an "interface" collection contains `func` subfields.
-	Collection string
+	Container string
 
 	// The tags defined in a struct field (i.e `json:"tag,omitempty"`)
 	// map[tag]map[name][]options (i.e map[json]map[tag]["omitempty"])
@@ -86,109 +82,17 @@ type FieldOptions struct {
 	Deepcopy bool
 }
 
-// isStruct returns whether the field is a struct.
-func (f *Field) IsStruct() bool {
-	return f.Collection == "struct"
-}
+// Pointer represents the string representation of a pointer.
+const Pointer = "*"
 
-// isInterface returns whether the field is an interface.
-func (f *Field) IsInterface() bool {
-	return f.Collection == "interface"
-}
-
-// IsNoContainer returns whether the field has no container.
-func (f *Field) IsNoContainer() bool {
-	return f.Container == ""
-}
-
-// IsPointer returns whether the field is a pointer of a type definition.
-func (f *Field) IsPointer() bool {
-	return f.Container != "" && f.Container[0] == '*'
-}
-
-// IsArray returns whether the field is an array.
-// assumes the caller is checking a valid container.
-func (f *Field) IsArray() bool {
-	return len(f.Container) >= 3 && f.Container[0] == '['
-}
-
-// IsSlice returns whether the field is a slice.
-func (f *Field) IsSlice() bool {
-	return len(f.Container) >= 2 && f.Container[0] == '[' && f.Container[1] == ']'
-}
-
-// IsMap returns whether the field is a map.
-// assumes the caller is checking a valid container.
-func (f *Field) IsMap() bool {
-	return len(f.Container) >= 3 && f.Container[0] == 'm'
-}
-
-// IsMap returns whether the field is a chan.
-// assumes the caller is checking a valid container.
-func (f *Field) IsChan() bool {
-	return len(f.Container) >= 4 && f.Container[0] == 'c'
+// UsesPointer returns whether the field uses a pointer.
+func (f *Field) UsesPointer() bool {
+	return f.Pointer == Pointer
 }
 
 // IsType returns whether the field is a type.
 func (f *Field) IsType() bool {
 	return f.Parent == nil
-}
-
-// FullDefinition returns the full definition of a field including its package.
-func (f *Field) FullDefinition() string {
-	if f.Package != "" {
-		return f.Package + "." + f.Definition
-	}
-
-	return f.Definition
-}
-
-// FullNameWithoutContainer returns the full name of a field including its parents
-// without the container (i.e domain.Account.User.ID).
-func (f *Field) FullNameWithoutContainer(name string) string {
-	if !f.IsType() {
-		// names are added in reverse.
-		if name == "" {
-			// reference the field (i.e `ID`).
-			name = f.Name
-		} else {
-			// prepend the field (i.e `User` + `.` + `ID`).
-			name = f.Name + "." + name
-		}
-
-		return f.Parent.FullNameWithoutContainer(name)
-	}
-
-	if name != "" {
-		name = "." + name
-	}
-
-	var fullname string
-	if f.Package != "" {
-		fullname = f.Package + "." + f.Definition + name
-	} else {
-		fullname = f.Definition + name
-	}
-
-	if !f.IsNoContainer() && !f.IsPointer() {
-		return fullname[len(f.Container):]
-	}
-
-	return fullname
-}
-
-// FullName returns the full name of a field including its parents (i.e *domain.Account.User.ID).
-func (f *Field) FullName(name string) string {
-	return f.Container + f.FullNameWithoutContainer("")
-}
-
-// FullVariableName gets the full variable name of a field (i.e tA.User.UserID).
-func (f *Field) FullVariableName(name string) string {
-	if !f.IsType() {
-		return f.Parent.FullVariableName(f.VariableName + name)
-	}
-
-	return f.VariableName + name
 }
 
 // AllFields gets all the fields in the scope of a field (including itself).
@@ -206,6 +110,52 @@ func (f *Field) AllFields(fields []*Field, cyclic map[*Field]bool) []*Field {
 	}
 
 	return fields
+}
+
+// FullVariableName returns the full variable name of a field (i.e tA.User.UserID).
+func (f *Field) FullVariableName(name string) string {
+	if !f.IsType() {
+		return f.Parent.FullVariableName(f.VariableName + name)
+	}
+
+	return f.VariableName + name
+}
+
+// FullDefinition returns the full definition of a field including its package.
+func (f *Field) FullDefinition() string {
+	if f.Package != "" {
+		return f.Package + "." + f.Definition
+	}
+
+	return f.Definition
+}
+
+// FullNameWithoutContainer returns the full name of a field including its parents
+// without the container (i.e domain.Account.User.ID).
+func (f *Field) FullNameWithoutPointer(name string) string {
+	if !f.IsType() {
+		// names are added in reverse.
+		if name == "" {
+			// reference the field (i.e `ID`).
+			name = f.Name
+		} else {
+			// prepend the field (i.e `User` + `.` + `ID`).
+			name = f.Name + "." + name
+		}
+
+		return f.Parent.FullNameWithoutPointer(name)
+	}
+
+	if name != "" {
+		name = "." + name
+	}
+
+	return f.FullDefinition() + name
+}
+
+// FullName returns the full name of a field including its parents (i.e *domain.Account.User.ID).
+func (f *Field) FullName(name string) string {
+	return f.Pointer + f.FullNameWithoutPointer("")
 }
 
 func (f *Field) String() string {

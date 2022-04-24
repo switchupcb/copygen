@@ -49,7 +49,7 @@ func SetConvert(field *models.Field, option Option) {
 		return
 	}
 
-	if option.Regex[1] != nil && option.Regex[1].MatchString(field.FullNameWithoutContainer("")) {
+	if option.Regex[1] != nil && option.Regex[1].MatchString(field.FullNameWithoutPointer("")) {
 		if value, ok := option.Value.(string); ok {
 			field.Options.Convert = value
 		}

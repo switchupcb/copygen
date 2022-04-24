@@ -37,6 +37,8 @@ Each example has a **README**.
 
 This [example](examples/main/) uses three type-structs to generate the `ModelsToDomain()` function using a Command Line Interface.
 
+_[`multi`](examples/_tests/multi/setup/setup.go) tests every type._
+
 ### Types
 
 The following types are defined in a program.

@@ -50,7 +50,7 @@ func SetDepth(field *models.Field, option Option) {
 		return
 	}
 
-	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutContainer("")) {
+	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutPointer("")) {
 		if value, ok := option.Value.(int); ok {
 			// Automatch all is on by default; if a user specifies 0 depth-level, guarantee it.
 			if value == 0 {

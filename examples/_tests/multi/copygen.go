@@ -4,71 +4,105 @@
 // Package copygen contains the setup information for copygen generated code.
 package copygen
 
+import (
+	"github.com/switchupcb/copygen/examples/_tests/multi/complex"
+	"github.com/switchupcb/copygen/examples/_tests/multi/external"
+)
+
 type Placeholder bool
 
-// ifcHolder represents a type that holds an interface.
-
-// ifc represents an interface type (equivalent to `error`).
-
-// funcHolder represents a type that holds a func.
-
-// Container represents a type that holds container types.
-type Container struct {
+// Collection represents a type that holds collection field types.
+type Collection struct {
 	Arr [16]byte
 	S   []string
 	M   map[string]bool
 	C   chan int
 }
 
-type ifcHolder struct {
-	IFC ifc
+// Array copies a [16]byte to a [16]byte.
+func Array(tb [16]byte, fb [16]byte) {
+	// [16]byte fields
+	tb = fb
 }
 
-type ifc interface {
-	Error() string
+// ArrayComplex copies a [16]map[byte]string to a *complex.Collection.
+func ArrayComplex(tC *complex.Collection, fm [16]map[byte]string) {
+	// *complex.Collection fields
 }
 
-type funcHolder struct {
-	F func() int
+// ArrayExternal copies a external.Collection to a *external.Collection.
+func ArrayExternal(tC *external.Collection, fC external.Collection) {
+	// *external.Collection fields
+	tC = &fC
+	tC.Arr = fC.Arr
+	tC.S = fC.S
+	tC.M = fC.M
+	tC.C = fC.C
 }
 
-// Array copies a [16]byte to a Container.
-func Array(tC Container, fb [16]byte) {
-	// Container fields
+// ArraySimple copies a [16]byte to a *Collection.
+func ArraySimple(tC *Collection, fb [16]byte) {
+	// *Collection fields
 	tC.Arr = fb
 }
 
-// Chan copies a chan int to a Container.
-func Chan(tC Container, fc chan int) {
-	// Container fields
-	tC.C = fc
-}
-
-// Complex copies a bool to a bool.
-func Complex(tP bool, fP bool) {
+// Basic copies a bool to a bool.
+func Basic(tb bool, fb bool) {
 	// bool fields
+	tb = fb
 }
 
-// Func copies a func() int to a funcHolder.
-func Func(tf funcHolder, ff func() int) {
-	// funcHolder fields
-	tf.F = ff
+// BasicExternal copies a *external.Placeholder to a external.Placeholder.
+func BasicExternal(tP external.Placeholder, fP *external.Placeholder) {
+	// external.Placeholder fields
+	tP = *fP
 }
 
-// Interface copies a error to a ifcHolder.
-func Interface(ti ifcHolder, fe error) {
-	// ifcHolder fields
-	ti.IFC.Error = fe.Error
+// BasicExternalMulti copies a *external.Placeholder to a external.Placeholder, *external.Placeholder.
+func BasicExternalMulti(tP external.Placeholder, tP *external.Placeholder, fP *external.Placeholder) {
+	// external.Placeholder fields
+	tP = *fP
+
+	// *external.Placeholder fields
 }
 
-// Map copies a map[string]bool to a Container.
-func Map(tC Container, fm map[string]bool) {
-	// Container fields
-	tC.M = fm
+// BasicPointer copies a Placeholder to a *Placeholder.
+func BasicPointer(tP *Placeholder, fP Placeholder) {
+	// *Placeholder fields
+	tP = &fP
 }
 
-// Slice copies a []string to a Container.
-func Slice(tC Container, fs []string) {
-	// Container fields
-	tC.S = fs
+// BasicPointerMulti copies a *Placeholder to a *Placeholder, *Placeholder, string.
+func BasicPointerMulti(tP *Placeholder, tP *Placeholder, ts string, fP *Placeholder) {
+	// *Placeholder fields
+	tP = fP
+
+	// *Placeholder fields
+
+	// string fields
+}
+
+// BasicSimple copies a Placeholder to a Placeholder.
+func BasicSimple(tP Placeholder, fP Placeholder) {
+	// Placeholder fields
+	tP = fP
+}
+
+// NoMatchArraySimple copies a [16]byte to a Collection.
+func NoMatchArraySimple(tC Collection, fb [16]byte) {
+	// Collection fields
+}
+
+// NoMatchBasic copies a Placeholder to a Placeholder.
+func NoMatchBasic(tP Placeholder, fP Placeholder) {
+	// Placeholder fields
+}
+
+// NoMatchBasicExternal copies a *Placeholder to a external.Placeholder, *external.Placeholder, bool.
+func NoMatchBasicExternal(tP external.Placeholder, tP *external.Placeholder, tb bool, fP *Placeholder) {
+	// external.Placeholder fields
+
+	// *external.Placeholder fields
+
+	// bool fields
 }
