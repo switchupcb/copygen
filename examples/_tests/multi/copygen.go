@@ -9,10 +9,31 @@ import (
 	"github.com/switchupcb/copygen/examples/_tests/multi/external"
 )
 
-// Placeholder represents a basic type..
+// Placeholder represents a basic type.
 type Placeholder bool
 
+// ifc represents an interface type (equivalent to `error`).
+type ifc interface {
+	Error() string
+}
+
+/*
+	NoMatchInterface(error) Container
+	Interface(interface{}) interface{}
+	InterfaceSimple(error) *Container
+	InterfaceExternal(external.Container) *Container
+	InterfaceComplex()
+	InterfaceExternalComplex
+*/
+
 // Collection represents a type that holds collection field types.
+
+// Container represents a type that holds container field types.
+type Container struct {
+	I ifc
+	F func() int
+}
+
 type Collection struct {
 	Arr [16]byte
 	S   []string
@@ -93,6 +114,95 @@ func BasicSimple(tP Placeholder, fP Placeholder) {
 	tP = fP
 }
 
+// Chan copies a chan int to a chan int.
+func Chan(tc chan int, fc chan int) {
+	// chan int fields
+	tc = fc
+}
+
+// ChanComplex copies a chan *[]int to a *complex.Collection.
+func ChanComplex(tC *complex.Collection, fc chan *[]int) {
+	// *complex.Collection fields
+	tC.C = fc
+}
+
+// ChanExternal copies a chan external.Placeholder to a chan external.Placeholder.
+func ChanExternal(tc chan external.Placeholder, fc chan external.Placeholder) {
+	// chan external.Placeholder fields
+	tc = fc
+}
+
+// ChanExternalComplex copies a chan *[]external.Collection to a complex.ComplexCollection.
+func ChanExternalComplex(tC complex.ComplexCollection, fc chan *[]external.Collection) {
+	// complex.ComplexCollection fields
+	tC.C = fc
+}
+
+// ChanSimple copies a chan int to a *Collection.
+func ChanSimple(tC *Collection, fc chan int) {
+	// *Collection fields
+	tC.C = fc
+}
+
+// Func copies a func()int to a func()int.
+func Func(tf func() int, ff func() int) {
+	// func()int fields
+	tf = ff
+}
+
+// FuncComplex copies a func([]string, uint64)*byte to a *complex.Container.
+func FuncComplex(tC *complex.Container, ff func([]string, uint64) *byte) {
+	// *complex.Container fields
+	tC.F = ff
+}
+
+// FuncExternal copies a func(external.Placeholder)int to a func(external.Placeholder)int.
+func FuncExternal(tf func(external.Placeholder) int, ff func(external.Placeholder) int) {
+	// func(external.Placeholder)int fields
+	tf = ff
+}
+
+// FuncExternalComplex copies a func(external.Collection)[]string to a *complex.ComplexContainer.
+func FuncExternalComplex(tC *complex.ComplexContainer, ff func(external.Collection) []string) {
+	// *complex.ComplexContainer fields
+	tC.F = ff
+}
+
+// FuncNoMatch copies a func()int to a Container.
+func FuncNoMatch(tC Container, ff func() int) {
+	// Container fields
+}
+
+// FuncSimple copies a func()int to a *Container.
+func FuncSimple(tC *Container, ff func() int) {
+	// *Container fields
+	tC.F = ff
+}
+
+// Map copies a map[string]bool to a map[string]bool.
+func Map(tm map[string]bool, fm map[string]bool) {
+	// map[string]bool fields
+	tm = fm
+}
+
+// MapExternal copies a map[string]external.Placeholder to a map[string]external.Placeholder.
+func MapExternal(tm map[string]external.Placeholder, fm map[string]external.Placeholder) {
+	// map[string]external.Placeholder fields
+	tm = fm
+}
+
+// MapExternalComplex copies a map[*external.Collection]external.Placeholder to a *complex.ComplexCollection.
+func MapExternalComplex(tC *complex.ComplexCollection, fm map[*external.Collection]external.Placeholder) {
+	// *complex.ComplexCollection fields
+	tC.M = fm
+}
+
+// MapSimple copies a map[string]bool to a *Collection.
+func MapSimple(tC *Collection, fm map[string]bool) {
+	// *Collection fields
+	tC.M = fm
+}
+
 // NoMatchArraySimple copies a [16]byte to a Collection.
 func NoMatchArraySimple(tC Collection, fb [16]byte) {
 	// Collection fields
@@ -110,6 +220,16 @@ func NoMatchBasicExternal(tP external.Placeholder, tP1 *external.Placeholder, tb
 	// *external.Placeholder fields
 
 	// bool fields
+}
+
+// NoMatchChan copies a chan int to a Collection.
+func NoMatchChan(tC Collection, fc chan int) {
+	// Collection fields
+}
+
+// NoMatchMap copies a map[string]bool to a Collection.
+func NoMatchMap(tC Collection, fm map[string]bool) {
+	// Collection fields
 }
 
 // NoMatchSliceSimple copies a []string to a Collection.

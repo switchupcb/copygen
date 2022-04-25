@@ -20,9 +20,6 @@ type fieldParser struct {
 	// cyclic is a key value cache used to prevent cyclic fields from unnecessary duplication or stack overflow.
 	cyclic map[string]*models.Field
 
-	// container represents a field's container.
-	container string
-
 	// options represents the field options defined above the models.Function
 	options []*options.Option
 }
@@ -127,64 +124,41 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 				continue
 			}
 
-			// parse a new field.
-			subfield := &models.Field{
-				VariableName: "." + x.Field(i).Name(),
-				Name:         x.Field(i).Name(),
-				Parent:       fp.field,
-			}
-			setFieldImportAndPackage(subfield, x.Field(i).Pkg())
-			setTags(subfield, x.Tag(i))
-			subfieldParser := &fieldParser{
-				field:     subfield,
-				parent:    nil,
-				container: "",
-				options:   fp.options,
-				cyclic:    fp.cyclic,
-			}
-
-			// sets the definition, container, and fields.
-			fp.cyclic[x.Field(i).String()] = subfield
-			subfield = subfieldParser.parseField(x.Field(i).Type())
+			subfield := fp.parseSubfield(x.Field(i), x.Tag(i))
 			fp.field.Fields = append(fp.field.Fields, subfield)
 		}
 
 	// Interface Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#interface-types
 	case *types.Interface:
-		fp.field.Container = models.ContainerInterface
-		for i := 0; i < x.NumMethods(); i++ {
-			if subfield, ok := fp.cyclic[x.Method(i).String()]; ok {
-				fp.field.Fields = append(fp.field.Fields, subfield)
-				continue
-			}
-
-			// parse a new field.
-			subfield := &models.Field{
-				VariableName: "." + x.Method(i).Name(),
-				Name:         x.Method(i).Name(),
-				Parent:       fp.field,
-			}
-			setFieldImportAndPackage(subfield, x.Method(i).Pkg())
-			subfieldParser := &fieldParser{
-				field:     subfield,
-				parent:    nil,
-				container: "",
-				options:   fp.options,
-				cyclic:    fp.cyclic,
-			}
-
-			// sets the definition, container, and fields.
-			fp.cyclic[x.Method(i).String()] = subfield
-			subfield = subfieldParser.parseField(x.Method(i).Type())
-			fp.field.Fields = append(fp.field.Fields, subfield)
-		}
+		fmt.Println("WARNING: interface assignment is temporarily unsupported")
 	}
 
 	options.SetFieldOptions(fp.field, fp.options)
 	filterFieldDepth(fp.field, fp.field.Options.Depth, 0)
 	fp.cyclic[typ.String()] = fp.field
 	return fp.field
+}
+
+// parseSubfield parses a types.Var into a *models.Field.
+func (fp fieldParser) parseSubfield(x *types.Var, tag string) *models.Field {
+	subfield := &models.Field{
+		VariableName: "." + x.Name(),
+		Name:         x.Name(),
+		Parent:       fp.field,
+	}
+	setFieldImportAndPackage(subfield, x.Pkg())
+	setTags(subfield, tag)
+	subfieldParser := &fieldParser{
+		field:   subfield,
+		parent:  nil,
+		options: fp.options,
+		cyclic:  fp.cyclic,
+	}
+
+	fp.cyclic[x.String()] = subfield
+	subfield = subfieldParser.parseField(x.Type())
+	return subfield
 }
 
 // alphastring only returns alphabetic characters (English) in a string.

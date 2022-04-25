@@ -54,6 +54,7 @@ func match(function models.Function, toField *models.Field, fromField *models.Fi
 // automatch is used when no `map` or `tag` options apply to a field.
 func automatch(toField, fromField *models.Field) {
 	if toField.Name == fromField.Name &&
+		toField.Container == fromField.Container &&
 		(toField.FullDefinition() == fromField.FullDefinition() || fromField.Options.Convert != "") {
 		fromField.To = toField
 		toField.From = fromField
