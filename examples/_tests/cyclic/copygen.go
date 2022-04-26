@@ -17,3 +17,9 @@ func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	tA.Info.UserID = fA.Info.UserID
 	tA.Info.Username = fA.Info.Username
 }
+
+// SuperCyclic copies a domain.CyclicInterface to a *domain.CyclicInterface.
+func SuperCyclic(tC *domain.CyclicInterface, fC domain.CyclicInterface) {
+	// *domain.CyclicInterface fields
+	tC = &fC
+}

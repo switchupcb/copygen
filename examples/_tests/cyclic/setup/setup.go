@@ -9,4 +9,5 @@ import (
 // Copygen defines the functions that will be generated.
 type Copygen interface {
 	ModelsToDomain(*models.Account, *models.User) *domain.Account
+	SuperCyclic(domain.CyclicInterface) *domain.CyclicInterface
 }

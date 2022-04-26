@@ -138,7 +138,6 @@ For information on testing, read [Integration Tests](examples/_tests/).
 # Roadmap
 
 Focus on these features:
-   - Parser: re-support interfaces
    - Templates: equivalent [`.tmpl`](examples/tmpl/template/generate.tmpl) template to [`generate.go`](cli/generator/template/generate.go)
    - Options, Matcher, Generator: `cast` option for [direct type conversions](https://go.dev/ref/spec#Conversions) _(as opposed to a convert function)_
    - Parser: Fix Free-floating comments _(add structs in [`multi`](examples/_tests/multi/copygen.go) to test)_

@@ -16,3 +16,8 @@ type Cyclic struct {
 	Username string
 	Account  *Account
 }
+
+// CyclicInterface represents a cyclic interface (that contains a cyclic func).
+type CyclicInterface interface {
+	CyclicFunc(CyclicInterface) bool
+}
