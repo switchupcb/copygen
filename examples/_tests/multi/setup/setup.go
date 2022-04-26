@@ -9,18 +9,15 @@ import (
 // Placeholder represents a basic type.
 type Placeholder bool
 
-// ifc represents an interface type (equivalent to `error`).
-type ifc interface {
-	Error() string
-}
-
 // Copygen defines the functions that will be generated.
 type Copygen interface {
 	NoMatchBasic(A Placeholder) (B Placeholder)
 	NoMatchBasicExternal(A *Placeholder) (A external.Placeholder, B *external.Placeholder, C bool)
 	Basic(bool) bool
+	BasicPointer(bool) *bool
+	BasicDoublePointer(*bool) **bool // Fail Pointer Semantics
 	BasicSimple(Placeholder) Placeholder
-	BasicPointer(Placeholder) *Placeholder
+	BasicSimplePointer(Placeholder) *Placeholder
 	BasicPointerMulti(A *Placeholder) (A *Placeholder, B *Placeholder, C string)
 	BasicExternal(*external.Placeholder) external.Placeholder
 	BasicExternalMulti(*external.Placeholder) (external.Placeholder, *external.Placeholder)
@@ -43,7 +40,7 @@ type Copygen interface {
 	Map(map[string]bool) map[string]bool
 	MapSimple(M map[string]bool) *Collection
 	MapExternal(map[string]external.Placeholder) map[string]external.Placeholder
-	// MapComplex(M map[string]interface{ Error() string }) *complex.Collection
+	MapComplex(M map[string]interface{ Error() string }) *complex.Collection
 	MapExternalComplex(M map[*external.Collection]external.Placeholder) *complex.ComplexCollection
 
 	NoMatchChan(chan int) Collection
@@ -53,21 +50,26 @@ type Copygen interface {
 	ChanComplex(C chan *[]int) *complex.Collection
 	ChanExternalComplex(C chan *[]external.Collection) complex.ComplexCollection
 
-	/*
-		NoMatchInterface(error) Container
-		Interface(interface{}) interface{}
-		InterfaceSimple(error) *Container
-		InterfaceExternal(external.Container) *Container
-		InterfaceComplex()
-		InterfaceExternalComplex
-	*/
+	NoMatchInterface(error) Collection
+	Interface(interface{}) interface{}
+	InterfaceSimple(I error) *Collection
+	InterfaceExternal(I error) *external.Collection
+	InterfaceComplex(I interface{ A(string) *int }) *complex.Collection
+	InterfaceExternalComplex(I interface {
+		A(string) map[*external.Collection]bool
+		B() (int, byte)
+	}) complex.ComplexCollection
 
-	FuncNoMatch(func() int) Container
+	NoMatchFunc(func() int) Collection
 	Func(func() int) func() int
-	FuncSimple(F func() int) *Container
+	FuncSimple(F func() int) *Collection
 	FuncExternal(func(external.Placeholder) int) func(external.Placeholder) int
-	FuncComplex(F func([]string, uint64) *byte) *complex.Container
-	FuncExternalComplex(F func(external.Collection) []string) *complex.ComplexContainer
+	FuncComplex(F func([]string, uint64) *byte) *complex.Collection
+	FuncExternalComplex(F func(external.Collection) []string) *complex.ComplexCollection
+
+	NoMatchComplex([]external.Collection) (Struct []external.Collection)
+	Struct(Collection) Collection
+	StructExternal(external.Collection) *Collection
 }
 
 // Collection represents a type that holds collection field types.
@@ -76,10 +78,11 @@ type Collection struct {
 	S   []string
 	M   map[string]bool
 	C   chan int
+	I   error
+	F   func() int
 }
 
-// Container represents a type that holds container field types.
-type Container struct {
-	I ifc
-	F func() int
+// freefloat serves the purpose of checking for free-floating comments.
+type freefloat struct {
+	A string
 }

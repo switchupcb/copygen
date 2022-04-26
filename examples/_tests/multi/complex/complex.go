@@ -8,6 +8,8 @@ type Collection struct {
 	S   []map[string][16]int
 	M   map[string]error
 	C   chan *[]int
+	I   interface{ A(string) *int }
+	F   func([]string, uint64) *byte
 }
 
 // ComplexCollection represents a type that holds collection field types.
@@ -16,16 +18,9 @@ type ComplexCollection struct {
 	S   []map[string]func(*external.Collection) string
 	M   map[*external.Collection]external.Placeholder
 	C   chan *[]external.Collection
-}
-
-// Container represents a type that holds container field types.
-type Container struct {
-	I error
-	F func([]string, uint64) *byte
-}
-
-// ComplexContainer represents a type that holds container field types.
-type ComplexContainer struct {
-	I interface{ Error() []external.Collection }
+	I   interface {
+		A(string) map[*external.Collection]bool
+		B() (int, byte)
+	}
 	F func(external.Collection) []string
 }

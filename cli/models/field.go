@@ -30,15 +30,6 @@ type Field struct {
 	// Pointer represents the pointer of this field (i.e `*`).
 	Pointer string
 
-	// Container represents the container that this field represents.
-	//
-	// A container (in the domain of field manipulation) refers to a
-	// category of types which indicate that a field contains multiple fields.
-	//
-	// a "struct" collection contains subfields with any other type.
-	// an "interface" collection contains `func` subfields.
-	Container string
-
 	// The tags defined in a struct field (i.e `json:"tag,omitempty"`)
 	// map[tag]map[name][]options (i.e map[json]map[tag]["omitempty"])
 	Tags map[string]map[string][]string
@@ -82,19 +73,6 @@ type FieldOptions struct {
 	Deepcopy bool
 }
 
-// Pointer represents the string representation of a pointer.
-const Pointer = "*"
-
-// UsesPointer returns whether the field uses a pointer.
-func (f *Field) UsesPointer() bool {
-	return f.Pointer == Pointer
-}
-
-// IsType returns whether the field is a type.
-func (f *Field) IsType() bool {
-	return f.Parent == nil
-}
-
 // AllFields gets all the fields in the scope of a field (including itself).
 func (f *Field) AllFields(fields []*Field, cyclic map[*Field]bool) []*Field {
 	if cyclic == nil {
@@ -130,8 +108,8 @@ func (f *Field) FullDefinition() string {
 	return f.Package + "." + f.Definition
 }
 
-// FullNameWithoutContainer returns the full name of a field including its parents
-// without the container (i.e domain.Account.User.ID).
+// FullNameWithoutPointer returns the full name of a field including its parents
+// without the pointer (i.e domain.Account.User.ID).
 func (f *Field) FullNameWithoutPointer(name string) string {
 	if !f.IsType() {
 		// names are added in reverse.

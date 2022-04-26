@@ -9,4 +9,6 @@ type Collection struct {
 	S   []string
 	M   map[string]bool
 	C   chan int
+	I   error
+	F   func() int
 }

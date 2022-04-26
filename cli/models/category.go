@@ -1,35 +1,27 @@
 package models
 
-// Container refers to a category of types which indicate that
-// a field contains multiple fields.
-const (
-	ContainerStruct    = "struct"
-	ContainerInterface = "interface"
-)
-
-// IsContainer returns whether the field has a container.
-func (f *Field) IsContainer() bool {
-	return f.Container != ""
+// IsType returns whether the field is a type.
+func (f *Field) IsType() bool {
+	return f.Parent == nil
 }
 
-// isStruct returns whether the field is a struct.
-func (f *Field) IsStruct() bool {
-	return f.Container == ContainerStruct
-}
+// Pointer represents the string representation of a pointer.
+const Pointer = "*"
 
-// isInterface returns whether the field is an interface.
-func (f *Field) IsInterface() bool {
-	return f.Container == ContainerInterface
+// UsesPointer returns whether the field uses a pointer.
+func (f *Field) UsesPointer() bool {
+	return f.Pointer == Pointer
 }
 
 // Collection refers to a category of types which indicate that
 // a field's definition collects multiple fields (i.e `map[string]bool`).
 const (
-	CollectionPointer = "*"
-	CollectionSlice   = "[]"
-	CollectionMap     = "map"
-	CollectionChan    = "chan"
-	CollectionFunc    = "func"
+	CollectionPointer   = "*"
+	CollectionSlice     = "[]"
+	CollectionMap       = "map"
+	CollectionChan      = "chan"
+	CollectionFunc      = "func"
+	CollectionInterface = "interface"
 )
 
 // IsPointer returns whether the field is a pointer.
@@ -67,7 +59,17 @@ func (f *Field) IsFunc() bool {
 	return len(f.Definition) >= 4 && f.Definition[:4] == CollectionFunc
 }
 
+// IsInterface returns whether the field is an interface.
+func (f *Field) IsInterface() bool {
+	return len(f.Definition) >= 9 && f.Definition[:9] == CollectionInterface
+}
+
 // IsCollection returns whether the field is a collection.
 func (f *Field) IsCollection() bool {
-	return f.IsPointer() || f.IsComposite() || f.IsFunc()
+	return f.IsPointer() || f.IsComposite() || f.IsFunc() || f.IsInterface()
+}
+
+// IsAlias determines whether the field is a type alias.
+func (f *Field) IsAlias() bool {
+	return f.Definition != "" && !f.IsCollection()
 }
