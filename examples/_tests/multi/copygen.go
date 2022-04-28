@@ -154,31 +154,31 @@ func EmptyStruct(te empty, fs struct{}) {
 	// empty fields
 }
 
-// Func copies a func()int to a func()int.
+// Func copies a func() int to a func() int.
 func Func(tf func() int, ff func() int) {
-	// func()int fields
+	// func() int fields
 	tf = ff
 }
 
-// FuncComplex copies a func([]string, uint64)byte to a *complex.Collection.
+// FuncComplex copies a func([]string, uint64) byte to a *complex.Collection.
 func FuncComplex(tC *complex.Collection, ff func([]string, uint64) byte) {
 	// *complex.Collection fields
 	tC.F = ff
 }
 
-// FuncExternal copies a func(Placeholder)int to a func(Placeholder)int.
+// FuncExternal copies a func(Placeholder) int to a func(Placeholder) int.
 func FuncExternal(tf func(Placeholder) int, ff func(Placeholder) int) {
-	// func(Placeholder)int fields
+	// func(Placeholder) int fields
 	tf = ff
 }
 
-// FuncExternalComplex copies a func(Collection)[]string to a *complex.ComplexCollection.
+// FuncExternalComplex copies a func(Collection) []string to a *complex.ComplexCollection.
 func FuncExternalComplex(tC *complex.ComplexCollection, ff func(Collection) []string) {
 	// *complex.ComplexCollection fields
 	tC.F = ff
 }
 
-// FuncSimple copies a func()int to a *Collection.
+// FuncSimple copies a func() int to a *Collection.
 func FuncSimple(tC *Collection, ff func() int) {
 	// *Collection fields
 	tC.F = ff
@@ -190,7 +190,7 @@ func Interface(ti interface{}, fi interface{}) {
 	ti = fi
 }
 
-// InterfaceComplex copies a interface{func(rune)int; } to a *complex.Collection.
+// InterfaceComplex copies a interface{func(rune) int; } to a *complex.Collection.
 func InterfaceComplex(tC *complex.Collection, fi interface{ func(rune) int }) {
 	// *complex.Collection fields
 	tC.I = fi
@@ -202,7 +202,7 @@ func InterfaceExternal(tC *external.Collection, fe error) {
 	tC.I = fe
 }
 
-// InterfaceExternalComplex copies a interface{func(string)map[Collection]bool; func()(int, byte); } to a complex.ComplexCollection.
+// InterfaceExternalComplex copies a interface{func(string) map[Collection]bool; func() (int, byte); } to a complex.ComplexCollection.
 func InterfaceExternalComplex(tC complex.ComplexCollection, fi interface {
 	func(string) map[Collection]bool
 	func() (int, byte)
@@ -223,7 +223,7 @@ func Map(tm map[string]bool, fm map[string]bool) {
 	tm = fm
 }
 
-// MapComplex copies a map[string]interface{func()string; } to a *complex.Collection.
+// MapComplex copies a map[string]interface{func() string; } to a *complex.Collection.
 func MapComplex(tC *complex.Collection, fm map[string]interface{ func() string }) {
 	// *complex.Collection fields
 }
@@ -275,7 +275,7 @@ func NoMatchComplex(tC []Collection, fC []Collection) {
 	// []Collection fields
 }
 
-// NoMatchFunc copies a func()int to a Collection.
+// NoMatchFunc copies a func() int to a Collection.
 func NoMatchFunc(tC Collection, ff func() int) {
 	// Collection fields
 }
@@ -313,7 +313,7 @@ func SliceExternal(tP []Placeholder, fP []Placeholder) {
 	tP = fP
 }
 
-// SliceExternalComplex copies a []map[string]func(Collection)string to a *complex.ComplexCollection.
+// SliceExternalComplex copies a []map[string]func(Collection) string to a *complex.ComplexCollection.
 func SliceExternalComplex(tC *complex.ComplexCollection, fm []map[string]func(Collection) string) {
 	// *complex.ComplexCollection fields
 	tC.S = fm

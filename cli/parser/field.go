@@ -123,8 +123,10 @@ func parseField(typ types.Type) *models.Field {
 		definition.WriteString(")")
 
 		// set the results.
-		hasResults := x.Results().Len() > 1
-		if hasResults {
+		if x.Results().Len() >= 1 {
+			definition.WriteString(" ")
+		}
+		if x.Results().Len() > 1 {
 			definition.WriteString("(")
 		}
 		for i := 0; i < x.Results().Len(); i++ {
@@ -133,7 +135,7 @@ func parseField(typ types.Type) *models.Field {
 				definition.WriteString(", ")
 			}
 		}
-		if hasResults {
+		if x.Results().Len() > 1 {
 			definition.WriteString(")")
 		}
 
