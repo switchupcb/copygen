@@ -25,8 +25,8 @@ The command-line interface _(cli)_ consists of 5 packages.
 | cli       | Contains the primary logic used to parse arguments and run the `copygen` command-line application. |
 | models    | Contains models based on the application's functionality _(business logic)_.                       |
 | config    | Contains external loaders used to configure the file settings and command line options.            |
-| parser    | Uses Abstract Syntax Tree (AST) analysis to parse a data file for fields.                          |
-| matcher   | Contains application logic to match fields to each other _(manually and automatically)_.           |
+| parser    | Uses an Abstract Syntax Tree (AST) and `go/types` to parse a setup file for fields.                |
+| matcher   | Contains application logic to match fields to each other.                                          |
 | generator | Contains the generator logic used to generate code _(and interpret templates)_.                    |
 
 _Read [program](examples/program/README.md) for an overview of the application's code._
@@ -48,7 +48,7 @@ There are multiple ways to parse `ast.Comments` into `Options`, but **convert** 
 
 #### Imports
 
-The `go/types` package will provide everything else; _**except**_ for alias import names. In order to assign aliased or non-aliased import names to `models.Field`, the imports of the `setup` file are mapped to a package path.
+The `go/types` package provides all of the other important information _**except**_ for alias import names. In order to assign aliased or non-aliased import names to `models.Field`, the imports of the `setup` file are mapped to a package path.
 
 #### Copygen Interface
 
@@ -78,7 +78,7 @@ Copygen supports three methods of generation for end-users _(developers)_: `.go`
 
 ### From vs. To
 
-From and To is used to denote the direction of a type or field. A from-field is assigned **to** a to-field. In contrast, a from-field applies to all to-fields _(unless specified otherwise)_. As a result, **"From" comes before "To" when parsing** while **"To" comes before "From" in comparison**.
+From and To is used to denote the direction of a type or field. A from-field is assigned **to** a to-field. In contrast, one from-field can match many to-fields. As a result, **"From" comes before "To" when parsing** while **"To" comes before "From" in comparison**.
 
 ### Variable Names
 
@@ -108,13 +108,11 @@ for _, field := range fields {
 }
 ```
 
-The same reasoning applies to `for i := 0; i < count; i++` loops.
-
 ### Anti-patterns
 
 Using the `*models.Field` definition for a `models.Field`'s `Parent` field can be considered an anti-pattern. In the program, a `models.Type` specifically refers to the types in a function signature _(i.e `func(models.Account, models.User) *domain.Account`)_. While these types **are** fields _(which may contain other fields)_ , their actual `Type` properties are not relevant to `models.Field`. As a result, `models.Field` objects are pointed directly to maintain simplicity.
 
-Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation`: `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program and more room for extension.
+Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation`: `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program.
 
 ## CI/CD
 
@@ -138,7 +136,7 @@ For information on testing, read [Integration Tests](examples/_tests/).
 # Roadmap
 
 Focus on these features:
+   - Parser: Fix Free-floating comments _(add structs in [`multi`](examples/_tests/multi/copygen.go) to test)_
    - Templates: equivalent [`.tmpl`](examples/tmpl/template/generate.tmpl) template to [`generate.go`](cli/generator/template/generate.go)
    - Options, Matcher, Generator: `cast` option for [direct type conversions](https://go.dev/ref/spec#Conversions) _(as opposed to a convert function)_
-   - Parser: Fix Free-floating comments _(add structs in [`multi`](examples/_tests/multi/copygen.go) to test)_
    - Generator: deepcopy
