@@ -51,6 +51,14 @@ var (
 	// ignorepkgpath is used to prevent the field parser from assigning a package name
 	// to a field that is defined in the setup file's package.
 	ignorepkgpath string
+
+	// fieldcache represents a map of `go/types` Type strings to models.Field.
+	//
+	// fieldcache is used to prevent cyclic fields from incorrect assignment.
+	//
+	// fieldcache improves performance by parsing a unique type definition once per runtime.
+	// definitions remain constant UNLESS the user modifies their modules during runtime.
+	fieldcache map[string]*models.Field
 )
 
 // parserLoadMode represents the load mode required for sufficient information during package load.
@@ -110,6 +118,7 @@ func Parse(gen *models.Generator) error {
 	}
 
 	// create the models.Function objects.
+	SetupCache()
 	if gen.Functions, err = p.parseFunctions(newCopygen); err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -117,7 +126,6 @@ func Parse(gen *models.Generator) error {
 	// reset global variables
 	ignorepkgpath = ""
 	aliasImportMap = nil
-
 	return nil
 }
 
@@ -141,4 +149,16 @@ func setupParser(gen *models.Generator) (*Parser, error) {
 		return nil, fmt.Errorf("an error occurred parsing the specified .go setup file: %v\n%w", gen.Setpath, err)
 	}
 	return p, nil
+}
+
+// SetupCache sets up the parser's global cache.
+func SetupCache() {
+	if fieldcache == nil {
+		fieldcache = make(map[string]*models.Field)
+	}
+}
+
+// ResetCache resets the parser's global cache.
+func ResetCache() {
+	fieldcache = make(map[string]*models.Field)
 }

@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/switchupcb/copygen/cli/models"
-	"github.com/switchupcb/copygen/cli/parser/options"
 )
 
 type parsedTypes struct {
@@ -15,7 +14,7 @@ type parsedTypes struct {
 }
 
 // parseTypes parses a types.Func's parameters for from-types and results for to-types.
-func parseTypes(method *types.Func, options []*options.Option) (parsedTypes, error) {
+func parseTypes(method *types.Func) (parsedTypes, error) {
 	var result parsedTypes
 
 	signature, ok := method.Type().(*types.Signature)
@@ -29,43 +28,25 @@ func parseTypes(method *types.Func, options []*options.Option) (parsedTypes, err
 		return result, fmt.Errorf("function %v has no types to copy to", method.Name())
 	}
 
-	var err error
-	result.fromTypes, err = parseTypeField(signature.Params(), options)
-	if err != nil {
-		return result, fmt.Errorf("an error occurred while parsing a from type parameter in %v\n%w", method.Name(), err)
-	}
-
-	result.toTypes, err = parseTypeField(signature.Results(), options)
-	if err != nil {
-		return result, fmt.Errorf("an error occurred while parsing a from type parameter in %v\n%w", method.Name(), err)
-	}
-
+	result.fromTypes = parseTypeField(signature.Params())
 	setVariableNames(result.fromTypes, "f")
+
+	result.toTypes = parseTypeField(signature.Results())
 	setVariableNames(result.toTypes, "t")
 
 	return result, nil
 }
 
 // parseTypeField parses a *types.Tuple into a *models.Type (that points to a *models.Field).
-func parseTypeField(vars *types.Tuple, fieldoptions []*options.Option) ([]models.Type, error) {
+func parseTypeField(vars *types.Tuple) []models.Type {
 	types := make([]models.Type, vars.Len())
 	for i := 0; i < vars.Len(); i++ {
-
-		// create a top-level field (fieldParser parent = nil).
-		fp := fieldParser{options: fieldoptions, cyclic: make(map[string]*models.Field)}
-		field := fp.parseField(vars.At(i).Type())
-		if field == nil {
-			return nil, fmt.Errorf("an error occurred parsing a type field parameter %v", vars.At(i).String())
-		}
-
-		// field.Name is set to the name of the parameter in the Copygen Func (if provided).
+		field := parseField(vars.At(i).Type()).Deepcopy(nil)
 		field.Name = vars.At(i).Name()
-		types[i] = models.Type{
-			Field: field,
-		}
+		types[i] = models.Type{Field: field}
 	}
 
-	return types, nil
+	return types
 }
 
 // setVariableNames sets the variable names for a list of type fields.

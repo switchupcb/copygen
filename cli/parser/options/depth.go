@@ -61,3 +61,22 @@ func SetDepth(field *models.Field, option Option) {
 		}
 	}
 }
+
+// FilterDepth filters a field according to it's depth level and returns the removed fields.
+func FilterDepth(field *models.Field, maxdepth, curdepth int) []*models.Field {
+	if maxdepth == 0 || len(field.Fields) == 0 {
+		return nil
+	}
+
+	var removed []*models.Field
+	if maxdepth < 0 || maxdepth <= curdepth {
+		field.Fields, removed = removed, field.Fields
+		return removed
+	}
+
+	for _, f := range field.Fields {
+		removed = append(removed, FilterDepth(f, maxdepth+f.Options.Depth, curdepth+1)...)
+	}
+
+	return removed
+}

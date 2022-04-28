@@ -13,6 +13,37 @@ func (f *Field) UsesPointer() bool {
 	return f.Pointer == Pointer
 }
 
+var (
+	// basicMap contains a list of basic types.
+	basicMap = map[string]bool{
+		"invalid":    true,
+		"bool":       true,
+		"int":        true,
+		"int8":       true,
+		"int16":      true,
+		"int32":      true,
+		"int64":      true,
+		"uint":       true,
+		"uint8":      true,
+		"uint16":     true,
+		"uint32":     true,
+		"uint64":     true,
+		"uintptr":    true,
+		"float32":    true,
+		"float64":    true,
+		"complex64":  true,
+		"complex128": true,
+		"string":     true,
+		"byte":       true,
+		"rune":       true,
+	}
+)
+
+// IsBasic determines whether the field is a basic type.
+func (f *Field) IsBasic() bool {
+	return basicMap[f.Definition]
+}
+
 // Collection refers to a category of types which indicate that
 // a field's definition collects multiple fields (i.e `map[string]bool`).
 const (
@@ -71,5 +102,5 @@ func (f *Field) IsCollection() bool {
 
 // IsAlias determines whether the field is a type alias.
 func (f *Field) IsAlias() bool {
-	return f.Definition != "" && !f.IsCollection()
+	return f.Definition != "" && !(f.IsBasic() || f.IsPointer() || f.IsComposite() || f.IsFunc())
 }

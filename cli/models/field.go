@@ -73,6 +73,56 @@ type FieldOptions struct {
 	Deepcopy bool
 }
 
+// Deepcopy returns a new field with copied properties (excluding Parent, To, and From fields).
+func (f *Field) Deepcopy(cyclic map[*Field]bool) *Field {
+	copied := &Field{
+		VariableName: f.VariableName,
+		Import:       f.Import,
+		Package:      f.Package,
+		Name:         f.Name,
+		Definition:   f.Definition,
+		Pointer:      f.Pointer,
+		Options: FieldOptions{
+			Convert:   f.Options.Convert,
+			Map:       f.Options.Map,
+			Tag:       f.Options.Tag,
+			Depth:     f.Options.Depth,
+			Automatch: f.Options.Automatch,
+			Deepcopy:  f.Options.Deepcopy,
+		},
+	}
+
+	copied.Tags = make(map[string]map[string][]string, len(f.Tags))
+	for k1, mapval := range f.Tags {
+		copied.Tags[k1] = make(map[string][]string, len(mapval))
+		for k2, sliceval := range f.Tags[k1] {
+			copied.Tags[k1][k2] = make([]string, len(sliceval))
+			for i, v := range f.Tags[k1][k2] {
+				copied.Tags[k1][k2][i] = v
+			}
+		}
+	}
+
+	// setup the cache
+	if cyclic == nil {
+		cyclic = make(map[*Field]bool)
+	}
+
+	// copy the subfields.
+	cyclic[f] = true
+	copied.Fields = make([]*Field, len(f.Fields))
+	for i, sf := range f.Fields {
+		if cyclic[sf] {
+			copied.Fields[i] = sf
+			continue
+		}
+
+		copied.Fields[i] = sf.Deepcopy(cyclic)
+		copied.Fields[i].Parent = copied
+	}
+	return copied
+}
+
 // AllFields gets all the fields in the scope of a field (including itself).
 func (f *Field) AllFields(fields []*Field, cyclic map[*Field]bool) []*Field {
 	if cyclic == nil {
@@ -101,7 +151,7 @@ func (f *Field) FullVariableName(name string) string {
 
 // FullDefinition returns the full definition of a field including its package.
 func (f *Field) FullDefinition() string {
-	if f.Package == "" || f.IsCollection() {
+	if f.Package == "" {
 		return f.Definition
 	}
 
@@ -161,5 +211,5 @@ func (f *Field) String() string {
 		parent = f.Parent.FullName("")
 	}
 
-	return fmt.Sprintf("%v Field %v%q of Definition %q Fields[%v]: Parent %q", direction, name, f.FullName(""), f.Definition, len(f.Fields), parent)
+	return fmt.Sprintf("%v Field %v%q of Definition %q Fields[%v]: Parent %q", direction, name, f.FullName(""), f.FullDefinition(), len(f.Fields), parent)
 }

@@ -44,10 +44,14 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 		// create the models.Type objects
 		fieldoptions, manual := getNodeOptions(astcopygen.Methods.List[i], p.Options.CommentOptionMap)
 		fieldoptions = append(fieldoptions, p.Options.ConvertOptions...)
-		parsed, err := parseTypes(method, fieldoptions)
+		parsed, err := parseTypes(method)
 		if err != nil {
 			return nil, fmt.Errorf("an error occurred while parsing the types of function %q.\n%w", method.Name(), err)
 		}
+
+		// set the options for each field.
+		setTypeOptions(parsed.fromTypes, fieldoptions)
+		setTypeOptions(parsed.toTypes, fieldoptions)
 
 		// map the function custom options.
 		var customoptionmap map[string][]string
@@ -102,4 +106,14 @@ func getNodeOptions(x ast.Node, commentoptionmap map[string]*options.Option) ([]
 	})
 
 	return nodeOptions, manual
+}
+
+// setTypeOptions sets the options for all fields in the given types.
+func setTypeOptions(types []models.Type, fieldoptions []*options.Option) {
+	for _, t := range types {
+		for _, field := range t.Field.AllFields(nil, nil) {
+			options.SetFieldOptions(field, fieldoptions)
+			options.FilterDepth(field, field.Options.Depth, 0)
+		}
+	}
 }

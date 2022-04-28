@@ -6,8 +6,30 @@ package copygen
 
 import (
 	"github.com/switchupcb/copygen/examples/_tests/cyclic/domain"
+	"github.com/switchupcb/copygen/examples/_tests/cyclic/duplicate"
 	"github.com/switchupcb/copygen/examples/_tests/cyclic/models"
 )
+
+// DuplicateCyclic copies a *duplicate.Account to a *domain.Account.
+func DuplicateCyclic(tA *domain.Account, fA *duplicate.Account) {
+	// *domain.Account fields
+	tA.ID = fA.ID
+	tA.Name = fA.Name
+	tA.Email = fA.Email
+	tA.Info.UserID = fA.Info.UserID
+	tA.Info.Username = fA.Info.Username
+	tA.Info.Account.ID = fA.ID
+	tA.Info.Account.Name = fA.Name
+	tA.Info.Account.Email = fA.Email
+	tA.Owner.ID = fA.ID
+	tA.Owner.Name = fA.Name
+	tA.Owner.Email = fA.Email
+	tA.Owner.Info.UserID = fA.Info.UserID
+	tA.Owner.Info.Username = fA.Info.Username
+	tA.Owner.Info.Account.ID = fA.ID
+	tA.Owner.Info.Account.Name = fA.Name
+	tA.Owner.Info.Account.Email = fA.Email
+}
 
 // ModelsToDomain copies a *models.Account, *models.User to a *domain.Account.
 func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
@@ -16,6 +38,14 @@ func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	tA.Name = fA.Name
 	tA.Info.UserID = fA.Info.UserID
 	tA.Info.Username = fA.Info.Username
+	tA.Info.Account.ID = fA.ID
+	tA.Info.Account.Name = fA.Name
+	tA.Owner.ID = fA.ID
+	tA.Owner.Name = fA.Name
+	tA.Owner.Info.UserID = fA.Info.UserID
+	tA.Owner.Info.Username = fA.Info.Username
+	tA.Owner.Info.Account.ID = fA.ID
+	tA.Owner.Info.Account.Name = fA.Name
 }
 
 // SuperCyclic copies a domain.CyclicInterface to a *domain.CyclicInterface.

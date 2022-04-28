@@ -3,31 +3,47 @@ package parser
 import (
 	"fmt"
 	"go/types"
+	"strings"
 
 	"github.com/fatih/structtag"
 	"github.com/switchupcb/copygen/cli/models"
-	"github.com/switchupcb/copygen/cli/parser/options"
 )
 
-// fieldParser represents the parameters required to parse a types.Type into a *models.Field.
-type fieldParser struct {
-	// field represents the current field being built.
-	field *models.Field
-
-	// parent represents the parent of the field parse.
-	parent *models.Field
-
-	// cyclic is a key value cache used to prevent cyclic fields from unnecessary duplication or stack overflow.
-	cyclic map[string]*models.Field
-
-	// options represents the field options defined above the models.Function
-	options []*options.Option
-}
-
 // parseField parses a types.Type into a *models.Field recursively.
-func (fp fieldParser) parseField(typ types.Type) *models.Field {
-	if fp.field == nil {
-		fp.field = &models.Field{Parent: fp.parent}
+func parseField(typ types.Type) *models.Field {
+
+	// check the cache for a parsed field.
+	var cachekey string
+	if x, ok := typ.(*types.Named); ok {
+
+		// structs and interface `go/types` strings aren't unique enough,
+		// so we must check for the type's import.
+		var typeImport, typePackage string
+		if x.Obj().Pkg() != nil {
+			typeImport = x.Obj().Pkg().Path()
+
+			if _, ok := aliasImportMap[typeImport]; ok {
+				typePackage = aliasImportMap[typeImport]
+			} else {
+				typePackage = x.Obj().Pkg().Name()
+			}
+		}
+
+		cachekey = typeImport + typePackage + typ.String()
+	} else {
+		cachekey = typ.String()
+	}
+
+	if cached, ok := fieldcache[cachekey]; ok {
+		return cached
+	}
+
+	// build the field in the cache.
+	cachefield := new(models.Field)
+
+	// do NOT cache pointers.
+	if typ.String()[0:1] != models.Pointer {
+		fieldcache[cachekey] = cachefield
 	}
 
 	switch x := typ.(type) {
@@ -35,145 +51,143 @@ func (fp fieldParser) parseField(typ types.Type) *models.Field {
 	// Named Types (Alias)
 	// https://go.googlesource.com/example/+/HEAD/gotypes#named-types
 	case *types.Named:
-		setFieldImportAndPackage(fp.field, x.Obj().Pkg())
-		setDefinition(fp.field, x.Obj().Name())
-
 		// A named type is either:
 		//   1. an alias (i.e `Placeholder` in `type Placeholder bool`)
 		//   2. a struct (i.e `Account` in `type Account struct`)
 		//   3. an interface (i.e `error` in `type error interface`)
 		//   4. a collected type (i.e `domain.Account` in `[]domain.Account`)
 		//
-		// Underlying types are only important in case 3,
+		// Underlying named types are only important in case 2,
 		// when we need to parse extra information from the field.
-		if !fp.field.IsCollection() {
+		cachefield.Definition = x.Obj().Name()
+		setFieldImportAndPackage(cachefield, x.Obj().Pkg())
 
-			// *types.Basic must handle case 1.
-			return fp.parseField(x.Underlying())
+		// Struct Types
+		// https://go.googlesource.com/example/+/HEAD/gotypes#struct-types
+		if s, ok := x.Underlying().(*types.Struct); ok {
+			parseStructField(cachefield, s)
 		}
 
 	// Basic Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#basic-types
 	case *types.Basic:
-		if !fp.field.IsAlias() {
-			fp.field.Package = ""
-			setDefinition(fp.field, x.Name())
-		}
+		cachefield.Definition = x.Name()
 
 	// Simple Composite Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#simple-composite-types
 	case *types.Pointer:
-		if fp.field.Definition == "" && fp.field.Pointer == "" {
-			fp.field.Pointer = models.Pointer
+		// underlyingfield is the cache representation of the underlying field (i.e `int`, `*int`).
+		underlyingfield := parseField(x.Elem())
+		cachefield.Import = underlyingfield.Import
+		cachefield.Package = underlyingfield.Package
+		cachefield.Fields = underlyingfield.Fields
+
+		// set the definition accordingly (i.e `*int`, `**int`).
+		cachefield.Pointer = models.Pointer
+		if underlyingfield.IsPointer() {
+			cachefield.Definition = models.CollectionPointer + underlyingfield.Definition
 		} else {
-			setDefinition(fp.field, models.CollectionPointer)
+			cachefield.Definition = underlyingfield.Definition
 		}
-		return fp.parseField(x.Elem())
 
 	case *types.Array:
-		setDefinition(fp.field, "["+fmt.Sprint(x.Len())+"]")
-		return fp.parseField(x.Elem())
+		underlyingfield := parseField(x.Elem())
+		cachefield.Definition = "[" + fmt.Sprint(x.Len()) + "]" + underlyingfield.Definition
 
 	case *types.Slice:
-		setDefinition(fp.field, models.CollectionSlice)
-		return fp.parseField(x.Elem())
+		underlyingfield := parseField(x.Elem())
+		cachefield.Definition = models.CollectionSlice + underlyingfield.Definition
 
 	case *types.Map:
-		setDefinition(fp.field, models.CollectionMap+"[")
-		_ = fp.parseField(x.Key())
-		setDefinition(fp.field, "]")
-		return fp.parseField(x.Elem())
+		keyfield := parseField(x.Key())
+		valfield := parseField(x.Elem())
+		cachefield.Definition = models.CollectionMap + "[" + keyfield.Definition + "]" + valfield.Definition
 
 	case *types.Chan:
-		setDefinition(fp.field, models.CollectionChan+" ")
-		return fp.parseField(x.Elem())
+		underlyingfield := parseField(x.Elem())
+		cachefield.Definition = models.CollectionChan + " " + underlyingfield.Definition
 
 	// Function (without Receivers)
 	// https://go.googlesource.com/example/+/HEAD/gotypes#function-and-method-types
 	case *types.Signature:
+		var definition strings.Builder
 
 		// set the parameters.
-		setDefinition(fp.field, models.CollectionFunc+"(")
+		definition.WriteString(models.CollectionFunc + "(")
 		for i := 0; i < x.Params().Len(); i++ {
-			_ = fp.parseField(x.Params().At(i).Type())
+			definition.WriteString(parseField(x.Params().At(i).Type()).Definition)
 			if i+1 != x.Params().Len() {
-				setDefinition(fp.field, ", ")
+				definition.WriteString(", ")
 			}
 		}
-		setDefinition(fp.field, ") ")
+		definition.WriteString(")")
 
 		// set the results.
-		if x.Results().Len() > 1 {
-			setDefinition(fp.field, "(")
+		hasResults := x.Results().Len() > 1
+		if hasResults {
+			definition.WriteString("(")
 		}
 		for i := 0; i < x.Results().Len(); i++ {
-			_ = fp.parseField(x.Results().At(i).Type())
+			definition.WriteString(parseField(x.Results().At(i).Type()).Definition)
 			if i+1 != x.Results().Len() {
-				setDefinition(fp.field, ", ")
+				definition.WriteString(", ")
 			}
 		}
-		if x.Results().Len() > 1 {
-			setDefinition(fp.field, ")")
+		if hasResults {
+			definition.WriteString(")")
 		}
+
+		cachefield.Definition = definition.String()
 
 	// Interface Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#interface-types
 	case *types.Interface:
-		if !fp.field.IsAlias() {
-			if x.Empty() {
-				setDefinition(fp.field, x.String())
-			} else {
-				setDefinition(fp.field, models.CollectionInterface+"{")
-				for i := 0; i < x.NumMethods(); i++ {
-					_ = fp.parseField(x.Method(i).Type())
-					setDefinition(fp.field, "; ")
-				}
-				setDefinition(fp.field, "}")
+		if x.Empty() {
+			cachefield.Definition = x.String()
+		} else {
+			var definition strings.Builder
+			definition.WriteString(models.CollectionInterface + "{")
+			for i := 0; i < x.NumMethods(); i++ {
+				definition.WriteString(parseField(x.Method(i).Type()).Definition + "; ")
 			}
+			definition.WriteString("}")
+			cachefield.Definition = definition.String()
 		}
 
-	// Struct Types
-	// https://go.googlesource.com/example/+/HEAD/gotypes#struct-types
+	// Unnamed Struct (struct{})
 	case *types.Struct:
-		for i := 0; i < x.NumFields(); i++ {
-			if subfield, ok := fp.cyclic[x.Field(i).String()]; ok {
-				fp.field.Fields = append(fp.field.Fields, subfield)
-				continue
-			}
+		cachefield.Definition = "struct{}"
 
-			subfield := fp.parseSubfield(x.Field(i), x.Tag(i))
-			fp.field.Fields = append(fp.field.Fields, subfield)
-		}
+	default:
+		fmt.Printf("WARNING: could not parse type %v\n", x.String())
 	}
 
-	// set the field's options.
-	options.SetFieldOptions(fp.field, fp.options)
-	filterFieldDepth(fp.field, fp.field.Options.Depth, 0)
-
-	setFieldVariableName(fp.field, "."+alphastring(fp.field.Definition))
-	fp.cyclic[typ.String()] = fp.field
-	return fp.field
+	cachefield.VariableName = "." + alphastring(cachefield.Definition)
+	return cachefield
 }
 
-// parseSubfield parses a types.Var into a *models.Field.
-func (fp fieldParser) parseSubfield(x *types.Var, tag string) *models.Field {
-	subfield := &models.Field{
-		VariableName: "." + x.Name(),
-		Name:         x.Name(),
-		Parent:       fp.field,
-	}
-	setFieldImportAndPackage(subfield, x.Pkg())
-	setTags(subfield, tag)
-	subfieldParser := &fieldParser{
-		field:   subfield,
-		parent:  nil,
-		options: fp.options,
-		cyclic:  fp.cyclic,
-	}
+// parseStructField parses a struct field.
+func parseStructField(field *models.Field, x *types.Struct) {
+	for i := 0; i < x.NumFields(); i++ {
+		// a deepcopy of subfield is returned and modified.
+		subfield := parseField(x.Field(i).Type()).Deepcopy(nil)
+		subfield.VariableName = "." + x.Field(i).Name()
+		subfield.Name = x.Field(i).Name()
+		setTags(subfield, x.Tag(i))
+		subfield.Parent = field
+		field.Fields = append(field.Fields, subfield)
 
-	fp.cyclic[x.String()] = subfield
-	subfield = subfieldParser.parseField(x.Type())
-	return subfield
+		// all subfields are deepcopied with Fields[0].
+		//
+		// in order to correctly represent a deepcopied struct field,
+		// we must point its fields back to the cached field.Fields,
+		// which will eventually be filled.
+		//
+		// cachedsubfield.Fields are never modified.
+		if cachedsubfield, ok := fieldcache[subfield.Import+subfield.Package+x.Field(i).String()]; ok {
+			subfield.Fields = cachedsubfield.Fields
+		}
+	}
 }
 
 // setFieldImportAndPackage sets the import and package of a field.
@@ -194,27 +208,9 @@ func setFieldImportAndPackage(field *models.Field, pkg *types.Package) {
 	// field collections set collected types' packages in the field.Definition.
 	// i.e map[*domain.Account]string
 	if field.IsCollection() {
-		setDefinition(field, field.Package+".")
+		field.Definition = field.Package + "." + field.Definition
+		field.Import = ""
 		field.Package = ""
-	}
-}
-
-// setFieldVariableName sets a field's variable name.
-func setFieldVariableName(field *models.Field, varname string) {
-	if field.VariableName == "" {
-		field.VariableName = varname
-	}
-}
-
-// setDefinition sets a field's definition.
-func setDefinition(field *models.Field, def string) {
-	switch {
-	case field.Definition == "":
-		field.Definition = def
-	case field.IsInterface():
-		field.Definition += def
-	case field.IsCollection():
-		field.Definition += def
 	}
 }
 
@@ -226,30 +222,11 @@ func setTags(field *models.Field, rawtag string) {
 		fmt.Printf("WARNING: could not parse tag for field %v\n%v", field.FullName(""), err)
 	}
 
-	if field.Tags == nil {
-		field.Tags = make(map[string]map[string][]string, tags.Len())
-	}
-
+	field.Tags = make(map[string]map[string][]string, tags.Len())
 	for _, tag := range tags.Tags() {
 		field.Tags[tag.Key] = map[string][]string{
 			tag.Name: tag.Options,
 		}
-	}
-}
-
-// filterFieldDepth filters a field's fields according to it's depth level.
-func filterFieldDepth(field *models.Field, maxdepth, curdepth int) {
-	if maxdepth == 0 {
-		return
-	}
-
-	if maxdepth < 0 || maxdepth <= curdepth {
-		field.Fields = make([]*models.Field, 0)
-		return
-	}
-
-	for _, f := range field.Fields {
-		filterFieldDepth(f, maxdepth+f.Options.Depth, curdepth+1)
 	}
 }
 

@@ -20,6 +20,7 @@ linters:
     - exhaustivestruct # exhausting
     - varnamelen # for loops
     - funlen # can't handle switch statement
+    - nestif # can't handle cache
     - goerr113 # errors used once
     - cyclop 
     - gocognit

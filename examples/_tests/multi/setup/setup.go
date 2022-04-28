@@ -54,7 +54,7 @@ type Copygen interface {
 	Interface(interface{}) interface{}
 	InterfaceSimple(I error) *Collection
 	InterfaceExternal(I error) *external.Collection
-	InterfaceComplex(I interface{ A(string) *int }) *complex.Collection
+	InterfaceComplex(I interface{ A(rune) *int }) *complex.Collection
 	InterfaceExternalComplex(I interface {
 		A(string) map[*external.Collection]bool
 		B() (int, byte)
@@ -68,6 +68,7 @@ type Copygen interface {
 	FuncExternalComplex(F func(external.Collection) []string) *complex.ComplexCollection
 
 	NoMatchComplex([]external.Collection) (Struct []external.Collection)
+	EmptyStruct(struct{}) empty
 	Struct(Collection) Collection
 	StructExternal(external.Collection) *Collection
 }
@@ -80,6 +81,11 @@ type Collection struct {
 	C   chan int
 	I   error
 	F   func() int
+}
+
+// empty represents a struct that contains an empty struct.
+type empty struct {
+	e struct{}
 }
 
 // freefloat serves the purpose of checking for free-floating comments.

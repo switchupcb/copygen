@@ -14,6 +14,8 @@ type Placeholder bool
 
 // Collection represents a type that holds collection field types.
 
+// empty represents a struct that contains an empty struct.
+
 // freefloat serves the purpose of checking for free-floating comments.
 type freefloat struct {
 	A string
@@ -28,6 +30,10 @@ type Collection struct {
 	F   func() int
 }
 
+type empty struct {
+	e struct{}
+}
+
 // Array copies a [16]byte to a [16]byte.
 func Array(tb [16]byte, fb [16]byte) {
 	// [16]byte fields
@@ -40,14 +46,14 @@ func ArrayComplex(tC *complex.Collection, fm [16]map[byte]string) {
 	tC.Arr = fm
 }
 
-// ArrayExternal copies a [16]external.Placeholder to a [16]external.Placeholder.
-func ArrayExternal(te [16]external.Placeholder, fe [16]external.Placeholder) {
-	// [16]external.Placeholder fields
-	te = fe
+// ArrayExternal copies a [16]Placeholder to a [16]Placeholder.
+func ArrayExternal(tP [16]Placeholder, fP [16]Placeholder) {
+	// [16]Placeholder fields
+	tP = fP
 }
 
-// ArrayExternalComplex copies a [16]map[*external.Collection]string to a *complex.ComplexCollection.
-func ArrayExternalComplex(tC *complex.ComplexCollection, fm [16]map[*external.Collection]string) {
+// ArrayExternalComplex copies a [16]map[Collection]string to a *complex.ComplexCollection.
+func ArrayExternalComplex(tC *complex.ComplexCollection, fm [16]map[Collection]string) {
 	// *complex.ComplexCollection fields
 	tC.Arr = fm
 }
@@ -64,9 +70,10 @@ func Basic(tb bool, fb bool) {
 	tb = fb
 }
 
-// BasicDoublePointer copies a *bool to a **bool.
-func BasicDoublePointer(tb **bool, fb *bool) {
-	// **bool fields
+// BasicDoublePointer copies a *bool to a *bool.
+func BasicDoublePointer(tb *bool, fb *bool) {
+	// *bool fields
+	tb = fb
 }
 
 // BasicExternal copies a *external.Placeholder to a external.Placeholder.
@@ -118,20 +125,20 @@ func Chan(tc chan int, fc chan int) {
 	tc = fc
 }
 
-// ChanComplex copies a chan *[]int to a *complex.Collection.
-func ChanComplex(tC *complex.Collection, fc chan *[]int) {
+// ChanComplex copies a chan []int to a *complex.Collection.
+func ChanComplex(tC *complex.Collection, fc chan []int) {
 	// *complex.Collection fields
 	tC.C = fc
 }
 
-// ChanExternal copies a chan external.Placeholder to a chan external.Placeholder.
-func ChanExternal(tc chan external.Placeholder, fc chan external.Placeholder) {
-	// chan external.Placeholder fields
+// ChanExternal copies a chan Placeholder to a chan Placeholder.
+func ChanExternal(tc chan Placeholder, fc chan Placeholder) {
+	// chan Placeholder fields
 	tc = fc
 }
 
-// ChanExternalComplex copies a chan *[]external.Collection to a complex.ComplexCollection.
-func ChanExternalComplex(tC complex.ComplexCollection, fc chan *[]external.Collection) {
+// ChanExternalComplex copies a chan []Collection to a complex.ComplexCollection.
+func ChanExternalComplex(tC complex.ComplexCollection, fc chan []Collection) {
 	// complex.ComplexCollection fields
 	tC.C = fc
 }
@@ -142,31 +149,36 @@ func ChanSimple(tC *Collection, fc chan int) {
 	tC.C = fc
 }
 
-// Func copies a func() int to a func() int.
+// EmptyStruct copies a struct{} to a empty.
+func EmptyStruct(te empty, fs struct{}) {
+	// empty fields
+}
+
+// Func copies a func()int to a func()int.
 func Func(tf func() int, ff func() int) {
-	// func() int fields
+	// func()int fields
 	tf = ff
 }
 
-// FuncComplex copies a func([]string, uint64) *byte to a *complex.Collection.
-func FuncComplex(tC *complex.Collection, ff func([]string, uint64) *byte) {
+// FuncComplex copies a func([]string, uint64)byte to a *complex.Collection.
+func FuncComplex(tC *complex.Collection, ff func([]string, uint64) byte) {
 	// *complex.Collection fields
 	tC.F = ff
 }
 
-// FuncExternal copies a func(external.Placeholder) int to a func(external.Placeholder) int.
-func FuncExternal(tf func(external.Placeholder) int, ff func(external.Placeholder) int) {
-	// func(external.Placeholder) int fields
+// FuncExternal copies a func(Placeholder)int to a func(Placeholder)int.
+func FuncExternal(tf func(Placeholder) int, ff func(Placeholder) int) {
+	// func(Placeholder)int fields
 	tf = ff
 }
 
-// FuncExternalComplex copies a func(external.Collection) []string to a *complex.ComplexCollection.
-func FuncExternalComplex(tC *complex.ComplexCollection, ff func(external.Collection) []string) {
+// FuncExternalComplex copies a func(Collection)[]string to a *complex.ComplexCollection.
+func FuncExternalComplex(tC *complex.ComplexCollection, ff func(Collection) []string) {
 	// *complex.ComplexCollection fields
 	tC.F = ff
 }
 
-// FuncSimple copies a func() int to a *Collection.
+// FuncSimple copies a func()int to a *Collection.
 func FuncSimple(tC *Collection, ff func() int) {
 	// *Collection fields
 	tC.F = ff
@@ -178,8 +190,8 @@ func Interface(ti interface{}, fi interface{}) {
 	ti = fi
 }
 
-// InterfaceComplex copies a interface{func(string) *int; } to a *complex.Collection.
-func InterfaceComplex(tC *complex.Collection, fi interface{ func(string) *int }) {
+// InterfaceComplex copies a interface{func(rune)int; } to a *complex.Collection.
+func InterfaceComplex(tC *complex.Collection, fi interface{ func(rune) int }) {
 	// *complex.Collection fields
 	tC.I = fi
 }
@@ -187,11 +199,12 @@ func InterfaceComplex(tC *complex.Collection, fi interface{ func(string) *int })
 // InterfaceExternal copies a error to a *external.Collection.
 func InterfaceExternal(tC *external.Collection, fe error) {
 	// *external.Collection fields
+	tC.I = fe
 }
 
-// InterfaceExternalComplex copies a interface{func(string) map[*external.Collection]bool; func() (int, byte); } to a complex.ComplexCollection.
+// InterfaceExternalComplex copies a interface{func(string)map[Collection]bool; func()(int, byte); } to a complex.ComplexCollection.
 func InterfaceExternalComplex(tC complex.ComplexCollection, fi interface {
-	func(string) map[*external.Collection]bool
+	func(string) map[Collection]bool
 	func() (int, byte)
 }) {
 	// complex.ComplexCollection fields
@@ -210,19 +223,19 @@ func Map(tm map[string]bool, fm map[string]bool) {
 	tm = fm
 }
 
-// MapComplex copies a map[string]interface{func() string; } to a *complex.Collection.
+// MapComplex copies a map[string]interface{func()string; } to a *complex.Collection.
 func MapComplex(tC *complex.Collection, fm map[string]interface{ func() string }) {
 	// *complex.Collection fields
 }
 
-// MapExternal copies a map[string]external.Placeholder to a map[string]external.Placeholder.
-func MapExternal(tm map[string]external.Placeholder, fm map[string]external.Placeholder) {
-	// map[string]external.Placeholder fields
+// MapExternal copies a map[string]Placeholder to a map[string]Placeholder.
+func MapExternal(tm map[string]Placeholder, fm map[string]Placeholder) {
+	// map[string]Placeholder fields
 	tm = fm
 }
 
-// MapExternalComplex copies a map[*external.Collection]external.Placeholder to a *complex.ComplexCollection.
-func MapExternalComplex(tC *complex.ComplexCollection, fm map[*external.Collection]external.Placeholder) {
+// MapExternalComplex copies a map[Collection]Placeholder to a *complex.ComplexCollection.
+func MapExternalComplex(tC *complex.ComplexCollection, fm map[Collection]Placeholder) {
 	// *complex.ComplexCollection fields
 	tC.M = fm
 }
@@ -257,12 +270,12 @@ func NoMatchChan(tC Collection, fc chan int) {
 	// Collection fields
 }
 
-// NoMatchComplex copies a []external.Collection to a []external.Collection.
-func NoMatchComplex(te []external.Collection, fe []external.Collection) {
-	// []external.Collection fields
+// NoMatchComplex copies a []Collection to a []Collection.
+func NoMatchComplex(tC []Collection, fC []Collection) {
+	// []Collection fields
 }
 
-// NoMatchFunc copies a func() int to a Collection.
+// NoMatchFunc copies a func()int to a Collection.
 func NoMatchFunc(tC Collection, ff func() int) {
 	// Collection fields
 }
@@ -294,14 +307,14 @@ func SliceComplex(tC *complex.Collection, fm []map[string][16]int) {
 	tC.S = fm
 }
 
-// SliceExternal copies a []external.Placeholder to a []external.Placeholder.
-func SliceExternal(te []external.Placeholder, fe []external.Placeholder) {
-	// []external.Placeholder fields
-	te = fe
+// SliceExternal copies a []Placeholder to a []Placeholder.
+func SliceExternal(tP []Placeholder, fP []Placeholder) {
+	// []Placeholder fields
+	tP = fP
 }
 
-// SliceExternalComplex copies a []map[string]func(*external.Collection) string to a *complex.ComplexCollection.
-func SliceExternalComplex(tC *complex.ComplexCollection, fm []map[string]func(*external.Collection) string) {
+// SliceExternalComplex copies a []map[string]func(Collection)string to a *complex.ComplexCollection.
+func SliceExternalComplex(tC *complex.ComplexCollection, fm []map[string]func(Collection) string) {
 	// *complex.ComplexCollection fields
 	tC.S = fm
 }
@@ -325,5 +338,6 @@ func StructExternal(tC *Collection, fC external.Collection) {
 	tC.S = fC.S
 	tC.M = fC.M
 	tC.C = fC.C
+	tC.I = fC.I
 	tC.F = fC.F
 }

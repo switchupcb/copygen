@@ -8,7 +8,7 @@ type Collection struct {
 	S   []map[string][16]int
 	M   map[string]error
 	C   chan *[]int
-	I   interface{ A(string) *int }
+	I   interface{ A(rune) *int }
 	F   func([]string, uint64) *byte
 }
 
