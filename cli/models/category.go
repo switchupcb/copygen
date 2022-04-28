@@ -5,16 +5,8 @@ func (f *Field) IsType() bool {
 	return f.Parent == nil
 }
 
-// Pointer represents the string representation of a pointer.
-const Pointer = "*"
-
-// UsesPointer returns whether the field uses a pointer.
-func (f *Field) UsesPointer() bool {
-	return f.Pointer == Pointer
-}
-
+// basicMap contains a list of basic types.
 var (
-	// basicMap contains a list of basic types.
 	basicMap = map[string]bool{
 		"invalid":    true,
 		"bool":       true,
@@ -44,6 +36,14 @@ func (f *Field) IsBasic() bool {
 	return basicMap[f.Definition]
 }
 
+// Pointer represents the char representation of a pointer.
+const Pointer = '*'
+
+// IsPointer returns whether the field is a pointer.
+func (f *Field) IsPointer() bool {
+	return len(f.Pointer) >= 1 && f.Pointer[1] == Pointer
+}
+
 // Collection refers to a category of types which indicate that
 // a field's definition collects multiple fields (i.e `map[string]bool`).
 const (
@@ -54,11 +54,6 @@ const (
 	CollectionFunc      = "func"
 	CollectionInterface = "interface"
 )
-
-// IsPointer returns whether the field is a pointer.
-func (f *Field) IsPointer() bool {
-	return len(f.Definition) >= 1 && f.Definition[0:1] == CollectionPointer
-}
 
 // IsArray returns whether the field is an array.
 func (f *Field) IsArray() bool {

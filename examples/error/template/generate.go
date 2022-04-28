@@ -112,11 +112,11 @@ func generateAssignment(toType models.Type) string {
 				assign.WriteString(fromField.Options.Convert + "(" + fromField.FullVariableName("") + ")\n")
 			} else {
 				switch {
-				case toField.Pointer == fromField.Pointer:
+				case toField.FullDefinition() == fromField.FullDefinition():
 					assign.WriteString(fromField.FullVariableName("") + "\n")
-				case toField.UsesPointer():
+				case toField.FullDefinition()[1:] == fromField.FullDefinition():
 					assign.WriteString("&" + fromField.FullVariableName("") + "\n")
-				case fromField.UsesPointer():
+				case toField.FullDefinition() == fromField.FullDefinition()[1:]:
 					assign.WriteString("*" + fromField.FullVariableName("") + "\n")
 				}
 			}

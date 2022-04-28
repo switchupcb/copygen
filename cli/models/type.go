@@ -10,9 +10,9 @@ type Type struct {
 
 // Name gets the name of the type field.
 func (t Type) Name() string {
-	return t.Field.FullName("")
+	return t.Field.FullName()
 }
 
 func (t Type) String() string {
-	return fmt.Sprintf("type %v", t.Field.FullName(""))
+	return fmt.Sprintf("type %v", t.Field.FullName())
 }

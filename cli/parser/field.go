@@ -42,7 +42,7 @@ func parseField(typ types.Type) *models.Field {
 	cachefield := new(models.Field)
 
 	// do NOT cache pointers.
-	if typ.String()[0:1] != models.Pointer {
+	if typ.String()[0] != models.Pointer {
 		fieldcache[cachekey] = cachefield
 	}
 
@@ -76,19 +76,11 @@ func parseField(typ types.Type) *models.Field {
 	// Simple Composite Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#simple-composite-types
 	case *types.Pointer:
-		// underlyingfield is the cache representation of the underlying field (i.e `int`, `*int`).
-		underlyingfield := parseField(x.Elem())
-		cachefield.Import = underlyingfield.Import
-		cachefield.Package = underlyingfield.Package
-		cachefield.Fields = underlyingfield.Fields
+		// cachefield is set to a deepcopy of the underlying field (i.e `int`, `*int`).
+		cachefield = parseField(x.Elem()).Deepcopy(nil)
 
 		// set the definition accordingly (i.e `*int`, `**int`).
-		cachefield.Pointer = models.Pointer
-		if underlyingfield.IsPointer() {
-			cachefield.Definition = models.CollectionPointer + underlyingfield.Definition
-		} else {
-			cachefield.Definition = underlyingfield.Definition
-		}
+		cachefield.Pointer += models.CollectionPointer
 
 	case *types.Array:
 		underlyingfield := parseField(x.Elem())
@@ -221,7 +213,7 @@ func setTags(field *models.Field, rawtag string) {
 	// rawtag represents tags as they are defined (i.e `api:"id", json:"tag"`).
 	tags, err := structtag.Parse(rawtag)
 	if err != nil {
-		fmt.Printf("WARNING: could not parse tag for field %v\n%v", field.FullName(""), err)
+		fmt.Printf("WARNING: could not parse tag for field %v\n%v", field.FullName(), err)
 	}
 
 	field.Tags = make(map[string]map[string][]string, tags.Len())

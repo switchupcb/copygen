@@ -70,10 +70,10 @@ func Basic(tb bool, fb bool) {
 	tb = fb
 }
 
-// BasicDoublePointer copies a *bool to a *bool.
-func BasicDoublePointer(tb *bool, fb *bool) {
-	// *bool fields
-	tb = fb
+// BasicDoublePointer copies a *bool to a **bool.
+func BasicDoublePointer(tb **bool, fb *bool) {
+	// **bool fields
+	tb = &fb
 }
 
 // BasicExternal copies a *external.Placeholder to a external.Placeholder.

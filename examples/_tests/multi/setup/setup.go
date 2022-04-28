@@ -15,7 +15,7 @@ type Copygen interface {
 	NoMatchBasicExternal(A *Placeholder) (A external.Placeholder, B *external.Placeholder, C bool)
 	Basic(bool) bool
 	BasicPointer(bool) *bool
-	BasicDoublePointer(*bool) **bool // Fail Pointer Semantics
+	BasicDoublePointer(*bool) **bool
 	BasicSimple(Placeholder) Placeholder
 	BasicSimplePointer(Placeholder) *Placeholder
 	BasicPointerMulti(A *Placeholder) (A *Placeholder, B *Placeholder, C string)

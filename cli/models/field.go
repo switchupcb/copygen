@@ -149,13 +149,23 @@ func (f *Field) FullVariableName(name string) string {
 	return f.VariableName + name
 }
 
-// FullDefinition returns the full definition of a field including its package.
-func (f *Field) FullDefinition() string {
+// FullDefinition returns the full definition of a field including its package
+// without its pointer(s) (i.e domain.Account).
+func (f *Field) FullDefinitionWithoutPointer() string {
 	if f.Package == "" {
 		return f.Definition
 	}
 
 	return f.Package + "." + f.Definition
+}
+
+// FullDefinition returns the full definition of a field including its package.
+func (f *Field) FullDefinition() string {
+	if f.Package == "" {
+		return f.Pointer + f.Definition
+	}
+
+	return f.Pointer + f.Package + "." + f.Definition
 }
 
 // FullNameWithoutPointer returns the full name of a field including its parents
@@ -178,11 +188,11 @@ func (f *Field) FullNameWithoutPointer(name string) string {
 		name = "." + name
 	}
 
-	return f.FullDefinition() + name
+	return f.FullDefinitionWithoutPointer() + name
 }
 
 // FullName returns the full name of a field including its parents (i.e *domain.Account.User.ID).
-func (f *Field) FullName(name string) string {
+func (f *Field) FullName() string {
 	return f.Pointer + f.FullNameWithoutPointer("")
 }
 
@@ -208,8 +218,8 @@ func (f *Field) String() string {
 
 	var parent string
 	if f.Parent != nil {
-		parent = f.Parent.FullName("")
+		parent = f.Parent.FullName()
 	}
 
-	return fmt.Sprintf("%v Field %v%q of Definition %q Fields[%v]: Parent %q", direction, name, f.FullName(""), f.FullDefinition(), len(f.Fields), parent)
+	return fmt.Sprintf("%v Field %v%q of Definition %q Fields[%v]: Parent %q", direction, name, f.FullName(), f.FullDefinition(), len(f.Fields), parent)
 }
