@@ -164,13 +164,7 @@ func setFieldImportAndPackage(field *models.Field, pkg *types.Package) {
 	}
 
 	field.Import = pkg.Path()
-	if ignorepkgpath != field.Import {
-		if aliasPkg, ok := aliasImportMap[field.Import]; ok {
-			field.Package = aliasPkg
-		} else {
-			field.Package = pkg.Name()
-		}
-	}
+	field.Package = pkg.Name()
 
 	// field collections set collected types' packages in the field.Definition.
 	// i.e map[*domain.Account]string
@@ -195,18 +189,4 @@ func setTags(field *models.Field, rawtag string) {
 			tag.Name: tag.Options,
 		}
 	}
-}
-
-// alphastring only returns alphabetic characters (English) in a string.
-func alphastring(s string) string {
-	bytes := []byte(s)
-	i := 0
-	for _, b := range bytes {
-		if ('a' <= b && b <= 'z') || ('A' <= b && b <= 'Z') || b == ' ' {
-			bytes[i] = b
-			i++
-		}
-	}
-
-	return string(bytes[:i])
 }

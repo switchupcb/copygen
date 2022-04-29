@@ -46,10 +46,6 @@ The `setup` file is parsed using an Abstract Syntax Tree. This tree contains the
 
 There are multiple ways to parse `ast.Comments` into `Options`, but **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. As a result, the most readable, efficient, and least error prone method of parsing `ast.Comments` into `Options `is simply to parse them when discovered; and assign them from a `CommentOptionMap` later. In addition, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
 
-#### Imports
-
-The `go/types` package provides all of the other important information _**except**_ for alias import names. In order to assign aliased or non-aliased import names to `models.Field`, the imports of the `setup` file are mapped to a package path.
-
 #### Copygen Interface
 
 The `type Copygen interface` is parsed to setup the `models.Function` and `models.Field` objects used in the `Matcher` and `Generator`.
@@ -57,6 +53,10 @@ The `type Copygen interface` is parsed to setup the `models.Function` and `model
 - [go/packages Package Object](https://pkg.go.dev/golang.org/x/tools/go/packages#Package)
 - [go/types Func (Signature)](https://pkg.go.dev/go/types#Func)
 - [go/types Types](https://pkg.go.dev/go/types#pkg-types)
+
+#### Imports
+
+The `go/types` package provides all of the other important information _**except**_ for alias import names. In order to assign aliased or non-aliased import names to `models.Field`, the imports of the `setup` file are mapped to a package path, then assigned to fields prior to matching.
 
 ### Generator
 
@@ -86,7 +86,6 @@ From and To is used to denote the direction of a type or field. A from-field is 
 | :------- | :----------------------------------------------------------------------------------- |
 | from.*   | Variables preceded by from indicate from-functionality.                              |
 | to.*     | Variables preceded by to indicate to-functionality.                                  |
-| loadpath | `loadpath` represents the (relative) path of the loader (current working directory). |
 
 ### Comments
 

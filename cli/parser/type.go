@@ -77,3 +77,17 @@ func createVariable(parameters map[string]bool, name string, occurrence int) str
 
 	return varname
 }
+
+// alphastring only returns alphabetic characters (English) in a string.
+func alphastring(s string) string {
+	bytes := []byte(s)
+	i := 0
+	for _, b := range bytes {
+		if ('a' <= b && b <= 'z') || ('A' <= b && b <= 'Z') || b == ' ' {
+			bytes[i] = b
+			i++
+		}
+	}
+
+	return string(bytes[:i])
+}

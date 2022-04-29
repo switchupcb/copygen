@@ -18,17 +18,8 @@ func DuplicateCyclic(tA *domain.Account, fA *duplicate.Account) {
 	tA.Email = fA.Email
 	tA.Info.UserID = fA.Info.UserID
 	tA.Info.Username = fA.Info.Username
-	tA.Info.Account.ID = fA.ID
-	tA.Info.Account.Name = fA.Name
-	tA.Info.Account.Email = fA.Email
-	tA.Owner.ID = fA.ID
-	tA.Owner.Name = fA.Name
-	tA.Owner.Email = fA.Email
-	tA.Owner.Info.UserID = fA.Info.UserID
-	tA.Owner.Info.Username = fA.Info.Username
-	tA.Owner.Info.Account.ID = fA.ID
-	tA.Owner.Info.Account.Name = fA.Name
-	tA.Owner.Info.Account.Email = fA.Email
+	tA.Info.Account = fA.Info.Account
+	tA.Owner = fA.Owner
 }
 
 // ModelsToDomain copies a *models.Account, *models.User to a *domain.Account.
@@ -38,14 +29,6 @@ func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
 	tA.Name = fA.Name
 	tA.Info.UserID = fA.Info.UserID
 	tA.Info.Username = fA.Info.Username
-	tA.Info.Account.ID = fA.ID
-	tA.Info.Account.Name = fA.Name
-	tA.Owner.ID = fA.ID
-	tA.Owner.Name = fA.Name
-	tA.Owner.Info.UserID = fA.Info.UserID
-	tA.Owner.Info.Username = fA.Info.Username
-	tA.Owner.Info.Account.ID = fA.ID
-	tA.Owner.Info.Account.Name = fA.Name
 }
 
 // SuperCyclic copies a domain.CyclicInterface to a *domain.CyclicInterface.

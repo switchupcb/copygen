@@ -33,7 +33,7 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 	}
 
 	if copygen.NumMethods() == 0 {
-		return nil, fmt.Errorf("no functions are defined in the \"type Copygen interface\"")
+		fmt.Println("WARNING: no functions are defined in the \"type Copygen interface\"")
 	}
 
 	// create the models.Function objects

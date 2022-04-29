@@ -4,7 +4,6 @@ package models
 type Generator struct {
 	Functions []Function       // The functions to generate.
 	Options   GeneratorOptions // The custom options for the generator.
-	Loadpath  string           // The filepath the loader file is located in.
 	Setpath   string           // The filepath the setup file is located in.
 	Outpath   string           // The filepath the generated code is output to.
 	Tempath   string           // The filepath for the template used to generate code.

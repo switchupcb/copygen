@@ -4,16 +4,17 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/switchupcb/copygen/cli/models"
 	"gopkg.in/yaml.v3"
 )
 
 // LoadYML loads a .yml configuration file into a Generator.
-func LoadYML(filepath string) (*models.Generator, error) {
-	file, err := os.ReadFile(filepath)
+func LoadYML(relativepath string) (*models.Generator, error) {
+	file, err := os.ReadFile(relativepath)
 	if err != nil {
-		return nil, fmt.Errorf("the specified .yml filepath doesn't exist: %v\n%w", filepath, err)
+		return nil, fmt.Errorf("the specified .yml filepath doesn't exist: %v\n%w", relativepath, err)
 	}
 
 	var yml YML
@@ -23,7 +24,22 @@ func LoadYML(filepath string) (*models.Generator, error) {
 
 	gen := ParseYML(yml)
 
-	gen.Loadpath = filepath
+	// determine the actual filepath of the loader.
+	absloadpath, err := filepath.Abs(relativepath)
+	if err != nil {
+		return nil, fmt.Errorf("an error occurred while determining the absolute file path of the loader file\n%v", relativepath)
+	}
+
+	// determine the actual filepath of the setup.go file.
+	gen.Setpath = filepath.Join(filepath.Dir(absloadpath), gen.Setpath)
+
+	// determine the actual filepath of the template file (if provided).
+	if gen.Tempath != "" {
+		gen.Tempath = filepath.Join(filepath.Dir(absloadpath), gen.Tempath)
+	}
+
+	// determine the actual filepath of the output file.
+	gen.Outpath = filepath.Join(filepath.Dir(absloadpath), gen.Outpath)
 
 	return gen, nil
 }
