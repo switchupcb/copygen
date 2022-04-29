@@ -11,33 +11,10 @@ import (
 
 // parseField parses a types.Type into a *models.Field recursively.
 func parseField(typ types.Type) *models.Field {
-
-	// check the cache for a parsed field.
-	var cachekey string
-	if x, ok := typ.(*types.Named); ok {
-
-		// structs and interface `go/types` strings aren't unique enough,
-		// so we must check for the type's import.
-		var typeImport, typePackage string
-		if x.Obj().Pkg() != nil {
-			typeImport = x.Obj().Pkg().Path()
-			if aliasPkg, ok := aliasImportMap[typeImport]; ok {
-				typePackage = aliasPkg
-			} else {
-				typePackage = x.Obj().Pkg().Name()
-			}
-		}
-
-		cachekey = typeImport + typePackage + typ.String()
-	} else {
-		cachekey = typ.String()
-	}
-
-	if cached, ok := fieldcache[cachekey]; ok {
+	if cached, ok := fieldcache[typ.String()]; ok {
 		return cached
 	}
 
-	// build the field.
 	field := new(models.Field)
 	switch x := typ.(type) {
 
@@ -52,14 +29,16 @@ func parseField(typ types.Type) *models.Field {
 		//
 		// Underlying named types are only important in case 2,
 		// when we need to parse extra information from the field.
+		if xs, ok := x.Underlying().(*types.Struct); ok {
+
+			// set the cache early to prevent issues with named cyclic structs.
+			fieldcache[x.String()] = field
+			structfield := parseField(xs)
+			field.Fields = structfield.Fields
+		}
+
 		field.Definition = x.Obj().Name()
 		setFieldImportAndPackage(field, x.Obj().Pkg())
-
-		// Struct Types
-		// https://go.googlesource.com/example/+/HEAD/gotypes#struct-types
-		if s, ok := x.Underlying().(*types.Struct); ok {
-			parseStructField(field, s)
-		}
 
 	// Basic Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#basic-types
@@ -138,9 +117,34 @@ func parseField(typ types.Type) *models.Field {
 			field.Definition = definition.String()
 		}
 
-	// Unnamed Struct (struct{})
+	// Struct Types
+	// https://go.googlesource.com/example/+/HEAD/gotypes#struct-types
 	case *types.Struct:
-		field.Definition = "struct{}"
+		var definition strings.Builder
+		definition.WriteString("struct{")
+		for i := 0; i < x.NumFields(); i++ {
+			// a deepcopy of subfield is returned and modified.
+			subfield := parseField(x.Field(i).Type()).Deepcopy(nil)
+			subfield.VariableName = "." + x.Field(i).Name()
+			subfield.Name = x.Field(i).Name()
+			setTags(subfield, x.Tag(i))
+			subfield.Parent = field
+			field.Fields = append(field.Fields, subfield)
+			definition.WriteString(subfield.Name + " " + subfield.Definition + "; ")
+
+			// all subfields are deepcopied with Fields[0].
+			//
+			// in order to correctly represent a deepcopied struct field,
+			// we must point its fields back to the cached field.Fields,
+			// which will eventually be filled.
+			//
+			// cachedsubfield.Fields are never modified.
+			if cachedsubfield, ok := fieldcache[x.Field(i).String()]; ok {
+				subfield.Fields = cachedsubfield.Fields
+			}
+		}
+		definition.WriteString("}")
+		field.Definition = definition.String()
 
 	default:
 		fmt.Printf("WARNING: could not parse type %v\n", x.String())
@@ -148,36 +152,9 @@ func parseField(typ types.Type) *models.Field {
 
 	// do NOT cache collections.
 	if !field.IsCollection() {
-		fieldcache[cachekey] = field
+		fieldcache[typ.String()] = field
 	}
 	return field
-}
-
-// parseStructField parses a struct field.
-func parseStructField(field *models.Field, x *types.Struct) {
-
-	// set the cache early to prevent issues with cyclic types
-	fieldcache[field.Import+field.Package+x.String()] = field
-	for i := 0; i < x.NumFields(); i++ {
-		// a deepcopy of subfield is returned and modified.
-		subfield := parseField(x.Field(i).Type()).Deepcopy(nil)
-		subfield.VariableName = "." + x.Field(i).Name()
-		subfield.Name = x.Field(i).Name()
-		setTags(subfield, x.Tag(i))
-		subfield.Parent = field
-		field.Fields = append(field.Fields, subfield)
-
-		// all subfields are deepcopied with Fields[0].
-		//
-		// in order to correctly represent a deepcopied struct field,
-		// we must point its fields back to the cached field.Fields,
-		// which will eventually be filled.
-		//
-		// cachedsubfield.Fields are never modified.
-		if cachedsubfield, ok := fieldcache[subfield.Import+subfield.Package+x.Field(i).String()]; ok {
-			subfield.Fields = cachedsubfield.Fields
-		}
-	}
 }
 
 // setFieldImportAndPackage sets the import and package of a field.
