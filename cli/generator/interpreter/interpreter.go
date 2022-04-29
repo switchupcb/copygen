@@ -16,7 +16,7 @@ import (
 func InterpretFunction(filepath, symbol string) (*reflect.Value, error) {
 	file, err := os.ReadFile(filepath)
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred loading a template file: %v\nIs the relative or absoute filepath set correctly?\n%w", filepath, err)
+		return nil, fmt.Errorf("an error occurred loading a template file: %v\nIs the relative or absolute filepath set correctly?\n%w", filepath, err)
 	}
 
 	// setup the interpreter
