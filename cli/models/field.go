@@ -27,9 +27,6 @@ type Field struct {
 	// Definition represents the type definition of the field (i.e `int` in `ID int`, `Logger` in `log.Logger`).
 	Definition string
 
-	// Pointer represents the pointer of this field (i.e `*`).
-	Pointer string
-
 	// The tags defined in a struct field (i.e `json:"tag,omitempty"`)
 	// map[tag]map[name][]options (i.e map[json]map[tag]["omitempty"])
 	Tags map[string]map[string][]string
@@ -81,7 +78,6 @@ func (f *Field) Deepcopy(cyclic map[*Field]bool) *Field {
 		Package:      f.Package,
 		Name:         f.Name,
 		Definition:   f.Definition,
-		Pointer:      f.Pointer,
 		Options: FieldOptions{
 			Convert:   f.Options.Convert,
 			Map:       f.Options.Map,
@@ -152,20 +148,30 @@ func (f *Field) FullVariableName(name string) string {
 // FullDefinition returns the full definition of a field including its package
 // without its pointer(s) (i.e domain.Account).
 func (f *Field) FullDefinitionWithoutPointer() string {
-	if f.Package == "" {
-		return f.Definition
+	i := 0
+	for i < len(f.Definition) && f.Definition[i] == Pointer {
+		i++
 	}
 
-	return f.Package + "." + f.Definition
+	if f.Package == "" {
+		return f.Definition[i:]
+	}
+
+	return f.Package + "." + f.Definition[i:]
 }
 
 // FullDefinition returns the full definition of a field including its package.
 func (f *Field) FullDefinition() string {
 	if f.Package == "" {
-		return f.Pointer + f.Definition
+		return f.Definition
 	}
 
-	return f.Pointer + f.Package + "." + f.Definition
+	i := 0
+	for i < len(f.Definition) && f.Definition[i] == Pointer {
+		i++
+	}
+
+	return f.Definition[:i] + f.Package + "." + f.Definition[i:]
 }
 
 // FullNameWithoutPointer returns the full name of a field including its parents
@@ -193,7 +199,12 @@ func (f *Field) FullNameWithoutPointer(name string) string {
 
 // FullName returns the full name of a field including its parents (i.e *domain.Account.User.ID).
 func (f *Field) FullName() string {
-	return f.Pointer + f.FullNameWithoutPointer("")
+	i := 0
+	for i < len(f.Definition) && f.Definition[i] == Pointer {
+		i++
+	}
+
+	return f.Definition[:i] + f.FullNameWithoutPointer("")
 }
 
 func (f *Field) String() string {

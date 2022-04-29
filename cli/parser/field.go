@@ -21,9 +21,8 @@ func parseField(typ types.Type) *models.Field {
 		var typeImport, typePackage string
 		if x.Obj().Pkg() != nil {
 			typeImport = x.Obj().Pkg().Path()
-
-			if _, ok := aliasImportMap[typeImport]; ok {
-				typePackage = aliasImportMap[typeImport]
+			if aliasPkg, ok := aliasImportMap[typeImport]; ok {
+				typePackage = aliasPkg
 			} else {
 				typePackage = x.Obj().Pkg().Name()
 			}
@@ -38,14 +37,8 @@ func parseField(typ types.Type) *models.Field {
 		return cached
 	}
 
-	// build the field in the cache.
-	cachefield := new(models.Field)
-
-	// do NOT cache pointers.
-	if typ.String()[0] != models.Pointer {
-		fieldcache[cachekey] = cachefield
-	}
-
+	// build the field.
+	field := new(models.Field)
 	switch x := typ.(type) {
 
 	// Named Types (Alias)
@@ -59,45 +52,42 @@ func parseField(typ types.Type) *models.Field {
 		//
 		// Underlying named types are only important in case 2,
 		// when we need to parse extra information from the field.
-		cachefield.Definition = x.Obj().Name()
-		setFieldImportAndPackage(cachefield, x.Obj().Pkg())
+		field.Definition = x.Obj().Name()
+		setFieldImportAndPackage(field, x.Obj().Pkg())
 
 		// Struct Types
 		// https://go.googlesource.com/example/+/HEAD/gotypes#struct-types
 		if s, ok := x.Underlying().(*types.Struct); ok {
-			parseStructField(cachefield, s)
+			parseStructField(field, s)
 		}
 
 	// Basic Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#basic-types
 	case *types.Basic:
-		cachefield.Definition = x.Name()
+		field.Definition = x.Name()
 
 	// Simple Composite Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#simple-composite-types
 	case *types.Pointer:
-		// cachefield is set to a deepcopy of the underlying field (i.e `int`, `*int`).
-		cachefield = parseField(x.Elem()).Deepcopy(nil)
+		elemfield := parseField(x.Elem())
 
-		// set the definition accordingly (i.e `*int`, `**int`).
-		cachefield.Pointer += models.CollectionPointer
+		// type aliases (including structs) must be deepcopied.
+		if elemfield.IsAlias() {
+			field = elemfield.Deepcopy(nil)
+		}
+		field.Definition = models.CollectionPointer + elemfield.Definition
 
 	case *types.Array:
-		underlyingfield := parseField(x.Elem())
-		cachefield.Definition = "[" + fmt.Sprint(x.Len()) + "]" + underlyingfield.Definition
+		field.Definition = "[" + fmt.Sprint(x.Len()) + "]" + parseField(x.Elem()).Definition
 
 	case *types.Slice:
-		underlyingfield := parseField(x.Elem())
-		cachefield.Definition = models.CollectionSlice + underlyingfield.Definition
+		field.Definition = models.CollectionSlice + parseField(x.Elem()).Definition
 
 	case *types.Map:
-		keyfield := parseField(x.Key())
-		valfield := parseField(x.Elem())
-		cachefield.Definition = models.CollectionMap + "[" + keyfield.Definition + "]" + valfield.Definition
+		field.Definition = models.CollectionMap + "[" + parseField(x.Key()).Definition + "]" + parseField(x.Elem()).Definition
 
 	case *types.Chan:
-		underlyingfield := parseField(x.Elem())
-		cachefield.Definition = models.CollectionChan + " " + underlyingfield.Definition
+		field.Definition = models.CollectionChan + " " + parseField(x.Elem()).Definition
 
 	// Function (without Receivers)
 	// https://go.googlesource.com/example/+/HEAD/gotypes#function-and-method-types
@@ -131,13 +121,13 @@ func parseField(typ types.Type) *models.Field {
 			definition.WriteString(")")
 		}
 
-		cachefield.Definition = definition.String()
+		field.Definition = definition.String()
 
 	// Interface Types
 	// https://go.googlesource.com/example/+/HEAD/gotypes#interface-types
 	case *types.Interface:
 		if x.Empty() {
-			cachefield.Definition = x.String()
+			field.Definition = x.String()
 		} else {
 			var definition strings.Builder
 			definition.WriteString(models.CollectionInterface + "{")
@@ -145,23 +135,29 @@ func parseField(typ types.Type) *models.Field {
 				definition.WriteString(parseField(x.Method(i).Type()).Definition + "; ")
 			}
 			definition.WriteString("}")
-			cachefield.Definition = definition.String()
+			field.Definition = definition.String()
 		}
 
 	// Unnamed Struct (struct{})
 	case *types.Struct:
-		cachefield.Definition = "struct{}"
+		field.Definition = "struct{}"
 
 	default:
 		fmt.Printf("WARNING: could not parse type %v\n", x.String())
 	}
 
-	cachefield.VariableName = "." + alphastring(cachefield.Definition)
-	return cachefield
+	// do NOT cache collections.
+	if !field.IsCollection() {
+		fieldcache[cachekey] = field
+	}
+	return field
 }
 
 // parseStructField parses a struct field.
 func parseStructField(field *models.Field, x *types.Struct) {
+
+	// set the cache early to prevent issues with cyclic types
+	fieldcache[field.Import+field.Package+x.String()] = field
 	for i := 0; i < x.NumFields(); i++ {
 		// a deepcopy of subfield is returned and modified.
 		subfield := parseField(x.Field(i).Type()).Deepcopy(nil)
@@ -192,8 +188,8 @@ func setFieldImportAndPackage(field *models.Field, pkg *types.Package) {
 
 	field.Import = pkg.Path()
 	if ignorepkgpath != field.Import {
-		if _, ok := aliasImportMap[field.Import]; ok {
-			field.Package = aliasImportMap[field.Import]
+		if aliasPkg, ok := aliasImportMap[field.Import]; ok {
+			field.Package = aliasPkg
 		} else {
 			field.Package = pkg.Name()
 		}

@@ -52,8 +52,8 @@ func ArrayExternal(tP [16]Placeholder, fP [16]Placeholder) {
 	tP = fP
 }
 
-// ArrayExternalComplex copies a [16]map[Collection]string to a *complex.ComplexCollection.
-func ArrayExternalComplex(tC *complex.ComplexCollection, fm [16]map[Collection]string) {
+// ArrayExternalComplex copies a [16]map[*Collection]string to a *complex.ComplexCollection.
+func ArrayExternalComplex(tC *complex.ComplexCollection, fm [16]map[*Collection]string) {
 	// *complex.ComplexCollection fields
 	tC.Arr = fm
 }
@@ -125,8 +125,8 @@ func Chan(tc chan int, fc chan int) {
 	tc = fc
 }
 
-// ChanComplex copies a chan []int to a *complex.Collection.
-func ChanComplex(tC *complex.Collection, fc chan []int) {
+// ChanComplex copies a chan *[]int to a *complex.Collection.
+func ChanComplex(tC *complex.Collection, fc chan *[]int) {
 	// *complex.Collection fields
 	tC.C = fc
 }
@@ -137,8 +137,8 @@ func ChanExternal(tc chan Placeholder, fc chan Placeholder) {
 	tc = fc
 }
 
-// ChanExternalComplex copies a chan []Collection to a complex.ComplexCollection.
-func ChanExternalComplex(tC complex.ComplexCollection, fc chan []Collection) {
+// ChanExternalComplex copies a chan *[]Collection to a complex.ComplexCollection.
+func ChanExternalComplex(tC complex.ComplexCollection, fc chan *[]Collection) {
 	// complex.ComplexCollection fields
 	tC.C = fc
 }
@@ -160,8 +160,8 @@ func Func(tf func() int, ff func() int) {
 	tf = ff
 }
 
-// FuncComplex copies a func([]string, uint64) byte to a *complex.Collection.
-func FuncComplex(tC *complex.Collection, ff func([]string, uint64) byte) {
+// FuncComplex copies a func([]string, uint64) *byte to a *complex.Collection.
+func FuncComplex(tC *complex.Collection, ff func([]string, uint64) *byte) {
 	// *complex.Collection fields
 	tC.F = ff
 }
@@ -190,8 +190,8 @@ func Interface(ti interface{}, fi interface{}) {
 	ti = fi
 }
 
-// InterfaceComplex copies a interface{func(rune) int; } to a *complex.Collection.
-func InterfaceComplex(tC *complex.Collection, fi interface{ func(rune) int }) {
+// InterfaceComplex copies a interface{func(rune) *int; } to a *complex.Collection.
+func InterfaceComplex(tC *complex.Collection, fi interface{ func(rune) *int }) {
 	// *complex.Collection fields
 	tC.I = fi
 }
@@ -202,9 +202,9 @@ func InterfaceExternal(tC *external.Collection, fe error) {
 	tC.I = fe
 }
 
-// InterfaceExternalComplex copies a interface{func(string) map[Collection]bool; func() (int, byte); } to a complex.ComplexCollection.
+// InterfaceExternalComplex copies a interface{func(string) map[*Collection]bool; func() (int, byte); } to a complex.ComplexCollection.
 func InterfaceExternalComplex(tC complex.ComplexCollection, fi interface {
-	func(string) map[Collection]bool
+	func(string) map[*Collection]bool
 	func() (int, byte)
 }) {
 	// complex.ComplexCollection fields
@@ -226,6 +226,7 @@ func Map(tm map[string]bool, fm map[string]bool) {
 // MapComplex copies a map[string]interface{func() string; } to a *complex.Collection.
 func MapComplex(tC *complex.Collection, fm map[string]interface{ func() string }) {
 	// *complex.Collection fields
+	tC.M = fm
 }
 
 // MapExternal copies a map[string]Placeholder to a map[string]Placeholder.
@@ -234,8 +235,8 @@ func MapExternal(tm map[string]Placeholder, fm map[string]Placeholder) {
 	tm = fm
 }
 
-// MapExternalComplex copies a map[Collection]Placeholder to a *complex.ComplexCollection.
-func MapExternalComplex(tC *complex.ComplexCollection, fm map[Collection]Placeholder) {
+// MapExternalComplex copies a map[*Collection]Placeholder to a *complex.ComplexCollection.
+func MapExternalComplex(tC *complex.ComplexCollection, fm map[*Collection]Placeholder) {
 	// *complex.ComplexCollection fields
 	tC.M = fm
 }
@@ -313,10 +314,16 @@ func SliceExternal(tP []Placeholder, fP []Placeholder) {
 	tP = fP
 }
 
-// SliceExternalComplex copies a []map[string]func(Collection) string to a *complex.ComplexCollection.
-func SliceExternalComplex(tC *complex.ComplexCollection, fm []map[string]func(Collection) string) {
+// SliceExternalComplex copies a []map[string]func(*Collection) string to a *complex.ComplexCollection.
+func SliceExternalComplex(tC *complex.ComplexCollection, fm []map[string]func(*Collection) string) {
 	// *complex.ComplexCollection fields
 	tC.S = fm
+}
+
+// SlicePointer copies a []*int to a []*int.
+func SlicePointer(ti []*int, fi []*int) {
+	// []*int fields
+	ti = fi
 }
 
 // SliceSimple copies a []string to a *Collection.

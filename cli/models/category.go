@@ -41,7 +41,7 @@ const Pointer = '*'
 
 // IsPointer returns whether the field is a pointer.
 func (f *Field) IsPointer() bool {
-	return len(f.Pointer) >= 1 && f.Pointer[1] == Pointer
+	return len(f.Definition) >= 1 && f.Definition[1] == Pointer
 }
 
 // Collection refers to a category of types which indicate that

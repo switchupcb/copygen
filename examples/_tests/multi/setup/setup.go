@@ -31,6 +31,7 @@ type Copygen interface {
 
 	NoMatchSliceSimple([]string) Collection
 	Slice([]string) []string
+	SlicePointer([]*int) []*int
 	SliceSimple(S []string) *Collection
 	SliceExternal([]external.Placeholder) []external.Placeholder
 	SliceComplex(S []map[string][16]int) *complex.Collection

@@ -6,7 +6,7 @@ import "github.com/switchupcb/copygen/examples/_tests/multi/external"
 type Collection struct {
 	Arr [16]map[byte]string
 	S   []map[string][16]int
-	M   map[string]error
+	M   map[string]interface{ Error() string }
 	C   chan *[]int
 	I   interface{ A(rune) *int }
 	F   func([]string, uint64) *byte
