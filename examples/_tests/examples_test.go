@@ -23,77 +23,77 @@ var (
 	tests = []test{
 		{
 			name:     "main",
-			ymlpath:  "examples/main/setup/setup.yml",
-			wantpath: "examples/main/copygen.go",
+			ymlpath:  "main/setup/setup.yml",
+			wantpath: "main/copygen.go",
 		},
 		{
 			name:     "automatch",
-			ymlpath:  "examples/automatch/setup/setup.yml",
-			wantpath: "examples/automatch/copygen.go",
+			ymlpath:  "automatch/setup/setup.yml",
+			wantpath: "automatch/copygen.go",
 		},
 		{
 			name:     "basic",
-			ymlpath:  "examples/basic/setup/setup.yml",
-			wantpath: "examples/basic/copygen.go",
+			ymlpath:  "basic/setup/setup.yml",
+			wantpath: "basic/copygen.go",
 		},
 		/*
 			{
 				name:     "deepcopy",
-				ymlpath:  "examples/deepcopy/setup/setup.yml",
-				wantpath: "examples/deepcopy/copygen.go",
+				ymlpath:  "deepcopy/setup/setup.yml",
+				wantpath: "deepcopy/copygen.go",
 			},
 		*/
 		{
 			name:     "error",
-			ymlpath:  "examples/error/setup/setup.yml",
-			wantpath: "examples/error/copygen.go",
+			ymlpath:  "error/setup/setup.yml",
+			wantpath: "error/copygen.go",
 		},
 		{
 			name:     "map",
-			ymlpath:  "examples/map/setup/setup.yml",
-			wantpath: "examples/map/copygen.go",
+			ymlpath:  "map/setup/setup.yml",
+			wantpath: "map/copygen.go",
 		},
 		{
 			name:     "tag",
-			ymlpath:  "examples/tag/setup/setup.yml",
-			wantpath: "examples/tag/copygen.go",
+			ymlpath:  "tag/setup/setup.yml",
+			wantpath: "tag/copygen.go",
 		},
 		{
 			name:     "alias",
-			ymlpath:  "examples/_tests/alias/setup/setup.yml",
-			wantpath: "examples/_tests/alias/copygen.go",
+			ymlpath:  "_tests/alias/setup/setup.yml",
+			wantpath: "_tests/alias/copygen.go",
 		},
 		{
 			name:     "automap",
-			ymlpath:  "examples/_tests/automap/setup/setup.yml",
-			wantpath: "examples/_tests/automap/copygen.go",
+			ymlpath:  "_tests/automap/setup/setup.yml",
+			wantpath: "_tests/automap/copygen.go",
 		},
 		/*
 			{
 				name:     "cast",
-				ymlpath:  "examples/_tests/cast/setup/setup.yml",
-				wantpath: "examples/_tests/cast/copygen.go",
+				ymlpath:  "_tests/cast/setup/setup.yml",
+				wantpath: "_tests/cast/copygen.go",
 			},
 		*/
 		{
 			name:     "cyclic",
-			ymlpath:  "examples/_tests/cyclic/setup/setup.yml",
-			wantpath: "examples/_tests/cyclic/copygen.go",
+			ymlpath:  "_tests/cyclic/setup/setup.yml",
+			wantpath: "_tests/cyclic/copygen.go",
 		},
 		{
 			name:     "duplicate",
-			ymlpath:  "examples/_tests/duplicate/setup/setup.yml",
-			wantpath: "examples/_tests/duplicate/copygen.go",
+			ymlpath:  "_tests/duplicate/setup/setup.yml",
+			wantpath: "_tests/duplicate/copygen.go",
 		},
 		{
 			name:     "import",
-			ymlpath:  "examples/_tests/import/setup/setup.yml",
-			wantpath: "examples/_tests/import/copygen.go",
+			ymlpath:  "_tests/import/setup/setup.yml",
+			wantpath: "_tests/import/copygen.go",
 		},
 		{
 			name:     "multi",
-			ymlpath:  "examples/_tests/multi/setup/setup.yml",
-			wantpath: "examples/_tests/multi/copygen.go",
+			ymlpath:  "_tests/multi/setup/setup.yml",
+			wantpath: "_tests/multi/copygen.go",
 		},
 	}
 )
@@ -164,7 +164,7 @@ func templateRun(env cli.Environment) (string, error) {
 		return "", fmt.Errorf("%w", err)
 	}
 
-	gen.Tempath = "examples/tmpl/template/generate.tmpl"
+	gen.Tempath = "tmpl/template/generate.tmpl"
 	code, err := generator.GenerateTemplate(gen)
 	if err != nil {
 		return "", fmt.Errorf("%w", err)

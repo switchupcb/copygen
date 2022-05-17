@@ -10,12 +10,13 @@ on:
 jobs:
   Integration:
     name: test
-
     runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-
+        os:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
     steps:
       - name: Checkout repository code
         uses: actions/checkout@v2
@@ -24,4 +25,5 @@ jobs:
         with:
           go-version: 1.18
       - name: Run tests
-        run: go test ./examples/_tests
+        working-directory: ./examples
+        run: go test ./_tests

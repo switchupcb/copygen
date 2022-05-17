@@ -14,9 +14,9 @@ func checkwd(t *testing.T) {
 		t.Fatalf("error getting the current working directory.\n%v", err)
 	}
 
-	if filepath.Base(cwd) != "copygen" {
+	if filepath.Base(cwd) != "examples" {
 		// go test uses the package directory as the current working directory.
-		if err = os.Chdir(filepath.Join(cwd, "../../")); err != nil {
+		if err = os.Chdir(filepath.Join(cwd, "../")); err != nil {
 			t.Fatalf("error changing the current working directory.\n%v", err)
 		}
 	}
