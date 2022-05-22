@@ -60,6 +60,8 @@ func (p *Parser) assignFieldOption(comments []*ast.Comment) error {
 
 	for _, comment := range comments {
 		text := comment.Text
+
+		// do NOT parse comments that have already been parsed.
 		if p.Options.CommentOptionMap[text] != nil {
 			continue
 		}

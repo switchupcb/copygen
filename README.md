@@ -34,9 +34,9 @@ Each example has a **README**.
 | [tmpl](examples/tmpl/)           | Uses `.tmpl` templates.                  |
 | [program](examples/program/)     | Uses Copygen programmatically.           |
 
-This [example](examples/main/) uses three type-structs to generate the `ModelsToDomain()` function using a Command Line Interface.
+_*[`multi`](examples/_tests/multi/setup/setup.go) tests every type._
 
-_[`multi`](examples/_tests/multi/setup/setup.go) tests every type._
+This [example](examples/main/) uses three type-structs to generate the `ModelsToDomain()` function using a Command Line Interface.
 
 ### Types
 
@@ -131,7 +131,7 @@ You can specify options for your Copygen functions using comments: Do **NOT** pu
 | `depth field level` | Use a specific field depth.                              | Copygen uses full-field [depth](#depth) by default. <br /> Override this using `depth` with _regex_ and a [depth-level](#depth) integer.                                           | `depth .* 2` <br /> `depth models.Account.* 1`                               |
 | `deepcopy field`    | Deepcopy from-fields.                                    | Copygen shallow copies fields by default. <br /> Override this using `deepcopy` with _regex_. <br /> For more info, view [Shallow Copy vs. Deep Copy](#shallow-copy-vs-deep-copy). | `deepcopy package.Type.Field` <br /> `deepcopy .*` _(all fields)_            |
 | `automatch field`   | Use the automatcher selectively or with `map` and `tag`. | Using `map` or `tag` disables the default automatcher. <br /> Enable it using `automatch` with _regex_. <br />                                                                     | `automatch package.Type.Field` <br /> `automatch models.User.*`              |
-| `custom option`     | Specify custom options.                                  | Use custom options with [templates](#templates). <br /> `custom` options are **function** options. <br /> Returns `map[string][]string` _(trim-spaced)_.                           | `ignore true` <br /> `swap false`                                            |
+| `custom option`     | Specify custom function options.                         | Use custom options with [templates](#templates). <br /> Returns `map[string][]string` _(trim-spaced)_.                                                                             | `ignore true` <br /> `swap false`                                            |
 
 _[View a reference on Regex.](https://cheatography.com/davechild/cheat-sheets/regular-expressions/)_
 
@@ -162,7 +162,7 @@ go install github.com/switchupcb/copygen@main
 
 Install a specific version by specifying a tag.
 ```
-go install github.com/switchupcb/copygen@v0.3.6
+go install github.com/switchupcb/copygen@v0.3.7
 ```
 
 Run the executable with given options.

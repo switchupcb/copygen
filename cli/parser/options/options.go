@@ -78,6 +78,8 @@ func SetFieldOptions(field *models.Field, fieldoptions []*Option) {
 		case CategoryDeepcopy:
 			SetDeepcopy(field, *option)
 
+		case CategoryCustom:
+			SetConvert(field, *option)
 		}
 	}
 }

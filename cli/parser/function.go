@@ -56,7 +56,7 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 		// map the function custom options.
 		var customoptionmap map[string][]string
 		for _, option := range fieldoptions {
-			err := options.MapCustomOption(customoptionmap, option)
+			customoptionmap, err = options.MapCustomOption(customoptionmap, option)
 			if err != nil {
 				fmt.Printf("WARNING: %v\n", err)
 			}
