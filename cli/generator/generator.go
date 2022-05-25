@@ -17,7 +17,7 @@ import (
 
 const (
 	GenerateFunction = "template.Generate"
-	writeFileMode    = 0222
+	writeFileMode    = 0644
 )
 
 // Generate outputs the generated code (with gofmt).
