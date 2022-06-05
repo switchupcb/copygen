@@ -22,12 +22,6 @@ func parseTypes(method *types.Func) (parsedTypes, error) {
 		return result, fmt.Errorf("impossible")
 	}
 
-	if signature.Params().Len() == 0 {
-		return result, fmt.Errorf("function %v has no types to copy from", method.Name())
-	} else if signature.Results().Len() == 0 {
-		return result, fmt.Errorf("function %v has no types to copy to", method.Name())
-	}
-
 	result.fromTypes = parseTypeField(signature.Params())
 	setVariableNames(result.fromTypes, "f")
 
