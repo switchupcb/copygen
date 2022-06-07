@@ -58,6 +58,7 @@ func parseField(typ types.Type) *models.Field {
 		}
 
 		field.Definition = models.CollectionPointer + collectedDefinition(elemfield)
+		field.VariableName = "." + alphastring(elemfield.Definition)
 
 	case *types.Array:
 		field.Definition = "[" + fmt.Sprint(x.Len()) + "]" + collectedDefinition(parseField(x.Elem()))
@@ -198,6 +199,17 @@ func collectedDefinition(collected *models.Field) string {
 	// do NOT reference it by package in the generated file (i.e `Collection`).
 	if collected.Import == setupPkgPath {
 		return collected.Definition
+	}
+
+	// when a setup file imports the package it will output to,
+	// do NOT reference the fields defined in the output package, by package.
+	if outputPkgPath != "" && collected.Import == outputPkgPath {
+		return collected.Definition
+	}
+
+	// when a field's import uses an alias, reassign the package reference.
+	if aliasPkg, ok := aliasImportMap[collected.Import]; ok {
+		return aliasPkg + "." + collected.Definition
 	}
 
 	return collected.FullDefinition()

@@ -51,12 +51,32 @@ var (
 
 	// setupPkgPath represents the current path of the setup file's package.
 	//
-	// setupPkgPath is used to remove package references from collected types in collections
-	// that will be used in the generated file's package (equal to the setup file's package).
+	// setupPkgPath is used to remove package references from types that will be
+	// used in the generated file's package (equal to the setup file's package).
+	//
+	// setupPkgPath is referenced while parsing collected type definitions for collection fields,
+	// and while setting package references for non-collection fields after parsing.
 	//
 	// i.e `Collections` parsed as `copygen.Collections` in the setup file's package copygen,
 	// output as `Collections` in the generated file's package copygen.
 	setupPkgPath string
+
+	// outputPkgPath represents the generated file's package path.
+	//
+	// outputPkgPath is used to remove package references from types that are imported
+	// (in the setup file) from the generated file's package.
+	//
+	// outputPkgPath is referenced while parsing collected type definitions for collection fields,
+	// and while setting package references for non-collection fields after parsing.
+	outputPkgPath string
+
+	// aliasImportMap represents a map of import paths to package names.
+	//
+	// aliasImportMap is used to assign the correct package reference to an aliased field.
+	//
+	// aliasImportMap is referenced while parsing collected type definitions for collection fields,
+	// and while setting package references for non-collection fields after parsing.
+	aliasImportMap map[string]string
 )
 
 // SetupCache sets up the parser's global cache.
@@ -98,6 +118,20 @@ func Parse(gen *models.Generator) error {
 	}
 	setupPkgPath = p.Pkgs[0].PkgPath
 
+	// determine the output file package path.
+	outputPkgs, _ := packages.Load(&packages.Config{Mode: packages.NeedName}, "file="+gen.Outpath)
+	if len(outputPkgs) > 0 {
+		outputPkgPath = outputPkgs[0].PkgPath
+	}
+
+	// set the aliasImportMap.
+	aliasImportMap = make(map[string]string, len(p.Config.SetupFile.Imports))
+	for _, imp := range p.Config.SetupFile.Imports {
+		if imp.Name != nil {
+			aliasImportMap[imp.Path.Value[1:len(imp.Path.Value)-1]] = imp.Name.Name
+		}
+	}
+
 	// find a new instance of a copygen AST since the old one has its comments removed.
 	var newCopygen *ast.InterfaceType
 	for _, decl := range p.Pkgs[0].Syntax[0].Decls {
@@ -120,8 +154,8 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("%w", err)
 	}
 
-	// rename fields' packages using imports.
-	p.setPackages(gen)
+	// rename non-collection fields' packages using imports.
+	setPackages(gen)
 
 	// Write the Keep.
 	buf := new(bytes.Buffer)
@@ -133,29 +167,14 @@ func Parse(gen *models.Generator) error {
 
 	// reset global variables.
 	setupPkgPath = ""
+	outputPkgPath = ""
+	aliasImportMap = nil
 
 	return nil
 }
 
-// setFieldPackage sets the packages for all fields in a generator using names from the setup file.
-func (p *Parser) setPackages(gen *models.Generator) {
-
-	// determine the output file package path.
-	var outputPkgPath string
-	pkgs, _ := packages.Load(&packages.Config{Mode: packages.NeedName}, "file="+gen.Outpath)
-	if len(pkgs) > 0 {
-		outputPkgPath = pkgs[0].PkgPath
-	}
-
-	// adjust the packages of each field where necessary.
-	imports := p.Config.SetupFile.Imports
-	aliasImportMap := make(map[string]string, len(imports))
-	for _, imp := range imports {
-		if imp.Name != nil {
-			aliasImportMap[imp.Path.Value[1:len(imp.Path.Value)-1]] = imp.Name.Name
-		}
-	}
-
+// setPackages sets the packages for all fields in a generator using names from the setup file.
+func setPackages(gen *models.Generator) {
 	for _, function := range gen.Functions {
 		functionTypes := [][]models.Type{
 			function.From,
