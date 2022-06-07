@@ -68,7 +68,7 @@ type Copygen interface {
 	FuncComplex(F func([]string, uint64) *byte) *complex.Collection
 	FuncExternalComplex(F func(external.Collection) []string) *complex.ComplexCollection
 
-	NoMatchComplex([]external.Collection) (Struct []external.Collection)
+	NoMatchExternal([]external.Collection) (Struct []external.Collection)
 	EmptyStruct(struct{}) empty
 	Struct(Collection) Collection
 	StructExternal(external.Collection) *Collection

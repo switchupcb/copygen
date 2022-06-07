@@ -48,6 +48,15 @@ var (
 	// fieldcache improves performance by parsing a unique type definition once per runtime.
 	// definitions remain constant UNLESS the user modifies their modules during runtime.
 	fieldcache map[string]*models.Field
+
+	// setupPkgPath represents the current path of the setup file's package.
+	//
+	// setupPkgPath is used to remove package references from collected types in collections
+	// that will be used in the generated file's package (equal to the setup file's package).
+	//
+	// i.e `Collections` parsed as `copygen.Collections` in the setup file's package copygen,
+	// output as `Collections` in the generated file's package copygen.
+	setupPkgPath string
 )
 
 // SetupCache sets up the parser's global cache.
@@ -87,6 +96,7 @@ func Parse(gen *models.Generator) error {
 	if err != nil {
 		return fmt.Errorf("an error occurred while loading the packages for types.\n%w", err)
 	}
+	setupPkgPath = p.Pkgs[0].PkgPath
 
 	// find a new instance of a copygen AST since the old one has its comments removed.
 	var newCopygen *ast.InterfaceType
@@ -121,6 +131,9 @@ func Parse(gen *models.Generator) error {
 	}
 	gen.Keep = buf.Bytes()
 
+	// reset global variables.
+	setupPkgPath = ""
+
 	return nil
 }
 
@@ -133,7 +146,6 @@ func (p *Parser) setPackages(gen *models.Generator) {
 	if len(pkgs) > 0 {
 		outputPkgPath = pkgs[0].PkgPath
 	}
-	setupPkgPath := p.Pkgs[0].PkgPath
 
 	// adjust the packages of each field where necessary.
 	imports := p.Config.SetupFile.Imports
@@ -154,10 +166,12 @@ func (p *Parser) setPackages(gen *models.Generator) {
 			for _, t := range types {
 				for _, field := range t.Field.AllFields(nil, nil) {
 
-					// a generated file's package == setup file's package
+					// a generated file's package == setup file's package.
 					//
 					// when the field is defined in the setup file (i.e `Collection`),
-					// do NOT reference it by package in the generated file.
+					// it will be parsed with the setup file's package (i.e `copygen.Collection`).
+					//
+					// do NOT reference it by package in the generated file (i.e `Collection`).
 					if field.Import == setupPkgPath {
 						field.Package = ""
 						continue

@@ -50,23 +50,26 @@ func parseField(typ types.Type) *models.Field {
 	case *types.Pointer:
 		elemfield := parseField(x.Elem())
 
-		// type aliases (including structs) must be deepcopied.
+		// type aliases (including structs) must be deepcopied
+		// in order to match underlying fields.
 		if elemfield.IsAlias() {
-			field = elemfield.Deepcopy(nil)
+			deepfield := elemfield.Deepcopy(nil)
+			field.Fields = deepfield.Fields
 		}
-		field.Definition = models.CollectionPointer + elemfield.Definition
+
+		field.Definition = models.CollectionPointer + collectedDefinition(elemfield)
 
 	case *types.Array:
-		field.Definition = "[" + fmt.Sprint(x.Len()) + "]" + parseField(x.Elem()).Definition
+		field.Definition = "[" + fmt.Sprint(x.Len()) + "]" + collectedDefinition(parseField(x.Elem()))
 
 	case *types.Slice:
-		field.Definition = models.CollectionSlice + parseField(x.Elem()).Definition
+		field.Definition = models.CollectionSlice + collectedDefinition(parseField(x.Elem()))
 
 	case *types.Map:
-		field.Definition = models.CollectionMap + "[" + parseField(x.Key()).Definition + "]" + parseField(x.Elem()).Definition
+		field.Definition = models.CollectionMap + "[" + collectedDefinition(parseField(x.Key())) + "]" + collectedDefinition(parseField(x.Elem()))
 
 	case *types.Chan:
-		field.Definition = models.CollectionChan + " " + parseField(x.Elem()).Definition
+		field.Definition = models.CollectionChan + " " + collectedDefinition(parseField(x.Elem()))
 
 	// Function (without Receivers)
 	// https://go.googlesource.com/example/+/HEAD/gotypes#function-and-method-types
@@ -76,7 +79,7 @@ func parseField(typ types.Type) *models.Field {
 		// set the parameters.
 		definition.WriteString(models.CollectionFunc + "(")
 		for i := 0; i < x.Params().Len(); i++ {
-			definition.WriteString(parseField(x.Params().At(i).Type()).Definition)
+			definition.WriteString(collectedDefinition(parseField(x.Params().At(i).Type())))
 			if i+1 != x.Params().Len() {
 				definition.WriteString(", ")
 			}
@@ -91,7 +94,7 @@ func parseField(typ types.Type) *models.Field {
 			definition.WriteString("(")
 		}
 		for i := 0; i < x.Results().Len(); i++ {
-			definition.WriteString(parseField(x.Results().At(i).Type()).Definition)
+			definition.WriteString(collectedDefinition(parseField(x.Results().At(i).Type())))
 			if i+1 != x.Results().Len() {
 				definition.WriteString(", ")
 			}
@@ -111,7 +114,7 @@ func parseField(typ types.Type) *models.Field {
 			var definition strings.Builder
 			definition.WriteString(models.CollectionInterface + "{")
 			for i := 0; i < x.NumMethods(); i++ {
-				definition.WriteString(parseField(x.Method(i).Type()).Definition + "; ")
+				definition.WriteString(collectedDefinition(parseField(x.Method(i).Type())) + "; ")
 			}
 			definition.WriteString("}")
 			field.Definition = definition.String()
@@ -130,7 +133,7 @@ func parseField(typ types.Type) *models.Field {
 			setTags(subfield, x.Tag(i))
 			subfield.Parent = field
 			field.Fields = append(field.Fields, subfield)
-			definition.WriteString(subfield.Name + " " + subfield.Definition + "; ")
+			definition.WriteString(subfield.Name + " " + subfield.FullDefinition() + "; ")
 
 			// all subfields are deepcopied with Fields[0].
 			//
@@ -165,14 +168,6 @@ func setFieldImportAndPackage(field *models.Field, pkg *types.Package) {
 
 	field.Import = pkg.Path()
 	field.Package = pkg.Name()
-
-	// field collections set collected types' packages in the field.Definition.
-	// i.e map[*domain.Account]string
-	if field.IsCollection() {
-		field.Definition = field.Package + "." + field.Definition
-		field.Import = ""
-		field.Package = ""
-	}
 }
 
 // setTags sets the tags for a field.
@@ -189,4 +184,21 @@ func setTags(field *models.Field, rawtag string) {
 			tag.Name: tag.Options,
 		}
 	}
+}
+
+// collectedDefinition determines the full definition for a collected type in a collection.
+//
+// collectedDefinition can be called in the parser, but ONLY because collections are NOT cached.
+func collectedDefinition(collected *models.Field) string {
+	// a generated file's package == setup file's package.
+	//
+	// when the field is defined in the setup file (i.e `Collection`),
+	// it will be parsed with the setup file's package (i.e `copygen.Collection`).
+	//
+	// do NOT reference it by package in the generated file (i.e `Collection`).
+	if collected.Import == setupPkgPath {
+		return collected.Definition
+	}
+
+	return collected.FullDefinition()
 }
