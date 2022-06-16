@@ -1,0 +1,63 @@
+name: "CICD"
+
+on:
+  push:
+    branches:
+     - main
+  pull_request:
+    branches:
+     - main
+
+jobs:
+  Linter:
+    name: Static Code Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - name: Perform static code analysis via golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.46.2
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          # In order:
+          # * Module Download Directory
+          # * Linux Build Directory
+          # * Mac Build Directory
+          # * Windows Build Directory
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            ~\AppData\Local\go-build
+          key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ matrix.go-version }}-
+
+  Integration:
+    needs: Linter
+    name: Integration Tests
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - name: Run tests
+        working-directory: ./examples
+        run: go test ./_tests
+

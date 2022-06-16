@@ -117,7 +117,7 @@ Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fiel
 
 ### Static Code Analysis
 
-Copygen uses [golangci-lint](https://github.com/golangci/golangci-lint) in order to statically analyze code. You can install golangci-lint with `go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.45.0` and run it using `golangci-lint run`. If you receive a `diff` error, you must add a `diff` tool in your PATH. There is one located in the `Git` bin.
+Copygen uses [golangci-lint](https://github.com/golangci/golangci-lint) in order to statically analyze code. You can install golangci-lint with `go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.46.2` and run it using `golangci-lint run`. If you receive a `diff` error, you must add a `diff` tool in your PATH. There is one located in the `Git` bin.
 
 If you receive `File is not ... with -...`, use `golangci-lint run --disable-all --no-config -Egofmt --fix`.
 
