@@ -23,22 +23,6 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.46.2
-      - name: Cache Go modules
-        uses: actions/cache@v3
-        with:
-          # In order:
-          # * Module Download Directory
-          # * Linux Build Directory
-          # * Mac Build Directory
-          # * Windows Build Directory
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-            ~/Library/Caches/go-build
-            ~\AppData\Local\go-build
-          key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go-version }}-
 
   Integration:
     needs: Linter
@@ -57,6 +41,22 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.18
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          # In order:
+          # * Module Download Directory
+          # * Linux Build Directory
+          # * Mac Build Directory
+          # * Windows Build Directory
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            ~\AppData\Local\go-build
+          key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ matrix.go-version }}-
       - name: Run tests
         working-directory: ./examples
         run: go test ./_tests
