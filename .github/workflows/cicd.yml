@@ -22,7 +22,8 @@ jobs:
       - name: Perform static code analysis via golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.46
+          version: v1.46.2
+
   Integration:
     needs: Linter
     name: Integration Tests

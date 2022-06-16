@@ -93,9 +93,7 @@ func (f *Field) Deepcopy(cyclic map[*Field]bool) *Field {
 		copied.Tags[k1] = make(map[string][]string, len(mapval))
 		for k2, sliceval := range f.Tags[k1] {
 			copied.Tags[k1][k2] = make([]string, len(sliceval))
-			for i, v := range f.Tags[k1][k2] {
-				copied.Tags[k1][k2][i] = v
-			}
+			copy(f.Tags[k1][k2], copied.Tags[k1][k2])
 		}
 	}
 
