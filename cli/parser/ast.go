@@ -5,12 +5,14 @@ import (
 	"go/token"
 )
 
+const copygenInterfaceName = "Copygen"
+
 // assertCopygenInterface determines if an ast.GenDecl is a Copygen Interface by type assertion.
 func assertCopygenInterface(x *ast.GenDecl) (*ast.InterfaceType, bool) {
 	if x.Tok == token.TYPE {
 		for _, spec := range x.Specs {
 			if ts, ok := spec.(*ast.TypeSpec); ok {
-				if it, ok := ts.Type.(*ast.InterfaceType); ok && ts.Name.Name == "Copygen" {
+				if it, ok := ts.Type.(*ast.InterfaceType); ok && ts.Name.Name == copygenInterfaceName {
 					return it, true
 				}
 			}

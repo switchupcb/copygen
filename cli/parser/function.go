@@ -9,8 +9,6 @@ import (
 	"github.com/switchupcb/copygen/cli/parser/options"
 )
 
-const copygenInterfaceName = "Copygen"
-
 // parseFunctions parses the AST for functions in the setup file.
 // astcopygen is used to assign options from *ast.Comments.
 func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, error) {

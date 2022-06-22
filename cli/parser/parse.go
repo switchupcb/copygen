@@ -107,7 +107,7 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("an error occurred parsing the specified .go setup file: %v\n%w", gen.Setpath, err)
 	}
 
-	// Parse the setup file's `type Copygen Interface` for the Keep (and set options in the process).
+	// Parse the setup file's `type Copygen Interface` for the Keep (and create Options in the process).
 	if err := p.Keep(p.Config.SetupFile); err != nil {
 		return fmt.Errorf("%w", err)
 	}
