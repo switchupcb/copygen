@@ -13,38 +13,21 @@ const copygenInterfaceName = "Copygen"
 
 // parseFunctions parses the AST for functions in the setup file.
 // astcopygen is used to assign options from *ast.Comments.
-func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Function, error) {
-
-	// find the `type Copygen interface` definition in the setup file.
-	var copygen *types.Interface
-
-	setpkg := p.Pkgs[0]
-	defs := setpkg.TypesInfo.Defs
-	for k, v := range defs {
-		if k.Name == copygenInterfaceName {
-			if it, ok := v.Type().Underlying().(*types.Interface); ok {
-				copygen = it
-			}
-		}
-	}
-
-	if copygen == nil {
-		return nil, fmt.Errorf("the \"type Copygen interface\" could not be found in the setup file's package")
-	}
-
-	if copygen.NumMethods() == 0 {
+func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, error) {
+	numMethods := len(copygen.Methods.List)
+	if numMethods == 0 {
 		fmt.Println("WARNING: no functions are defined in the \"type Copygen interface\"")
 	}
 
-	// create the models.Function objects
-	functions := make([]models.Function, copygen.NumMethods())
-	for i := 0; i < copygen.NumMethods(); i++ {
-		method := copygen.Method(i)
+	// create models.Function objects.
+	functions := make([]models.Function, numMethods)
+	for i := 0; i < numMethods; i++ {
+		method := p.Config.SetupPkg.TypesInfo.Defs[copygen.Methods.List[i].Names[0]]
 
-		// create the models.Type objects
-		fieldoptions, manual := getNodeOptions(astcopygen.Methods.List[i], p.Options.CommentOptionMap)
+		// create models.Type objects.
+		fieldoptions, manual := getNodeOptions(copygen.Methods.List[i], p.Options.CommentOptionMap)
 		fieldoptions = append(fieldoptions, p.Options.ConvertOptions...)
-		parsed, err := parseTypes(method)
+		parsed, err := parseTypes(method.(*types.Func))
 		if err != nil {
 			return nil, fmt.Errorf("an error occurred while parsing the types of function %q.\n%w", method.Name(), err)
 		}
@@ -54,7 +37,7 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 		setTypeOptions(parsed.toTypes, fieldoptions)
 
 		// map the function custom options.
-		var customoptionmap map[string][]string
+		customoptionmap := make(map[string][]string)
 		for _, option := range fieldoptions {
 			customoptionmap, err = options.MapCustomOption(customoptionmap, option)
 			if err != nil {
@@ -62,7 +45,7 @@ func (p *Parser) parseFunctions(astcopygen *ast.InterfaceType) ([]models.Functio
 			}
 		}
 
-		// create the models.Function
+		// create the models.Function object.
 		function := models.Function{
 			Name: method.Name(),
 			To:   parsed.toTypes,

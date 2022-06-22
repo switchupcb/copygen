@@ -26,6 +26,9 @@ type Config struct {
 	// SetupFile represents the setup file as an Abstract Syntax Tree.
 	SetupFile *ast.File
 
+	// SetupPkg represent the setup file's package.
+	SetupPkg *packages.Package
+
 	// Fileset represents the parser's fileset.
 	Fileset *token.FileSet
 }
@@ -104,19 +107,18 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("an error occurred parsing the specified .go setup file: %v\n%w", gen.Setpath, err)
 	}
 
-	// Parse the Keep (and set options in the process).
+	// Parse the setup file's `type Copygen Interface` for the Keep (and set options in the process).
 	if err := p.Keep(p.Config.SetupFile); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
-	// Analyze the `type Copygen Interface` to create models.Function and models.Field objects.
-	// load package types from the setup file (NOTE: loads different *ast.Files).
+	// Analyze a new `type Copygen Interface` to create models.Function and models.Field objects.
 	cfg := &packages.Config{Mode: parserLoadMode}
 	p.Pkgs, err = packages.Load(cfg, "file="+gen.Setpath)
 	if err != nil {
 		return fmt.Errorf("an error occurred while loading the packages for types.\n%w", err)
 	}
-	setupPkgPath = p.Pkgs[0].PkgPath
+	p.Config.SetupPkg = p.Pkgs[0]
 
 	// determine the output file package path.
 	outputPkgs, _ := packages.Load(&packages.Config{Mode: packages.NeedName}, "file="+gen.Outpath)
@@ -132,9 +134,11 @@ func Parse(gen *models.Generator) error {
 		}
 	}
 
-	// find a new instance of a copygen AST since the old one has its comments removed.
+	// find a new instance of a `type Copygen interface` AST from the setup file's
+	// loaded go/types package (containing different *ast.Files from the Keep)
+	// since the parsed `type Copygen interface` has its comments removed.
 	var newCopygen *ast.InterfaceType
-	for _, decl := range p.Pkgs[0].Syntax[0].Decls {
+	for _, decl := range p.Config.SetupPkg.Syntax[0].Decls {
 		switch declaration := decl.(type) {
 		case *ast.GenDecl:
 			if it, ok := assertCopygenInterface(declaration); ok {
@@ -148,7 +152,7 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("the \"type Copygen interface\" could not be found in the setup file")
 	}
 
-	// create the models.Function objects.
+	// create models.Function objects.
 	SetupCache()
 	if gen.Functions, err = p.parseFunctions(newCopygen); err != nil {
 		return fmt.Errorf("%w", err)

@@ -44,7 +44,7 @@ The `setup` file is parsed using an Abstract Syntax Tree. This tree contains the
 
 **Convert** options are defined **outside** of the `type Copygen Interface` and may apply to multiple functions. As a result, all `ast.Comments` must be parsed before `models.Function` and `models.Field` objects can be created. In order to do this, the `type Copygen Interface` is stored, but **NOT** analyzed until the `setup` file is traversed. 
 
-There are multiple ways to parse `ast.Comments` into `Options`, but **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. As a result, the most readable, efficient, and least error prone method of parsing `ast.Comments` into `Options `is simply to parse them when discovered; and assign them from a `CommentOptionMap` later. In addition, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
+There are multiple ways to parse `ast.Comments` into `Options`, but **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. As a result, the most readable, efficient, and least error prone method of parsing `ast.Comments` into `Options` is to parse them when discovered; and assign them from a `CommentOptionMap` later. In addition, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
 
 #### Copygen Interface
 
@@ -130,7 +130,7 @@ If you receive `File is not ... with -...`, use `golangci-lint run --disable-all
 
 ### Tests
 
-For information on testing, read [Integration Tests](examples/_tests/).
+For information on testing, read [Tests](examples/_tests/).
 
 # Roadmap
 

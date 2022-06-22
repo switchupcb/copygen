@@ -27,8 +27,7 @@ func (p *Parser) Keep(astFile *ast.File) error {
 
 				// remove the `type Copygen interface` function ast.Comments.
 				comments := getNodeComments(declaration)
-				err := p.assignFieldOption(comments)
-				if err != nil {
+				if err := p.assignFieldOption(comments); err != nil {
 					return fmt.Errorf("%w", err)
 				}
 				trash = append(trash, comments...)
