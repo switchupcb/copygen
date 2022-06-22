@@ -34,13 +34,13 @@ type empty struct {
 	e struct{}
 }
 
-// NoMatchBasic copies a copygen.Placeholder to a copygen.Placeholder.
-func NoMatchBasic(tP copygen.Placeholder, fP copygen.Placeholder) {
-	// copygen.Placeholder fields
+// NoMatchBasic copies a Placeholder to a Placeholder.
+func NoMatchBasic(tP Placeholder, fP Placeholder) {
+	// Placeholder fields
 }
 
-// NoMatchBasicExternal copies a *copygen.Placeholder to a external.Placeholder, *external.Placeholder, bool.
-func NoMatchBasicExternal(tP external.Placeholder, tP1 *external.Placeholder, tb bool, fP *copygen.Placeholder) {
+// NoMatchBasicExternal copies a *Placeholder to a external.Placeholder, *external.Placeholder, bool.
+func NoMatchBasicExternal(tP external.Placeholder, tP1 *external.Placeholder, tb bool, fP *Placeholder) {
 	// external.Placeholder fields
 
 	// *external.Placeholder fields
@@ -48,34 +48,34 @@ func NoMatchBasicExternal(tP external.Placeholder, tP1 *external.Placeholder, tb
 	// bool fields
 }
 
-// NoMatchArraySimple copies a [16]byte to a copygen.Collection.
-func NoMatchArraySimple(tC copygen.Collection, fb [16]byte) {
-	// copygen.Collection fields
+// NoMatchArraySimple copies a [16]byte to a Collection.
+func NoMatchArraySimple(tC Collection, fb [16]byte) {
+	// Collection fields
 }
 
-// NoMatchSliceSimple copies a []string to a copygen.Collection.
-func NoMatchSliceSimple(tC copygen.Collection, fs []string) {
-	// copygen.Collection fields
+// NoMatchSliceSimple copies a []string to a Collection.
+func NoMatchSliceSimple(tC Collection, fs []string) {
+	// Collection fields
 }
 
-// NoMatchMap copies a map[string]bool to a copygen.Collection.
-func NoMatchMap(tC copygen.Collection, fm map[string]bool) {
-	// copygen.Collection fields
+// NoMatchMap copies a map[string]bool to a Collection.
+func NoMatchMap(tC Collection, fm map[string]bool) {
+	// Collection fields
 }
 
-// NoMatchChan copies a chan int to a copygen.Collection.
-func NoMatchChan(tC copygen.Collection, fc chan int) {
-	// copygen.Collection fields
+// NoMatchChan copies a chan int to a Collection.
+func NoMatchChan(tC Collection, fc chan int) {
+	// Collection fields
 }
 
-// NoMatchInterface copies a error to a copygen.Collection.
-func NoMatchInterface(tC copygen.Collection, fe error) {
-	// copygen.Collection fields
+// NoMatchInterface copies a error to a Collection.
+func NoMatchInterface(tC Collection, fe error) {
+	// Collection fields
 }
 
-// NoMatchFunc copies a func() int to a copygen.Collection.
-func NoMatchFunc(tC copygen.Collection, ff func() int) {
-	// copygen.Collection fields
+// NoMatchFunc copies a func() int to a Collection.
+func NoMatchFunc(tC Collection, ff func() int) {
+	// Collection fields
 }
 
 // NoMatchExternal copies a []external.Collection to a []external.Collection.
@@ -101,24 +101,24 @@ func BasicDoublePointer(tb **bool, fb *bool) {
 	tb = &fb
 }
 
-// BasicSimple copies a copygen.Placeholder to a copygen.Placeholder.
-func BasicSimple(tP copygen.Placeholder, fP copygen.Placeholder) {
-	// copygen.Placeholder fields
+// BasicSimple copies a Placeholder to a Placeholder.
+func BasicSimple(tP Placeholder, fP Placeholder) {
+	// Placeholder fields
 	tP = fP
 }
 
-// BasicSimplePointer copies a copygen.Placeholder to a *copygen.Placeholder.
-func BasicSimplePointer(tP *copygen.Placeholder, fP copygen.Placeholder) {
-	// *copygen.Placeholder fields
+// BasicSimplePointer copies a Placeholder to a *Placeholder.
+func BasicSimplePointer(tP *Placeholder, fP Placeholder) {
+	// *Placeholder fields
 	tP = &fP
 }
 
-// BasicPointerMulti copies a *copygen.Placeholder to a *copygen.Placeholder, *copygen.Placeholder, string.
-func BasicPointerMulti(tP *copygen.Placeholder, tP1 *copygen.Placeholder, ts string, fP *copygen.Placeholder) {
-	// *copygen.Placeholder fields
+// BasicPointerMulti copies a *Placeholder to a *Placeholder, *Placeholder, string.
+func BasicPointerMulti(tP *Placeholder, tP1 *Placeholder, ts string, fP *Placeholder) {
+	// *Placeholder fields
 	tP = fP
 
-	// *copygen.Placeholder fields
+	// *Placeholder fields
 
 	// string fields
 }
@@ -144,9 +144,9 @@ func Array(tb [16]byte, fb [16]byte) {
 	tb = fb
 }
 
-// ArraySimple copies a [16]byte to a *copygen.Collection.
-func ArraySimple(tC *copygen.Collection, fb [16]byte) {
-	// *copygen.Collection fields
+// ArraySimple copies a [16]byte to a *Collection.
+func ArraySimple(tC *Collection, fb [16]byte) {
+	// *Collection fields
 	tC.Arr = fb
 }
 
@@ -180,9 +180,9 @@ func SlicePointer(ti []*int, fi []*int) {
 	ti = fi
 }
 
-// SliceSimple copies a []string to a *copygen.Collection.
-func SliceSimple(tC *copygen.Collection, fs []string) {
-	// *copygen.Collection fields
+// SliceSimple copies a []string to a *Collection.
+func SliceSimple(tC *Collection, fs []string) {
+	// *Collection fields
 	tC.S = fs
 }
 
@@ -210,9 +210,9 @@ func Map(tm map[string]bool, fm map[string]bool) {
 	tm = fm
 }
 
-// MapSimple copies a map[string]bool to a *copygen.Collection.
-func MapSimple(tC *copygen.Collection, fm map[string]bool) {
-	// *copygen.Collection fields
+// MapSimple copies a map[string]bool to a *Collection.
+func MapSimple(tC *Collection, fm map[string]bool) {
+	// *Collection fields
 	tC.M = fm
 }
 
@@ -240,9 +240,9 @@ func Chan(tc chan int, fc chan int) {
 	tc = fc
 }
 
-// ChanSimple copies a chan int to a *copygen.Collection.
-func ChanSimple(tC *copygen.Collection, fc chan int) {
-	// *copygen.Collection fields
+// ChanSimple copies a chan int to a *Collection.
+func ChanSimple(tC *Collection, fc chan int) {
+	// *Collection fields
 	tC.C = fc
 }
 
@@ -270,9 +270,9 @@ func Interface(ti interface{}, fi interface{}) {
 	ti = fi
 }
 
-// InterfaceSimple copies a error to a *copygen.Collection.
-func InterfaceSimple(tC *copygen.Collection, fe error) {
-	// *copygen.Collection fields
+// InterfaceSimple copies a error to a *Collection.
+func InterfaceSimple(tC *Collection, fe error) {
+	// *Collection fields
 	tC.I = fe
 }
 
@@ -303,9 +303,9 @@ func Func(tf func() int, ff func() int) {
 	tf = ff
 }
 
-// FuncSimple copies a func() int to a *copygen.Collection.
-func FuncSimple(tC *copygen.Collection, ff func() int) {
-	// *copygen.Collection fields
+// FuncSimple copies a func() int to a *Collection.
+func FuncSimple(tC *Collection, ff func() int) {
+	// *Collection fields
 	tC.F = ff
 }
 
@@ -327,21 +327,21 @@ func FuncExternalComplex(tC *complex.ComplexCollection, ff func(external.Collect
 	tC.F = ff
 }
 
-// EmptyStruct copies a struct{} to a copygen.empty.
-func EmptyStruct(te copygen.empty, fs struct{}) {
-	// copygen.empty fields
+// EmptyStruct copies a struct{} to a empty.
+func EmptyStruct(te empty, fs struct{}) {
+	// empty fields
 	te.e = fs
 }
 
-// Struct copies a copygen.Collection to a copygen.Collection.
-func Struct(tC copygen.Collection, fC copygen.Collection) {
-	// copygen.Collection fields
+// Struct copies a Collection to a Collection.
+func Struct(tC Collection, fC Collection) {
+	// Collection fields
 	tC = fC
 }
 
-// StructExternal copies a external.Collection to a *copygen.Collection.
-func StructExternal(tC *copygen.Collection, fC external.Collection) {
-	// *copygen.Collection fields
+// StructExternal copies a external.Collection to a *Collection.
+func StructExternal(tC *Collection, fC external.Collection) {
+	// *Collection fields
 	tC.Arr = fC.Arr
 	tC.S = fC.S
 	tC.M = fC.M
