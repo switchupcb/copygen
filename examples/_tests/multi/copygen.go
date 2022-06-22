@@ -330,6 +330,7 @@ func FuncExternalComplex(tC *complex.ComplexCollection, ff func(external.Collect
 // EmptyStruct copies a struct{} to a copygen.empty.
 func EmptyStruct(te copygen.empty, fs struct{}) {
 	// copygen.empty fields
+	te.e = fs
 }
 
 // Struct copies a copygen.Collection to a copygen.Collection.
