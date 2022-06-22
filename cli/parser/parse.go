@@ -119,6 +119,7 @@ func Parse(gen *models.Generator) error {
 		return fmt.Errorf("an error occurred while loading the packages for types.\n%w", err)
 	}
 	p.Config.SetupPkg = p.Pkgs[0]
+	setupPkgPath = p.Config.SetupPkg.PkgPath
 
 	// determine the output file package path.
 	outputPkgs, _ := packages.Load(&packages.Config{Mode: packages.NeedName}, "file="+gen.Outpath)
