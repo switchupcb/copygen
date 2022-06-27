@@ -133,6 +133,11 @@ func testExample(t *testing.T, test test) {
 
 	fmt.Println("PASSED:", test.name)
 
+	// skip the custom generator error example for the .tmpl method.
+	if test.name == "error" {
+		return
+	}
+
 	// test the .tmpl method using copygen programmatically.
 	tmplcode, err := templateRun(env)
 	if err != nil {
@@ -140,10 +145,8 @@ func testExample(t *testing.T, test test) {
 	}
 
 	if !bytes.Equal(normalizeLineBreaks([]byte(tmplcode)), normalizeLineBreaks(valid)) {
-		fmt.Println("FAILED: ", test.name, "(tmpl)", "bypassing...")
-		return
-		// fmt.Println(tmplcode)
-		// t.Fatalf("Run(%v [tmpl]) output not equivalent to %v", test.name, test.wantpath)
+		fmt.Println(tmplcode)
+		t.Fatalf("Run(%v [tmpl]) output not equivalent to %v", test.name, test.wantpath)
 	}
 
 	fmt.Println("PASSED:", test.name, "(tmpl)")
@@ -165,7 +168,7 @@ func templateRun(env cli.Environment) (string, error) {
 	}
 
 	gen.Tempath = "tmpl/template/generate.tmpl"
-	code, err := generator.GenerateTemplate(gen)
+	code, err := generator.Generate(gen, env.Output, env.Write)
 	if err != nil {
 		return "", fmt.Errorf("%w", err)
 	}
