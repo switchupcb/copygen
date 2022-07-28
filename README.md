@@ -316,6 +316,8 @@ Copygen's customizability with templates allows you to generate any code **based
 | Repogen | Generate a Business-Logic Repository package based on a Data Access Object (DAO) model. |
 | Wrapper | Generate functions for requests using an API resource and request object model.         |
 
+_Check out more usecases in real-world examples using [Copygen Usecases](https://github.com/switchupcb/copygen/discussions/categories/usecases)._
+
 ## License
 
 Copygen uses a [GPLv3 License](https://www.gnu.org/licenses/gpl-3.0.en.html). An exception is provided for template and example files, which are licensed under the [MIT License](cli/generator/template/LICENSE.md).
