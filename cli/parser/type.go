@@ -37,9 +37,11 @@ func parseTypeField(vars *types.Tuple) []models.Type {
 	for i := 0; i < vars.Len(); i++ {
 		field := parseField(vars.At(i).Type()).Deepcopy(nil)
 		field.Name = vars.At(i).Name()
+
 		if !field.IsPointer() {
 			field.VariableName = "." + alphastring(field.Definition)
 		}
+
 		types[i] = models.Type{Field: field}
 	}
 

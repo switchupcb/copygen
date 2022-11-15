@@ -47,6 +47,9 @@ type Field struct {
 
 	// The custom options of a field.
 	Options FieldOptions
+
+	// Embedded represents whether the field is an embedded field.
+	Embedded bool
 }
 
 // FieldOptions represent options for a Field.
@@ -86,6 +89,7 @@ func (f *Field) Deepcopy(cyclic map[*Field]bool) *Field {
 			Automatch: f.Options.Automatch,
 			Deepcopy:  f.Options.Deepcopy,
 		},
+		Embedded: f.Embedded,
 	}
 
 	copied.Tags = make(map[string]map[string][]string, len(f.Tags))
@@ -114,6 +118,7 @@ func (f *Field) Deepcopy(cyclic map[*Field]bool) *Field {
 		copied.Fields[i] = sf.Deepcopy(cyclic)
 		copied.Fields[i].Parent = copied
 	}
+
 	return copied
 }
 

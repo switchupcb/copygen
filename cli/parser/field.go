@@ -114,9 +114,15 @@ func parseField(typ types.Type) *models.Field {
 		} else {
 			var definition strings.Builder
 			definition.WriteString(models.CollectionInterface + "{")
+
 			for i := 0; i < x.NumMethods(); i++ {
 				definition.WriteString(collectedDefinition(parseField(x.Method(i).Type())) + "; ")
 			}
+
+			for i := 0; i < x.NumEmbeddeds(); i++ {
+				definition.WriteString(collectedDefinition(parseField(x.EmbeddedType(i))) + "; ")
+			}
+
 			definition.WriteString("}")
 			field.Definition = definition.String()
 		}
@@ -127,22 +133,28 @@ func parseField(typ types.Type) *models.Field {
 		var definition strings.Builder
 		definition.WriteString("struct{")
 		for i := 0; i < x.NumFields(); i++ {
-			// a deepcopy of subfield is returned and modified.
+			// a deepcopy of subfield is returned, then modified.
 			subfield := parseField(x.Field(i).Type()).Deepcopy(nil)
 			subfield.VariableName = "." + x.Field(i).Name()
 			subfield.Name = x.Field(i).Name()
 			setTags(subfield, x.Tag(i))
 			subfield.Parent = field
 			field.Fields = append(field.Fields, subfield)
+
+			if x.Field(i).Embedded() {
+				subfield.Embedded = true
+			}
+
 			definition.WriteString(subfield.Name + " " + subfield.FullDefinition() + "; ")
 
-			// all subfields are deepcopied with Fields[0].
+			// Due to the possibility of cyclic structs,
+			// all subfields are deepcopied with len([]Fields) == (0:?).
 			//
-			// in order to correctly represent a deepcopied struct field,
-			// we must point its fields back to the cached field.Fields,
-			// which will eventually be filled.
+			// In order to correctly represent a deepcopied subfield,
+			// point its fields back to the cached field []Fields,
+			// which are eventually filled.
 			//
-			// cachedsubfield.Fields are never modified.
+			// cachedsubfield.Fields pointer is never modified.
 			if cachedsubfield, ok := fieldcache[x.Field(i).String()]; ok {
 				subfield.Fields = cachedsubfield.Fields
 			}
