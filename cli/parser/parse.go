@@ -55,13 +55,14 @@ var (
 	// setupPkgPath represents the current path of the setup file's package.
 	//
 	// setupPkgPath is used to remove package references from types that will be
-	// used in the generated file's package (equal to the setup file's package).
+	// used in the generated file's package (equal to the setup file's package),
+	// since the setup file's types are redefined (copied) to the generated file.
 	//
 	// setupPkgPath is referenced while parsing collected type definitions for collection fields,
 	// and while setting package references for non-collection fields after parsing.
 	//
-	// i.e `Collections` parsed as `copygen.Collections` in the setup file's package copygen,
-	// output as `Collections` in the generated file's package copygen.
+	// i.e `Collection` parsed as `copygen.Collection` in the setup file's package copygen,
+	// output as `Collection` in the generated file's package copygen.
 	setupPkgPath string
 
 	// outputPkgPath represents the generated file's package path.
