@@ -73,6 +73,11 @@ func NoMatchInterface(tC Collection, fe error) {
 	// Collection fields
 }
 
+// NoMatchInterfaceAlias copies a interface{func() string; } to a *Collection.
+func NoMatchInterfaceAlias(tC *Collection, fi interface{ func() string }) {
+	// *Collection fields
+}
+
 // NoMatchFunc copies a func() int to a Collection.
 func NoMatchFunc(tC Collection, ff func() int) {
 	// Collection fields

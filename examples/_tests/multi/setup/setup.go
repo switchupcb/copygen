@@ -18,6 +18,7 @@ type Copygen interface {
 	NoMatchMap(map[string]bool) Collection
 	NoMatchChan(chan int) Collection
 	NoMatchInterface(error) Collection
+	NoMatchInterfaceAlias(I interface{ Error() string }) *Collection
 	NoMatchFunc(func() int) Collection
 	NoMatchExternal([]external.Collection) (Struct []external.Collection)
 

@@ -21,6 +21,9 @@ func parseField(typ types.Type) *models.Field {
 	// Named Types (Alias)
 	// https://go.googlesource.com/example/+/HEAD/gotypes#named-types
 	case *types.Named:
+		// set the cache early to prevent issues with named cyclic types.
+		fieldcache[x.String()] = field
+
 		// A named type is either:
 		//   1. an alias (i.e `Placeholder` in `type Placeholder bool`)
 		//   2. a struct (i.e `Account` in `type Account struct`)
@@ -30,11 +33,10 @@ func parseField(typ types.Type) *models.Field {
 		// Underlying named types are only important in case 2,
 		// when we need to parse extra information from the field.
 		if xs, ok := x.Underlying().(*types.Struct); ok {
-
-			// set the cache early to prevent issues with named cyclic structs.
-			fieldcache[x.String()] = field
 			structfield := parseField(xs)
 			field.Fields = structfield.Fields
+		} else {
+			field.Underlying = parseField(x.Underlying())
 		}
 
 		field.Definition = x.Obj().Name()
@@ -166,10 +168,6 @@ func parseField(typ types.Type) *models.Field {
 		fmt.Printf("WARNING: could not parse type %v\n", x.String())
 	}
 
-	// do NOT cache collections.
-	if !field.IsCollection() {
-		fieldcache[typ.String()] = field
-	}
 	return field
 }
 

@@ -87,6 +87,10 @@ func (f *Field) IsFunc() bool {
 
 // IsInterface returns whether the field is an interface.
 func (f *Field) IsInterface() bool {
+	if f.Underlying != nil {
+		return f.Underlying.IsInterface()
+	}
+
 	return len(f.Definition) >= 9 && f.Definition[:9] == CollectionInterface
 }
 

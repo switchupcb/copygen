@@ -34,11 +34,19 @@ type Field struct {
 	// The type or field that contains this field.
 	Parent *Field
 
+	// Underlying represents the underlying type field of this field (or nil).
+	// The underlying field of a `type Number string` *Field is a `string` *Field.
+	//
+	// Underlying fields of the same type point to the same *Field object.
+	Underlying *Field
+
 	// The field that this field will be copied from (or nil).
+	//
 	// Set in the matcher.
 	From *Field
 
 	// The field that this field will be copied to (or nil).
+	//
 	// Set in the matcher.
 	To *Field
 
@@ -81,6 +89,7 @@ func (f *Field) Deepcopy(cyclic map[*Field]bool) *Field {
 		Package:      f.Package,
 		Name:         f.Name,
 		Definition:   f.Definition,
+		Underlying:   f.Underlying,
 		Options: FieldOptions{
 			Convert:   f.Options.Convert,
 			Map:       f.Options.Map,
