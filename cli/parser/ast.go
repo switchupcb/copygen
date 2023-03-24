@@ -75,6 +75,7 @@ func astRemoveComments(file *ast.File, comments []*ast.Comment) {
 					// prevent the comment from being compared again.
 					comments[k] = comments[len(comments)-1]
 					comments = comments[:len(comments)-1]
+
 					break
 				}
 			}

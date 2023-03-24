@@ -140,18 +140,21 @@ func Parse(gen *models.Generator) error {
 	// loaded go/types package (containing different *ast.Files from the Keep)
 	// since the parsed `type Copygen interface` has its comments removed.
 	var newCopygen *ast.InterfaceType
-	for _, decl := range p.Config.SetupPkg.Syntax[0].Decls {
-		switch declaration := decl.(type) {
-		case *ast.GenDecl:
-			if it, ok := assertCopygenInterface(declaration); ok {
-				newCopygen = it
-				break
+	for _, astFile := range p.Config.SetupPkg.Syntax {
+		for _, decl := range astFile.Decls {
+			switch declaration := decl.(type) {
+			case *ast.GenDecl:
+				if it, ok := assertCopygenInterface(declaration); ok {
+					newCopygen = it
+
+					break
+				}
 			}
 		}
 	}
 
 	if newCopygen == nil {
-		return fmt.Errorf("the \"type Copygen interface\" could not be found in the setup file")
+		return fmt.Errorf("the \"type Copygen interface\" could not be found (in the setup file's go/types)")
 	}
 
 	// create models.Function objects.
