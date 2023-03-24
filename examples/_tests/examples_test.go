@@ -95,6 +95,11 @@ var (
 			ymlpath:  "_tests/multi/setup/setup.yml",
 			wantpath: "_tests/multi/copygen.go",
 		},
+		{
+			name:     "same",
+			ymlpath:  "_tests/same/setup/setup.yml",
+			wantpath: "_tests/same/setup/copygen.go",
+		},
 	}
 )
 

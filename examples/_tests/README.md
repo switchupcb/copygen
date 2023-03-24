@@ -16,4 +16,5 @@ The command line interface is straightforward. The loader uses a tested library.
 | Import    | Imports a package in the setup file, that the output file exists in. |
 | Multi     | Tests all types using multiple functions.                            |
 | Option    | Tests Generator and Function option-parsing.                         |
+| Same      | Generates an output file in the same directory as the setup file.    |
 

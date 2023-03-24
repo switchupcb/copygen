@@ -7,6 +7,7 @@ package domain
 import (
 	c "strconv"
 
+	domain "github.com/switchupcb/copygen/examples/_tests/import"
 	"github.com/switchupcb/copygen/examples/_tests/import/models"
 )
 
@@ -16,9 +17,9 @@ func Itoa(i int) string {
 	return c.Itoa(i)
 }
 
-// ModelsToDomain copies a *models.Account, *models.User to a *Account.
-func ModelsToDomain(tA *Account, fA *models.Account, fU *models.User) {
-	// *Account fields
+// ModelsToDomain copies a *models.Account, *models.User to a *domain.Account.
+func ModelsToDomain(tA *domain.Account, fA *models.Account, fU *models.User) {
+	// *domain.Account fields
 	tA.ID = fA.ID
 	tA.UserID = Itoa(fU.UserID)
 	tA.Name = fA.Name

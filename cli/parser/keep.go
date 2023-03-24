@@ -12,6 +12,7 @@ const convertOptionSplitAmount = 3
 
 // Keep removes ast.Nodes from an ast.File that will be kept in a generated output file.
 func (p *Parser) Keep(astFile *ast.File) error {
+	var foundCopygenInterface bool
 	var trash []*ast.Comment
 
 	for i := len(astFile.Decls) - 1; i > -1; i-- {
@@ -20,6 +21,7 @@ func (p *Parser) Keep(astFile *ast.File) error {
 
 			// keep all declaration objects in the setup file except for the `type Copygen interface`.
 			if _, ok := assertCopygenInterface(declaration); ok {
+				foundCopygenInterface = true
 
 				// remove from the `type Copygen interface` (from the slice).
 				astFile.Decls[i] = astFile.Decls[len(astFile.Decls)-1]
@@ -46,6 +48,10 @@ func (p *Parser) Keep(astFile *ast.File) error {
 
 	// Remove ast.Comments that will be parsed into options from the ast.File.
 	astRemoveComments(astFile, trash)
+
+	if !foundCopygenInterface {
+		return fmt.Errorf("the \"type Copygen interface\" could not be found (in the setup file's AST)")
+	}
 
 	return nil
 }
