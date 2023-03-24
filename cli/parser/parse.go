@@ -151,6 +151,10 @@ func Parse(gen *models.Generator) error {
 				}
 			}
 		}
+
+		if newCopygen != nil {
+			break
+		}
 	}
 
 	if newCopygen == nil {
