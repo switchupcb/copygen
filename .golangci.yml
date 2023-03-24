@@ -5,32 +5,35 @@ run:
 linters:
   enable-all: true
   disable:
-    - unused # The repository has no Application Life Cycle Management. Run manually prior to a release.
-    - deadcode # The repository has no Application Life Cycle Management. Run manually prior to a release.
     - gomnd # Run manually prior to a release.
     - gomoddirectives # The repository uses go modules in its interpreter functionality from a temporary tagged fork.
 
+    - cyclop 
+    - exhaustruct
+    - exhaustivestruct # exhausting
+    - forbidigo
+    - funlen # can't handle switch statement
+    - gochecknoglobals # No data race conditions
+    - gocognit
+    - goerr113 # errors used once
+    - gofumpt # too many false positives
     - lll
+    - nestif # can't handle cache
     - nlreturn
+    - unparam # generator function
+    - varnamelen # for loops
     - whitespace
     - wsl
-    - forbidigo
-    - gochecknoglobals # No data race conditions
-    - gofumpt # too many false positives
-    - exhaustivestruct # exhausting
-    - exhaustruct
-    - varnamelen # for loops
-    - funlen # can't handle switch statement
-    - nestif # can't handle cache
-    - goerr113 # errors used once
-    - cyclop 
-    - gocognit
 
-
+    - deadcode # deprecated
     - golint # deprecated
-    - scopelint # deprecated
+    - ifshort # deprecated
     - interfacer # deprecated
     - maligned # deprecated
+    - nosnakecase # deprecated
+    - scopelint # deprecated
+    - structcheck # deprecated
+    - varcheck # deprecated
 
   fast: false
 linters-settings:
@@ -42,3 +45,7 @@ linters-settings:
   wrapcheck:
     ignorePackageGlobs:
       - github.com/switchupcb/copygen/cli/generator/*
+  revive:
+    rules:
+      - name: unused-parameter
+        disabled: true
