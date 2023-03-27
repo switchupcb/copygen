@@ -1,11 +1,10 @@
 # Define where the code will be generated.
 generated:
   setup: ./setup.go
-  output: ../copygen.go
+  output: ./copygen.go
 
   # Define the optional custom templates used to generate the file (.go, .tmpl supported).
-  template: ../template/generate.go
-
+  # template: ./generate.go
 
 # Define how the matcher will work.
 matcher:
@@ -15,5 +14,5 @@ matcher:
     depth: 1      # Set the maximum depth to attempt automatic casting (default: 1)
 
 # Define custom options (which are passed to generator options) for customization.
-custom:
-  option: The possibilities are endless.
+# custom:
+#   option: The possibilities are endless.

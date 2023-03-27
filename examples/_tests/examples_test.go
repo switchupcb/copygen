@@ -38,6 +38,38 @@ var (
 		},
 		/*
 			{
+				name:     "cast-assert",
+				ymlpath:  "cast/assert/setup.yml",
+				wantpath: "cast/assert/copygen.go",
+			},
+			{
+				name:     "cast-convert",
+				ymlpath:  "cast/convert/setup.yml",
+				wantpath: "cast/convert/copygen.go",
+			},
+			{
+				name:     "cast-depth",
+				ymlpath:  "cast/depth/setup.yml",
+				wantpath: "cast/depth/copygen.go",
+			},
+			{
+				name:     "cast-expression",
+				ymlpath:  "cast/expression/setup.yml",
+				wantpath: "cast/expression/copygen.go",
+			},
+			{
+				name:     "cast-function",
+				ymlpath:  "cast/function/setup.yml",
+				wantpath: "cast/function/copygen.go",
+			},
+			{
+				name:     "cast-property",
+				ymlpath:  "cast/property/setup.yml",
+				wantpath: "cast/property/copygen.go",
+			},
+		*/
+		/*
+			{
 				name:     "deepcopy",
 				ymlpath:  "deepcopy/setup/setup.yml",
 				wantpath: "deepcopy/copygen.go",
@@ -68,13 +100,6 @@ var (
 			ymlpath:  "_tests/automap/setup/setup.yml",
 			wantpath: "_tests/automap/copygen.go",
 		},
-		/*
-			{
-				name:     "cast",
-				ymlpath:  "_tests/cast/setup/setup.yml",
-				wantpath: "_tests/cast/copygen.go",
-			},
-		*/
 		{
 			name:     "cyclic",
 			ymlpath:  "_tests/cyclic/setup/setup.yml",
