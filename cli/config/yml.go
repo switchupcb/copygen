@@ -51,6 +51,14 @@ func ParseYML(yml YML) *models.Generator {
 		Outpath: yml.Generated.Output,
 		Tempath: yml.Generated.Template,
 		Options: models.GeneratorOptions{
+			Matcher: models.MatcherOptions{
+				Skip:                         yml.Matcher.Skip,
+				AutoCast:                     yml.Matcher.Cast.Enabled,
+				CastDepth:                    yml.Matcher.Cast.Depth,
+				DisableAssignObjectInterface: yml.Matcher.Cast.Disabled.AssignObjectInterface,
+				DisableAssertInterfaceObject: yml.Matcher.Cast.Disabled.AssertInterfaceObject,
+				DisableConvert:               yml.Matcher.Cast.Disabled.Convert,
+			},
 			Custom: yml.Options,
 		},
 	}

@@ -39,6 +39,11 @@ func NoMatchBasic(tP Placeholder, fP Placeholder) {
 	// Placeholder fields
 }
 
+// NoMatchBasicAlias copies a bool to a Placeholder.
+func NoMatchBasicAlias(tP Placeholder, fb bool) {
+	// Placeholder fields
+}
+
 // NoMatchBasicExternal copies a *Placeholder to a external.Placeholder, *external.Placeholder, bool.
 func NoMatchBasicExternal(tP external.Placeholder, tP1 *external.Placeholder, tb bool, fP *Placeholder) {
 	// external.Placeholder fields

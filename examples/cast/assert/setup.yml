@@ -1,0 +1,22 @@
+# Define where the code will be generated.
+generated:
+  setup: ./setup.go
+  output: ./copygen.go
+
+  # Define the optional custom templates used to generate the file (.go, .tmpl supported).
+  # template: ./generate.go
+
+# Define how the matcher will work.
+matcher:
+  skip: false     # Skip the matcher (default: false).
+  cast:
+    enabled: true # Enable automatic casting (default: false).
+    depth: 1      # Set the maximum depth for automatic casting (default: 1)
+    disabled:
+      assignObjectInterface: false   # Disable assignment of objects to interfaces (default: false).
+      assertInterfaceObject: false   # Disable assertion of interfaces to objects (default: false).
+      convert: false                 # Disable type conversion (default: false).
+
+# Define custom options (which are passed to generator options) for customization.
+# custom:
+#   option: The possibilities are endless.

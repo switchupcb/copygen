@@ -10,7 +10,6 @@ The command line interface is straightforward. The loader uses a tested library.
 | :-------- | :------------------------------------------------------------------- |
 | Alias     | Uses an alias import (for a copied struct).                          |
 | Automap   | Uses the `automatch` option with a manual matcher option (`map`).    |
-| Cast      | Uses the `cast` option for direct type conversion.                   |
 | Cyclic    | Uses a nested struct (containing a field of the same type).          |
 | Duplicate | Defines two structs with duplicate definitions, but not names.       |
 | Import    | Imports a package in the setup file, that the output file exists in. |

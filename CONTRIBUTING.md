@@ -44,7 +44,7 @@ The `setup` file is parsed using an Abstract Syntax Tree. This tree contains the
 
 **Convert** options are defined **outside** of the `type Copygen Interface` and may apply to multiple functions. As a result, all `ast.Comments` must be parsed before `models.Function` and `models.Field` objects can be created. In order to do this, the `type Copygen Interface` is stored, but **NOT** analyzed until the `setup` file is traversed. 
 
-There are multiple ways to parse `ast.Comments` into `Options`, but **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. As a result, the most readable, efficient, and least error prone method of parsing `ast.Comments` into `Options` is to parse them when discovered; and assign them from a `CommentOptionMap` later. In addition, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
+There are multiple ways to parse `ast.Comments` into `Options`, but **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. As a result, the most readable, efficient, and least error prone method of parsing `ast.Comments` into `Options` is to parse them when discovered and assign them from a `CommentOptionMap` later. In addition, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
 
 #### Copygen Interface
 
@@ -64,7 +64,9 @@ Copygen supports three methods of generation for end-users _(developers)_: `.go`
 
 #### .go
 
-`.go` code generation allows users to generate code using the programming language they are familiar with. `.go` code generation works by allowing the end-user to specify **where** _the `.go` file containing the code generation algorithm_ is, then running the file _at runtime_. In order to do this, we must use an **interpreter**. Templates are interpreted by our [temporary yaegi fork](https://github.com/switchupcb/yaegi). `models` objects are extracted via reflection and loaded into the interpreter. Then, the interpreter interprets the provided `.go` template file _(specified by the user)_ to run the `Generate()` function.
+`.go` code generation allows users to generate code using the programming language they are familiar with. `.go` code generation works by allowing the end-user to specify **where** _the `.go` file containing the code generation algorithm_ is, then running the file _at runtime_. In order to do this, we must use an **interpreter**.
+
+Templates are interpreted by our [yaegi fork](https://github.com/switchupcb/yaegi). `models` objects are extracted via reflection and loaded into the interpreter. Then, the interpreter interprets the provided `.go` template file _(specified by the user)_ to run the `Generate()` function.
 
 #### .tmpl
 
@@ -72,20 +74,20 @@ Copygen supports three methods of generation for end-users _(developers)_: `.go`
 
 #### programmatic
 
-`programmatic` code generation allows users to generate code by using `copygen` as a third-party module. For more information, read the [program example README](/examples/program/README.md).
+`programmatic` code generation allows users to generate code by using `copygen` as a third-party module. For more information, read the [program example](/examples/program/README.md).
 
 ## Specification
 
 ### From vs. To
 
-From and To is used to denote the direction of a type or field. A from-field is assigned **to** a to-field. In contrast, one from-field can match many to-fields. As a result, **"From" comes before "To" when parsing** while **"To" comes before "From" in comparison**.
+From and To is used to denote the direction of a type or field. A from-field is assigned **to** a to-field. In contrast, one from-field can match many to-fields. As a result, **"From" comes before "To" when parsing** while **"To" comes before "From" when matching**.
 
 ### Variable Names
 
-| Variable | Description                                                                          |
-| :------- | :----------------------------------------------------------------------------------- |
-| from.*   | Variables preceded by from indicate from-functionality.                              |
-| to.*     | Variables preceded by to indicate to-functionality.                                  |
+| Variable | Description                                             |
+| :------- | :------------------------------------------------------ |
+| from.*   | Variables preceded by from indicate from-functionality. |
+| to.*     | Variables preceded by to indicate to-functionality.     |
 
 ### Comments
 
@@ -93,14 +95,14 @@ Comments follow [Effective Go](https://golang.org/doc/effective_go#commentary) a
 
 ### Why Pointers
 
-Contrary to the README, pointers aren't used — on Fields — as a performance optimization. Using pointers with Fields makes it less likely for a mistake to occur during the comparison of them. For example, using a for-copy loop on a `[]models.Field`:
+Contrary to the README, pointers aren't used — on `models.Fields` — as a performance optimization. Using pointers with `models.Fields` makes it less likely for a mistake to occur during their comparison. For example, using a for-copy loop on a `[]models.Field`:
 
 ```go
-// A copy of field is created with a separate pointer.
+// A copy of field is created with a distinct memory address.
 for _, field := range fields {
-   // fromField.To still points to the original field.
-   // fromField.From points to a field which is NOT the copied field (but has the same values).
-   if field == fromField.To {
+   // field.To still points to the original field's .To memory address.
+   // field.To.From points to the original field's memory address, which is NOT the copied field's memory address, even though both fields' fields have the same values.
+   if field == field.To.From {
       // never happens
       ...
    }
@@ -109,9 +111,9 @@ for _, field := range fields {
 
 ### Anti-patterns
 
-Using the `*models.Field` definition for a `models.Field`'s `Parent` field can be considered an anti-pattern. In the program, a `models.Type` specifically refers to the types in a function signature _(i.e `func(models.Account, models.User) *domain.Account`)_. While these types **are** fields _(which may contain other fields)_ , their actual `Type` properties are not relevant to `models.Field`. As a result, `models.Field` objects are pointed directly to maintain simplicity.
+Using the `*models.Field` definition for a `models.Field`'s `Parent` field can be considered an anti-pattern. In the program, a `models.Type` specifically refers to the types in a function signature _(i.e `func(models.Account, models.User) *domain.Account`)_. While these types **are** fields _(which may contain other fields)_ , their actual `Type` properties are not relevant to `models.Field`. As a result, `models.Field` objects are pointed directly to each other for simplicity.
 
-Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation`: `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program.
+Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation` since `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program for the end user.
 
 ## CI/CD
 
@@ -124,7 +126,9 @@ If you receive `File is not ... with -...`, use `golangci-lint run --disable-all
 #### Fieldalignment
 
 **Struct padding** aligns the fields of a struct to addresses in memory. The compiler does this to improve performance and prevent numerous issues on a system's architecture _(32-bit, 64-bit)_. As a result, misaligned fields add more memory-usage to a program, which can effect performance in a numerous amount of ways. For a simple explanation, view [Golang Struct Size and Memory Optimization](https://medium.com/techverito/golang-struct-size-and-memory-optimisation-b46b124f008d
-). Fieldalignment can be fixed using the [fieldalignment tool](https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/fieldalignment) which is installed using `go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest`.
+).
+
+Fieldalignment can be fixed using the [fieldalignment tool](https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/fieldalignment) which is installed using `go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest`.
 
 **ALWAYS COMMIT BEFORE USING `fieldalignment -fix ./cli/...`** as it may remove comments.
 
@@ -134,7 +138,6 @@ For information on testing, read [Tests](examples/_tests/).
 
 # Roadmap
 
-Focus on these features:
-   - Options, Matcher, Generator: `cast` option for [direct type conversions](https://go.dev/ref/spec#Conversions) _(as opposed to a convert function)_
+Implement the following features.
    - Generator: deepcopy
    - Parser: Fix Free-floating comments _(add structs in [`multi`](examples/_tests/multi/copygen.go) to test)_

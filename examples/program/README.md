@@ -4,7 +4,7 @@ Using Copygen programmatically allows you to implement custom loaders, matchers,
 
 ### Disclaimer
 
-Copygen uses a [GPLv3 License](../../README.md#license). An exception is provided for template and example files, which are licensed under the [MIT License](cli/generator/template/LICENSE.md). While this allows you to use the generator tool without restriction, **proprietary programmatic usage** of Copygen requires the purchase of a license exception. In order to purchase a license exception, please contact SwitchUpCB using the [Copygen License Exception Inquiry Form](https://switchupcb.com/copygen-license-exception/). For more information, please read [What Can I do?](../../README.md#what-can-i-do)
+Copygen uses a [GPLv3 License](../../README.md#license). An exception is provided for template and example files, which are licensed under the [MIT License](cli/generator/template/LICENSE.md). While this allows you to use the generator tool without restriction, **proprietary programmatic usage** of Copygen requires the purchase of a license exception. In order to purchase a license exception, please contact SwitchUpCB using the [Copygen License Exception Inquiry Form](https://switchupcb.com/copygen-license-exception/). For more information, read [What Can I do?](../../README.md#what-can-i-do)
 
 ## Standard
 

@@ -17,6 +17,7 @@ func main() {
 	code, err := env.Run()
 	if err != nil {
 		fmt.Printf("%v", err)
+
 		return
 	}
 
