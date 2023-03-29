@@ -27,12 +27,12 @@ func ParseConvert(option, value string) (*Option, error) {
 
 	funcRe, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred compiling the regex for the first field in the %s option: %q\n%w", CategoryConvert, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the function in the %s option: %q\n%w", CategoryConvert, option, err)
 	}
 
 	fieldRe, err := regexp.Compile("^" + splitoption[1] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred compiling the regex for the second field in the %s option: %q\n%w", CategoryConvert, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the from-field in the %s option: %q\n%w", CategoryConvert, option, err)
 	}
 
 	return &Option{
