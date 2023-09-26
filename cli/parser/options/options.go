@@ -55,7 +55,7 @@ func NewFieldOption(category, text string) (*Option, error) {
 }
 
 // SetFieldOptions sets a field's (and its subfields) options.
-func SetFieldOptions(field *models.Field, fieldoptions []*Option) {
+func SetFieldOptions(field *models.Field, fieldoptions []*Option, functionName string) {
 	for _, option := range fieldoptions {
 
 		switch option.Category {
@@ -70,7 +70,7 @@ func SetFieldOptions(field *models.Field, fieldoptions []*Option) {
 			SetTag(field, *option)
 
 		case CategoryConvert:
-			SetConvert(field, *option)
+			SetConvert(field, *option, functionName)
 
 		case CategoryDepth:
 			SetDepth(field, *option)
@@ -79,7 +79,7 @@ func SetFieldOptions(field *models.Field, fieldoptions []*Option) {
 			SetDeepcopy(field, *option)
 
 		case CategoryCustom:
-			SetConvert(field, *option)
+			SetConvert(field, *option, functionName)
 		}
 	}
 }

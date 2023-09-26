@@ -43,15 +43,18 @@ func ParseConvert(option, value string) (*Option, error) {
 }
 
 // SetConvert sets a field's convert option.
-func SetConvert(field *models.Field, option Option) {
+func SetConvert(field *models.Field, option Option, functionName string) {
 	// A convert option can only be set to a field once.
 	if field.Options.Convert != "" {
 		return
 	}
 
-	if option.Regex[1] != nil && option.Regex[1].MatchString(field.FullNameWithoutPointer("")) {
-		if value, ok := option.Value.(string); ok {
-			field.Options.Convert = value
+	if option.Regex[0] != nil && option.Regex[0].MatchString(functionName) {
+		if option.Regex[1] != nil && option.Regex[1].MatchString(field.FullNameWithoutPointer("")) {
+			if value, ok := option.Value.(string); ok {
+				field.Options.Convert = value
+			}
 		}
 	}
+
 }
