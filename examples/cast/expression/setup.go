@@ -1,6 +1,6 @@
 package expression
 
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	// cast int int * 2
 	ExprDouble(int) int

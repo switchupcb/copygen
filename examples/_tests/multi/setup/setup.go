@@ -9,7 +9,7 @@ import (
 // Placeholder represents a basic type.
 type Placeholder bool
 
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	NoMatchBasic(A Placeholder) (B Placeholder)
 	NoMatchBasicAlias(B bool) (B Placeholder)

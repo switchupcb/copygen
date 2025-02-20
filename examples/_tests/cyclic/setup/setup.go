@@ -7,7 +7,7 @@ import (
 	"github.com/switchupcb/copygen/examples/_tests/cyclic/models"
 )
 
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	ModelsToDomain(*models.Account, *models.User) *domain.Account
 	DuplicateCyclic(*duplicate.Account) *domain.Account

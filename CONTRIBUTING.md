@@ -2,7 +2,9 @@
 
 ## Contributor License Agreement
  
-Contributions to this project must be accompanied by a **Contributor License Agreement**. You or your employer retain the copyright to your contribution. This simply gives us permission to use and redistribute your contributions as part of the project.
+Contributions to this project must be accompanied by a **Contributor License Agreement**. 
+
+You or your employer retain the copyright to your contribution: Accepting this agreement gives us permission to use and redistribute your contributions as part of the project.
 
 ## Pull Requests
 
@@ -10,7 +12,7 @@ Pull requests must pass all [CI/CD](#cicd) measures and follow the [code specifi
 
 ## Domain
 
-The domain of Copygen lies in field manipulation. The program uses provided types to determine the fields we must assign. In this context, a `Type` refers to _the types used in a function (as parameters or results)_ rather than a type used to define variables.
+The domain of Copygen lies in field manipulation. The program uses provided types to determine the fields we must assign. In the context of this domain, a `Type` refers to _the types used in a function (as parameters or results) [e.g., `func example(x TypeX) y TypeY`]_, and not a type used to define variables (e.g., `type example string`).
 
 ## Project Structure
 
@@ -36,17 +38,21 @@ _Read [program](examples/program/README.md) for an overview of the application's
 
 A `setup` file's abstract syntax tree is traversed once, but involves four processes.
 
-#### Keep
+#### 1. Keep
 
-The `setup` file is parsed using an Abstract Syntax Tree. This tree contains the `type Copygen Interface` but also code that must be **kept** in the generated `output` file. For example, the package declaration, file imports, convert functions, and [custom types](README.md#custom-types) all exist _outside_ of the `type Copygen Interface`. Instead of storing these declarations and attempting to regenerate them, we simply discard declarations — from the `setup` file's AST — that won't be kept: In this case, the `type Copygen Interface` and `ast.Comments` (that refer to `Options`).
+The `setup` file is parsed using an Abstract Syntax Tree. 
 
-#### Options
+This tree contains the `type Copygen Interface` but also code that must be **kept** in the generated `output` file. 
 
-**Convert** options are defined **outside** of the `type Copygen Interface` and may apply to multiple functions. As a result, all `ast.Comments` must be parsed before `models.Function` and `models.Field` objects can be created. In order to do this, the `type Copygen Interface` is stored, but **NOT** analyzed until the `setup` file is traversed. 
+For example, the package declaration, file imports, convert functions, and [custom types](README.md#custom-types) all exist _outside_ of the `type Copygen Interface`. Instead of storing these declarations and attempting to regenerate them, we simply discard declarations — from the `setup` file's AST — that won't be kept: In this case, the `type Copygen Interface` and `ast.Comments` (that refer to `Options`).
 
-There are multiple ways to parse `ast.Comments` into `Options`, but **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. As a result, the most readable, efficient, and least error prone method of parsing `ast.Comments` into `Options` is to parse them when discovered and assign them from a `CommentOptionMap` later. In addition, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
+#### 2. Options
 
-#### Copygen Interface
+**Convert** options are defined **outside** of the `type Copygen Interface` and may apply to multiple functions. So, all `ast.Comments` must be parsed before `models.Function` and `models.Field` objects can be created. In order to do this, the `type Copygen Interface` is stored, but **NOT** analyzed until the `setup` file is traversed. 
+
+There are multiple ways to parse `ast.Comments` into `Options`, but **convert** options require the name of their respective **convert** functions _(which can't be parsed from comments)_. So, the most readable, efficient, and least error prone method of parsing `ast.Comments` into `Options` is to parse them when discovered and assign them from a `CommentOptionMap` later. In addition, regex compilation is expensive — [especially in Go](https://github.com/mariomka/regex-benchmark#performance) — and avoided by only compiling unique comments once.
+
+#### 3. Copygen Interface
 
 The `type Copygen interface` is parsed to setup the `models.Function` and `models.Field` objects used in the `Matcher` and `Generator`.
 - [go/types Contents (Types, A -> B)](https://go.googlesource.com/example/+/HEAD/gotypes#contents)
@@ -54,7 +60,7 @@ The `type Copygen interface` is parsed to setup the `models.Function` and `model
 - [go/types Func (Signature)](https://pkg.go.dev/go/types#Func)
 - [go/types Types](https://pkg.go.dev/go/types#pkg-types)
 
-#### Imports
+#### 4. Imports
 
 The `go/types` package provides all of the other important information _**except**_ for alias import names. In order to assign aliased or non-aliased import names to `models.Field`, the imports of the `setup` file are mapped to a package path, then assigned to fields prior to matching.
 
@@ -64,23 +70,29 @@ Copygen supports three methods of generation for end-users _(developers)_: `.go`
 
 #### .go
 
-`.go` code generation allows users to generate code using the programming language they are familiar with. `.go` code generation works by allowing the end-user to specify **where** _the `.go` file containing the code generation algorithm_ is, then running the file _at runtime_. In order to do this, we must use an **interpreter**.
+`.go` code generation allows users to generate code using the programming language they are familiar with. 
 
-Templates are interpreted by our [yaegi fork](https://github.com/switchupcb/yaegi). `models` objects are extracted via reflection and loaded into the interpreter. Then, the interpreter interprets the provided `.go` template file _(specified by the user)_ to run the `Generate()` function.
+`.go` code generation works by allowing the end-user to specify **where** _the `.go` file containing the code generation algorithm_ is, then running the file _at runtime_. We must use an **interpreter** to provide this functionality.
+
+`.go` templates are interpreted by a [yaegi fork](https://github.com/switchupcb/yaegi). 
+1. `models` objects are extracted via reflection and loaded into the interpreter. 
+2. Then, the interpreter interprets the provided `.go` template file _(specified by the user)_ to run the `Generate()` function.
 
 #### .tmpl
 
-`.tmpl` code generation allows users to generate code using [`text/templates`](https://pkg.go.dev/text/template). `.tmpl` code generation works by allowing the end-user to specify **where** _the `.tmpl` file containing the code generation algorithm_ is, then parsing and executing the file _at runtime_.
+`.tmpl` code generation allows users to generate code using [`text/templates`](https://pkg.go.dev/text/template). 
+
+`.tmpl` code generation works by allowing the end-user to specify **where** _the `.tmpl` file containing the code generation algorithm_ is, then parsing and executing the file _at runtime_.
 
 #### programmatic
 
-`programmatic` code generation allows users to generate code by using `copygen` as a third-party module. For more information, read the [program example](/examples/program/README.md).
+`programmatic` code generation lets users generate code by using `copygen` as a third-party module. For more information, read the [program example](/examples/program/README.md).
 
 ## Specification
 
 ### From vs. To
 
-From and To is used to denote the direction of a type or field. A from-field is assigned **to** a to-field. In contrast, one from-field can match many to-fields. As a result, **"From" comes before "To" when parsing** while **"To" comes before "From" when matching**.
+From and To is used to denote the direction of a type or field. A from-field is assigned **to** a to-field. In contrast, one from-field can match many to-fields. So, **"From" comes before "To" when parsing** while **"To" comes before "From" when matching**.
 
 ### Variable Names
 
@@ -111,7 +123,7 @@ for _, field := range fields {
 
 ### Anti-patterns
 
-Using the `*models.Field` definition for a `models.Field`'s `Parent` field can be considered an anti-pattern. In the program, a `models.Type` specifically refers to the types in a function signature _(i.e `func(models.Account, models.User) *domain.Account`)_. While these types **are** fields _(which may contain other fields)_ , their actual `Type` properties are not relevant to `models.Field`. As a result, `models.Field` objects are pointed directly to each other for simplicity.
+Using the `*models.Field` definition for a `models.Field`'s `Parent` field can be considered an anti-pattern. In the program, a `models.Type` specifically refers to the types in a function signature _(i.e `func(models.Account, models.User) *domain.Account`)_. While these types **are** fields _(which may contain other fields)_ , their actual `Type` properties are not relevant to `models.Field`. So, `models.Field` objects are pointed directly to each other for simplicity.
 
 Using the `*models.Field` definition for a `models.Field`'s `From` and `To` fields can be placed into a `type FieldRelation` since `From` and `To` is only assigned in the matcher. While either method allows you to reference a `models.Field`'s respective `models.Field`, directly pointing `models.Field` objects adds more customizability to the program for the end user.
 
@@ -125,7 +137,7 @@ If you receive `File is not ... with -...`, use `golangci-lint run --disable-all
 
 #### Fieldalignment
 
-**Struct padding** aligns the fields of a struct to addresses in memory. The compiler does this to improve performance and prevent numerous issues on a system's architecture _(32-bit, 64-bit)_. As a result, misaligned fields add more memory-usage to a program, which can effect performance in a numerous amount of ways. For a simple explanation, view [Golang Struct Size and Memory Optimization](https://medium.com/techverito/golang-struct-size-and-memory-optimisation-b46b124f008d
+**Struct padding** aligns the fields of a struct to addresses in memory. The compiler does this to improve performance and prevent numerous issues on a system's architecture _(32-bit, 64-bit)_. So, misaligned fields add more memory-usage to a program, which can effect performance in a numerous amount of ways. For a simple explanation, view [Golang Struct Size and Memory Optimization](https://medium.com/techverito/golang-struct-size-and-memory-optimisation-b46b124f008d
 ).
 
 Fieldalignment can be fixed using the [fieldalignment tool](https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/fieldalignment) which is installed using `go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest`.

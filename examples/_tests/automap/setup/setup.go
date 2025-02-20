@@ -6,7 +6,7 @@ import (
 	"github.com/switchupcb/copygen/examples/automatch/models"
 )
 
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	// map models.Account.ID domain.Account.ID
 	// map models.Account.Name domain.Account.Name

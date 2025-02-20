@@ -56,7 +56,7 @@ generated:
 Map the from-field `models.User.UserID` to to-fields with the regex pattern `domain.Account.ID`. Map the from-field `models.Account.Name` to to-fields with the regex pattern `domain.Account.Name`. Map the from-field `models.Account.Email` to to-fields with the regex pattern `domain.Account.Email`.
 
 ```go
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	// map models.User.UserID domain.Account.ID
 	// map models.Account.Name domain.Account.Name

@@ -128,7 +128,7 @@ var (
 	}
 )
 
-// TestExamples tests calls cli.Run() in a similar manner to calling the CLI,
+// TestExamples tests calls cli.Run() similarly to calling the CLI,
 // checking for a valid output.
 func TestExamples(t *testing.T) {
 	checkwd(t)

@@ -6,7 +6,7 @@ import (
 	data "github.com/switchupcb/copygen/examples/main/models"
 )
 
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	ModelsToDomain(*data.Account, *data.User) *service.Account
 }

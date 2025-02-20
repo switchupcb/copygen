@@ -6,7 +6,7 @@ import (
 	"github.com/switchupcb/copygen/examples/automatch/models"
 )
 
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	// depth domain.Account 2
 	// depth models.User 1

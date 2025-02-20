@@ -8,7 +8,7 @@ import (
 	"github.com/switchupcb/copygen/examples/tmpl/models"
 )
 
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	// custom see table in the README for options
 	ModelsToDomain(*models.Account, *models.User) *domain.Account

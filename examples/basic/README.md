@@ -49,7 +49,7 @@ generated:
 The automatcher will match fields from `models.Account` to `domain.Account` and the `UserID string` field to a `domain.Account.UserID` that has a definition of a `string`.
 
 ```go
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	Basic(A *models.Account, UserID string) *domain.Account
 }

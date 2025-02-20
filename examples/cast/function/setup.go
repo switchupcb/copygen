@@ -1,6 +1,6 @@
 package function
 
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	// cast Custom string .String()
 	TypeFuncString(Custom) string
