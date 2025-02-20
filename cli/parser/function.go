@@ -10,7 +10,7 @@ import (
 )
 
 // parseFunctions parses the AST for functions in the setup file.
-// astcopygen is used to assign options from *ast.Comments.
+// The copygen *ast.InterfaceType is used to assign options from *ast.Comments.
 func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, error) {
 	numMethods := len(copygen.Methods.List)
 	if numMethods == 0 {

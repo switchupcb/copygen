@@ -11,7 +11,7 @@ import (
 const (
 	CategoryConvert = "convert"
 
-	// FormatConvert represents an end-user facing format for convert options.
+	// FormatConvert represents an end-user facing format for a convert option.
 	// <option> refers to the "convert" option.
 	FormatConvert = "<option>:<whitespaces><regex><whitespaces><regex>"
 )
@@ -38,7 +38,7 @@ func ParseConvert(option, value string) (*Option, error) {
 	return &Option{
 		Category: CategoryConvert,
 		Regex:    map[int]*regexp.Regexp{0: funcRe, 1: fieldRe},
-		Value:    value,
+		Value:    value, // string
 	}, nil
 }
 

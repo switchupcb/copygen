@@ -43,7 +43,7 @@ func ParseAutomatch(option string) (*Option, error) {
 	return &Option{
 		Category: CategoryAutomatch,
 		Regex:    map[int]*regexp.Regexp{0: fieldRe},
-		Value:    true,
+		Value:    true, // bool
 	}, nil
 }
 
@@ -61,7 +61,7 @@ func SetAutomatch(field *models.Field, option Option) {
 const (
 	CategoryMap = "map"
 
-	// FormatMap represents an end-user facing format for map options.
+	// FormatMap represents an end-user facing format for a map option.
 	// <option> refers to the "map" option.
 	FormatMap = "<option>:<whitespaces><regex><whitespaces><field>"
 )
@@ -77,14 +77,14 @@ func ParseMap(option string) (*Option, error) {
 
 	fromRe, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred compiling the regex for the from field in the %s option: %q\n%w", CategoryMap, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the from-field in the %s option: %q\n%w", CategoryMap, option, err)
 	}
 
-	// map options are compared in the matcher
+	// map options are compared in the matcher.
 	return &Option{
 		Category: CategoryMap,
 		Regex:    map[int]*regexp.Regexp{0: fromRe},
-		Value:    splitoption[1],
+		Value:    splitoption[1], // string
 	}, nil
 }
 
@@ -104,7 +104,7 @@ func SetMap(field *models.Field, option Option) {
 const (
 	CategoryTag = "tag"
 
-	// FormatTag represents an end-user facing format for tag options.
+	// FormatTag represents an end-user facing format for a tag option.
 	// <option> refers to the "tag" option.
 	FormatTag = "<option>:<whitespaces><regex><whitespaces><tag>"
 )
@@ -126,7 +126,7 @@ func ParseTag(option string) (*Option, error) {
 	return &Option{
 		Category: CategoryTag,
 		Regex:    map[int]*regexp.Regexp{0: fieldRe},
-		Value:    splitoption[1],
+		Value:    splitoption[1], // string
 	}, nil
 }
 
