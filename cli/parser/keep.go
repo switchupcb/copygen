@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"strings"
@@ -50,7 +51,7 @@ func (p *Parser) Keep(astFile *ast.File) error {
 	astRemoveComments(astFile, trash)
 
 	if !foundCopygenInterface {
-		return fmt.Errorf("the \"type Copygen interface\" could not be found (in the setup file's AST)")
+		return errors.New("the \"type Copygen interface\" could not be found (in the setup file's AST)")
 	}
 
 	return nil

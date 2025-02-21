@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/types"
@@ -25,7 +26,13 @@ func (p *Parser) parseFunctions(copygen *ast.InterfaceType) ([]models.Function, 
 		// create models.Type objects.
 		fieldoptions, manual := getNodeOptions(copygen.Methods.List[i], p.Options.CommentOptionMap)
 		fieldoptions = append(fieldoptions, p.Options.ConvertOptions...)
-		parsed, err := parseTypes(method.(*types.Func))
+
+		methodFuncs, ok := method.(*types.Func)
+		if !ok {
+			return nil, errors.New("method object is not a Go types function")
+		}
+
+		parsed, err := parseTypes(methodFuncs)
 		if err != nil {
 			return nil, fmt.Errorf("an error occurred while parsing the types of function %q.\n%w", method.Name(), err)
 		}

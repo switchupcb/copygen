@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"go/types"
+	"strconv"
 	"strings"
 
 	"github.com/fatih/structtag"
@@ -63,7 +64,7 @@ func parseField(typ types.Type) *models.Field {
 		field.VariableName = "." + alphastring(elemfield.Definition)
 
 	case *types.Array:
-		field.Definition = "[" + fmt.Sprint(x.Len()) + "]" + collectedDefinition(parseField(x.Elem()))
+		field.Definition = "[" + strconv.FormatInt(x.Len(), 10) + "]" + collectedDefinition(parseField(x.Elem()))
 
 	case *types.Slice:
 		field.Definition = models.CollectionSlice + collectedDefinition(parseField(x.Elem()))

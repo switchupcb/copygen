@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -48,7 +49,7 @@ func (e *Environment) parseArgs() error {
 	flag.Parse()
 
 	if !strings.HasSuffix(*ymlpath, ".yml") {
-		return fmt.Errorf("you must specify a .yml configuration file using -yml")
+		return errors.New("you must specify a .yml configuration file using -yml")
 	}
 
 	e.YMLPath = *ymlpath

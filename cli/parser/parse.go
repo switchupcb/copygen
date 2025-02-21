@@ -3,6 +3,7 @@ package parser
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -158,7 +159,7 @@ func Parse(gen *models.Generator) error {
 	}
 
 	if newCopygen == nil {
-		return fmt.Errorf("the \"type Copygen interface\" could not be found (in the setup file's go/types)")
+		return errors.New("the \"type Copygen interface\" could not be found (in the setup file's go/types)")
 	}
 
 	// create models.Function objects.

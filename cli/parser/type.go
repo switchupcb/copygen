@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"fmt"
+	"errors"
 	"go/types"
 	"strconv"
 
@@ -19,7 +19,7 @@ func parseTypes(method *types.Func) (parsedTypes, error) {
 
 	signature, ok := method.Type().(*types.Signature)
 	if !ok {
-		return result, fmt.Errorf("impossible")
+		return result, errors.New("impossible")
 	}
 
 	result.fromTypes = parseTypeField(signature.Params())
