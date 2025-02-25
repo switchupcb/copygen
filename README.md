@@ -34,10 +34,10 @@ Each example has a **README**.
 | :------------------------------- | :--------------------------------------- |
 | main                             | The default example.                     |
 | [basic](examples/basic/)         | Matches a `basic` type to a field.       |
-| [automatch](examples/automatch/) | Uses the automatch feature with depth.   |
-| [map](examples/map/)             | Uses the manual map feature.             |
-| [tag](examples/tag/)             | Uses the manual tag feature.             |
-| [cast](examples/cast/)           | Uses the cast option modifier.           |
+| [automatch](examples/automatch/) | Uses the automatch matcher with depth.   |
+| [map](examples/map/)             | Uses the manual map matcher.             |
+| [tag](examples/tag/)             | Uses the manual tag matcher.             |
+| [cast](examples/cast/)           | Uses the cast modifier.                  |
 | deepcopy _(Roadmap)_             | Uses the deepcopy option.                |
 | [error](examples/error/)         | Uses `.go` templates to return an error. |
 | [tmpl](examples/tmpl/)           | Uses `.tmpl` templates.                  |
@@ -148,9 +148,13 @@ Use comments to specify options for Copygen functions: Do **NOT** add empty line
 
 _[View a reference on Regex.](https://cheatography.com/davechild/cheat-sheets/regular-expressions/)_
 
+A matching option _(e.g. `map`, `automatch`, `tag`)_ determines whether the field will be matched to another field, but a modifying option _(e.g. `convert`, `cast`)_ is only applied when a field is matched.
+
 #### Convert
 
-Use the `convert function field` option to control how a type or field is copied within a function.
+Use the `convert function field` option to control how a type or field is copied within a function when the field is matched.
+
+
 ```go
 /* Define the function and field this converter is applied to using regex. */
 // convert .* models.User.UserID
@@ -164,9 +168,9 @@ _This example converts the `models.User.UserID` value using `Itoa` within all fu
 
 #### Cast
 
-Use the `matcher: cast` generator option to enable automatic casting. 
+Use the `setup.yml` `matcher: cast` generator option to enable automatic casting when a field is matched.
 
-Use the `cast from to modifier` option to perform direct type assertion, conversion, expressions, function usage, and property usage with a matched field. 
+Use the `setup.go` `cast from to modifier` option to perform direct type assertion, conversion, expressions, function usage, and property usage with a matched field. 
 
 For more information, read the [`cast` example](/examples/cast/).
 

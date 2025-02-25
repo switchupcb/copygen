@@ -6,6 +6,7 @@ type Copygen interface {
 	ConvertBool(bool) Placeholder
 	// cast Placeholder bool
 	ConvertPlaceholder(Placeholder) bool
-	// map Placeholder bool -cast
+	// map Placeholder bool
+	// cast Placeholder bool
 	MapConvertPlaceholder(Placeholder) bool
 }

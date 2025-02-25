@@ -23,7 +23,7 @@ const (
 
 	// FormatAutomatch represents an end-user facing format for automatch options.
 	// <option> refers to the "automatch" option.
-	FormatAutomatch = "<option>:<whitespaces><regex>"
+	FormatAutomatch = "<option><whitespaces><regex>"
 )
 
 // ParseAutomatch parses a automatch option.
@@ -63,7 +63,7 @@ const (
 
 	// FormatMap represents an end-user facing format for a map option.
 	// <option> refers to the "map" option.
-	FormatMap = "<option>:<whitespaces><regex><whitespaces><field>"
+	FormatMap = "<option><whitespaces><regex><whitespaces><field>"
 )
 
 // ParseMap parses a map option.
@@ -106,7 +106,7 @@ const (
 
 	// FormatTag represents an end-user facing format for a tag option.
 	// <option> refers to the "tag" option.
-	FormatTag = "<option>:<whitespaces><regex><whitespaces><tag>"
+	FormatTag = "<option><whitespaces><regex><whitespaces><tag>"
 )
 
 // ParseTag parses a tag option.

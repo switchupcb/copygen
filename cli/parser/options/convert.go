@@ -13,7 +13,7 @@ const (
 
 	// FormatConvert represents an end-user facing format for a convert option.
 	// <option> refers to the "convert" option.
-	FormatConvert = "<option>:<whitespaces><regex><whitespaces><regex>"
+	FormatConvert = "<option><whitespaces><regex><whitespaces><regex>"
 )
 
 // ParseConvert parses a convert option.

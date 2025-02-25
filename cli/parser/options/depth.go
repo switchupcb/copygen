@@ -14,7 +14,7 @@ const (
 
 	// FormatDepth represents an end-user facing format for a depth option.
 	// <option> refers to the "depth" option.
-	FormatDepth = "<option>:<whitespaces><regex><whitespaces><int>"
+	FormatDepth = "<option><whitespaces><regex><whitespaces><int>"
 )
 
 // ParseDepth parses a depth option.

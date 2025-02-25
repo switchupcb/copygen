@@ -13,7 +13,7 @@ These examples use the `cast from to modifier` option to modify fields before as
 
 ## Modifiers
 
-Copygen handles assignability of fields with identical field names and definitions by default. When you must match fields using identical field names, but different definitions, enable Copygen type casting: This option modifies the matcher to match fields using an automatic or provided modifier.
+Copygen handles assignability of fields with identical field names and definitions by default. Enable Copygen type casting when you must match fields using identical field names, but different definitions: This option modifies the matcher to match fields using an automatic or provided modifier.
 
 _Typecasting is not a feature in the Go programming language._
 
@@ -88,6 +88,6 @@ Use the `-cast modifier` function option modifier to enable casting for the resp
 
 The `cast` option is a **modifier**: It modifies the matching algorithm or assignment of fields. It can't be used to match fields in a direct manner _(unlike `automatch`, `map`, and `tag`)_.
 
-When a `modifier` is **NOT** provided, Copygen will perform **automatic typecasting** using type assertion or conversion at the specified depth level. Otherwise, the definition of the **provided modifier** will be evaluated to match fields. 
+Copygen will perform **automatic typecasting** using type assertion or conversion at the specified depth level when a `modifier` is **NOT** provided. Otherwise, the definition of the **provided modifier** is evaluated to match fields. 
 
 _For example, `map .* package.Type.Field -cast .String()` matches from-fields with the name `Field` (from `package.Type.Field`) and definition `string` (since `.String()` returns `string`) when depth is greater than 0._

@@ -13,11 +13,11 @@ const (
 
 	// FormatCast represents an end-user facing format for a cast option.
 	// <option> refers to the "cast" option.
-	FormatCast = "<option>:<whitespaces><regex><whitespaces><field><whitespaces><modifier>"
+	FormatCast = "<option><whitespaces><regex><whitespaces><field><whitespaces><modifier>"
 
 	// FormatModifierCast represents an end-user facing format for a cast option modifier.
 	// <option> refers to the "cast" option.
-	FormatModifierCast = "-<option>:<whitespaces><regex><whitespaces><modifier>"
+	FormatModifierCast = "-<option><whitespaces><regex><whitespaces><modifier>"
 )
 
 // ParseCast parses a cast option.
