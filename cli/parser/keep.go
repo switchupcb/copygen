@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"strings"
@@ -10,7 +11,7 @@ import (
 
 const convertOptionSplitAmount = 3
 
-// Keep removes ast.Nodes from an ast.File that will be kept in a generated output file.
+// Keep removes ast.Nodes from an ast.File that are kept in a generated output file.
 func (p *Parser) Keep(astFile *ast.File) error {
 	var foundCopygenInterface bool
 	var trash []*ast.Comment
@@ -46,11 +47,11 @@ func (p *Parser) Keep(astFile *ast.File) error {
 		}
 	}
 
-	// Remove ast.Comments that will be parsed into options from the ast.File.
+	// Remove ast.Comments that are parsed into options from the ast.File.
 	astRemoveComments(astFile, trash)
 
 	if !foundCopygenInterface {
-		return fmt.Errorf("the \"type Copygen interface\" could not be found (in the setup file's AST)")
+		return errors.New("the \"type Copygen interface\" could not be found (in the setup file's AST)")
 	}
 
 	return nil

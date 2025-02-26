@@ -56,7 +56,7 @@ generated:
 Specify a depth-level of two for the subfields of `domain.Account`. Specify a depth-level of 1 for the `models.User` field. Keep in mind that not specifying a depth-level for `models.Account` would result in the same outcome, as Copygen uses a maximum depth by default.
 
 ```go
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	// depth domain.Account 2
 	// depth models.User 1

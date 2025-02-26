@@ -3,6 +3,7 @@ package generator
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/format"
 	"os"
@@ -99,7 +100,7 @@ func GenerateCode(gen *models.Generator) (string, error) {
 
 	fn, ok := v.Interface().(func(*models.Generator) (string, error))
 	if !ok {
-		return "", fmt.Errorf("the template function `Generate` could not be type asserted. Is it a func(*models.Generator) (string, error)?")
+		return "", errors.New("the template function `Generate` could not be type asserted. Is it a func(*models.Generator) (string, error)?")
 	}
 
 	content, err := fn(gen)

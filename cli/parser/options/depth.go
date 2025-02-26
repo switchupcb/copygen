@@ -12,9 +12,9 @@ import (
 const (
 	CategoryDepth = "depth"
 
-	// FormatDepth represents an end-user facing format for depth options.
+	// FormatDepth represents an end-user facing format for a depth option.
 	// <option> refers to the "depth" option.
-	FormatDepth = "<option>:<whitespaces><regex><whitespaces><int>"
+	FormatDepth = "<option><whitespaces><regex><whitespaces><int>"
 )
 
 // ParseDepth parses a depth option.
@@ -39,7 +39,7 @@ func ParseDepth(option string) (*Option, error) {
 	return &Option{
 		Category: CategoryDepth,
 		Regex:    map[int]*regexp.Regexp{0: re},
-		Value:    depth,
+		Value:    depth, // int
 	}, nil
 }
 

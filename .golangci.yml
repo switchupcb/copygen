@@ -5,19 +5,20 @@ run:
 linters:
   enable-all: true
   disable:
-    - gomnd # Run manually prior to a release.
     - gomoddirectives # The repository uses go modules in its interpreter functionality from a temporary tagged fork.
 
-    - cyclop 
+    - cyclop
+    - depguard
+    - err113 # future implementation
     - exhaustruct
-    - exhaustivestruct # exhausting
     - forbidigo
     - funlen # can't handle switch statement
     - gochecknoglobals # No data race conditions
     - gocognit
-    - goerr113 # errors used once
     - gofumpt # too many false positives
+    - intrange
     - lll
+    - mnd
     - nestif # can't handle cache
     - nlreturn
     - unparam # generator function
@@ -25,15 +26,8 @@ linters:
     - whitespace
     - wsl
 
-    - deadcode # deprecated
-    - golint # deprecated
-    - ifshort # deprecated
-    - interfacer # deprecated
-    - maligned # deprecated
-    - nosnakecase # deprecated
-    - scopelint # deprecated
-    - structcheck # deprecated
-    - varcheck # deprecated
+    - tenv # deprecated
+
 
   fast: false
 linters-settings:
@@ -45,6 +39,10 @@ linters-settings:
   wrapcheck:
     ignorePackageGlobs:
       - github.com/switchupcb/copygen/cli/generator/*
+  gocritic:
+   settings:
+    ifElseChain:
+        minThreshold: 3
   revive:
     rules:
       - name: unused-parameter

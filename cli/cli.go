@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -14,10 +15,9 @@ import (
 
 // Environment represents the copygen environment.
 type Environment struct {
-	YMLPath        string // The .yml file path used as a configuration file.
-	Output         bool   // Whether to print the generated code to stdout.
-	Write          bool   // Whether to write the generated code to a file.
-	DisableMatcher bool   // Whether to disable the matcher.
+	YMLPath string // The .yml file path used as a configuration file.
+	Output  bool   // Whether to print the generated code to stdout.
+	Write   bool   // Whether to write the generated code to a file.
 }
 
 // CLI runs copygen from a Command Line Interface and returns the exit status.
@@ -41,22 +41,20 @@ func CLI() int {
 func (e *Environment) parseArgs() error {
 	// define the command line arguments.
 	var (
-		ymlpath        = flag.String("yml", "", "The path to the .yml flag used for code generation (from the current working directory).")
-		output         = flag.Bool("o", false, "Use -o to print generated code to the screen.")
-		disablematcher = flag.Bool("xm", false, "Use -xm to disable the matcher.")
+		ymlpath = flag.String("yml", "", "The path to the .yml flag used for code generation (from the current working directory).")
+		output  = flag.Bool("o", false, "Use -o to print generated code to the screen.")
 	)
 
 	// parse the command line arguments.
 	flag.Parse()
 
 	if !strings.HasSuffix(*ymlpath, ".yml") {
-		return fmt.Errorf("you must specify a .yml configuration file using -yml")
+		return errors.New("you must specify a .yml configuration file using -yml")
 	}
 
 	e.YMLPath = *ymlpath
 	e.Output = *output
 	e.Write = true
-	e.DisableMatcher = *disablematcher
 
 	return nil
 }
@@ -75,7 +73,7 @@ func (e *Environment) Run() (string, error) {
 	}
 
 	// The matcher is run on the parsed data (to create the objects used during generation).
-	if !e.DisableMatcher {
+	if !gen.Options.Matcher.Skip {
 		if err = matcher.Match(gen); err != nil {
 			return "", fmt.Errorf("%w", err)
 		}

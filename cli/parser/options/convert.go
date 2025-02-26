@@ -11,9 +11,9 @@ import (
 const (
 	CategoryConvert = "convert"
 
-	// FormatConvert represents an end-user facing format for convert options.
+	// FormatConvert represents an end-user facing format for a convert option.
 	// <option> refers to the "convert" option.
-	FormatConvert = "<option>:<whitespaces><regex><whitespaces><regex>"
+	FormatConvert = "<option><whitespaces><regex><whitespaces><regex>"
 )
 
 // ParseConvert parses a convert option.
@@ -27,18 +27,18 @@ func ParseConvert(option, value string) (*Option, error) {
 
 	funcRe, err := regexp.Compile("^" + splitoption[0] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred compiling the regex for the first field in the %s option: %q\n%w", CategoryConvert, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the function in the %s option: %q\n%w", CategoryConvert, option, err)
 	}
 
 	fieldRe, err := regexp.Compile("^" + splitoption[1] + "$")
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred compiling the regex for the second field in the %s option: %q\n%w", CategoryConvert, option, err)
+		return nil, fmt.Errorf("an error occurred compiling the regex for the from-field in the %s option: %q\n%w", CategoryConvert, option, err)
 	}
 
 	return &Option{
 		Category: CategoryConvert,
 		Regex:    map[int]*regexp.Regexp{0: funcRe, 1: fieldRe},
-		Value:    value,
+		Value:    value, // string
 	}, nil
 }
 

@@ -55,7 +55,7 @@ generated:
 Match all fields _(.*)_ according to their respective `api` tag.
 
 ```go
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	// tag .* api
 	ModelsToDomain(*models.Account, *models.User) *domain.Account

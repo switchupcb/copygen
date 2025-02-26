@@ -6,7 +6,7 @@ import (
 	"github.com/switchupcb/copygen/examples/map/models"
 )
 
-// Copygen defines the functions that will be generated.
+// Copygen defines the functions that are generated.
 type Copygen interface {
 	A(*models.Account)
 	B(*models.User)

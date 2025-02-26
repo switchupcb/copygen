@@ -1,14 +1,18 @@
 # Program
 
-Using Copygen programmatically allows you to implement custom loaders, matchers, and generator functions, or pass `.yml` files in a similar manner to the command line tool.
+Using Copygen programmatically allows you to implement custom loaders, matchers, and generator functions, or pass `.yml` files similarly to the command line tool.
 
 ### Disclaimer
 
-Copygen uses a [GPLv3 License](../../README.md#license). An exception is provided for template and example files, which are licensed under the [MIT License](cli/generator/template/LICENSE.md). While this allows you to use the generator tool without restriction, **proprietary programmatic usage** of Copygen requires the purchase of a license exception. In order to purchase a license exception, please contact SwitchUpCB using the [Copygen License Exception Inquiry Form](https://switchupcb.com/copygen-license-exception/). For more information, please read [What Can I do?](../../README.md#what-can-i-do)
+Copygen uses a [AGPLv3 License](../../README.md#license). 
+
+An exception is provided for template and example files, which are licensed under the [MIT License](cli/generator/template/LICENSE.md). While this license lets you use the generator tool without restriction, **proprietary programmatic usage** of Copygen requires the purchase of a license exception. 
+
+You can receive a license exception for Copygen by contacting SwitchUpCB using the [Copygen License Exception Inquiry Form](https://switchupcb.com/copygen-license-exception/).
 
 ## Standard
 
-The `Run()` function operates in a similar manner to using `copygen -yml path` in your command line interface.
+The `Run()` function operates similarly to using `copygen -yml path` in your command line interface.
 
 ### Define the Environment
 
@@ -65,7 +69,7 @@ if err != nil {
 return code, nil
 ```
 
-Copygen's standard functions (`Parse`, `Match`, `Generate`) accept a [`model.Generator`](https://pkg.go.dev/github.com/switchupcb/copygen/cli/models#Generator). This allows the implementation of any configuration method (including `LoadYML`) with a Copygen standard function, as long as that method returns a valid `model.Generator`. In a similar manner, custom `Parse`, `Match`, and `Generate` functions can be used with Copygen standard functions interchangeably.
+Copygen's standard functions (`Parse`, `Match`, `Generate`) accept a [`model.Generator`](https://pkg.go.dev/github.com/switchupcb/copygen/cli/models#Generator). This lets the implementation of any configuration method (including `LoadYML`) with a Copygen standard function, as long as that method returns a valid `model.Generator`. similarly, custom `Parse`, `Match`, and `Generate` functions can be used with Copygen standard functions interchangeably.
 
 ### Configuration
 
@@ -90,11 +94,13 @@ Read the [documentation](https://pkg.go.dev/github.com/switchupcb/copygen/cli/ma
 
 ### Generator
 
-The generator package exports three methods of code generation by default. The easiest way to customize the generator is by using [templates](../../README.md#templates). For more information, read the [documentation](https://pkg.go.dev/github.com/switchupcb/copygen/cli/generator#section-documentation).
+The generator package exports three methods of code generation by default. The easiest way to customize the generator is by using [templates](../../README.md#templates).
+
+For more information, read the [documentation](https://pkg.go.dev/github.com/switchupcb/copygen/cli/generator#section-documentation).
 
 ## Debug
 
-The [`debug.go`](https://pkg.go.dev/github.com/switchupcb/copygen/cli/models/debug#pkg-functions) file provides helper functions during debugging. To view an Abstract Syntax Tree, use a [GoAst Viewer](https://yuroyoro.github.io/goast-viewer/index.html).
+The [`debug.go`](https://pkg.go.dev/github.com/switchupcb/copygen/cli/models/debug#pkg-functions) file provides helper functions during debugging. Use a [GoAst Viewer](https://yuroyoro.github.io/goast-viewer/index.html) to view an Abstract Syntax Tree.
 
 ### PrintFieldGraph
 

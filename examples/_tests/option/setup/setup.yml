@@ -6,6 +6,14 @@ generated:
   # Define the optional custom templates used to generate the file (.go, .tmpl supported).
   template: ../template/generate.go
 
+
+# Define how the matcher will work.
+matcher:
+  skip: false     # Determine whether the matcher should be skipped (default: false).
+  cast:
+    enabled: true # Determine whether automatic casting is enabled (default: false).
+    depth: 1      # Set the maximum depth to attempt automatic casting (default: 1)
+
 # Define custom options (which are passed to generator options) for customization.
 custom:
   option: The possibilities are endless.

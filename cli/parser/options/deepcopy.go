@@ -19,7 +19,7 @@ func ParseDeepcopy(option string) (*Option, error) {
 	return &Option{
 		Category: CategoryDeepcopy,
 		Regex:    map[int]*regexp.Regexp{0: re},
-		Value:    true,
+		Value:    true, // bool
 	}, nil
 }
 
