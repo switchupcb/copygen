@@ -2,7 +2,6 @@ package options
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 
@@ -53,7 +52,7 @@ func SetCast(field *models.Field, option Option) {
 
 // ParseModifierCast parses a cast option modifier.
 func ParseModifierCast(option string) (*Option, error) {
-	log.Printf("FEATURE TODO: ParseModifierCast: option %q", option)
+	fmt.Printf("FEATURE TODO: ParseModifierCast: option %q", option)
 
 	// - cast modifier...
 
