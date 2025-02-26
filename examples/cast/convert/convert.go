@@ -12,4 +12,4 @@ package convert
 //
 // To assign a boolean variable to a Placeholder variable, type conversion must occur.
 // placeholder = Placeholder(boolean)
-type Placeholder bool
+type Placeholder interface{}

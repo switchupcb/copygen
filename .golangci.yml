@@ -39,6 +39,10 @@ linters-settings:
   wrapcheck:
     ignorePackageGlobs:
       - github.com/switchupcb/copygen/cli/generator/*
+  gocritic:
+   settings:
+    ifElseChain:
+        minThreshold: 3
   revive:
     rules:
       - name: unused-parameter

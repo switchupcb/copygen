@@ -2,6 +2,7 @@ package options
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -41,23 +42,20 @@ func ParseCast(option string) (*Option, error) {
 	}, nil
 }
 
-// ParseModifierCast parses a cast option modifier.
-func ParseModifierCast(option string) (*Option, error) {
-	// - cast
-	// - cast modifier...
-
-	return nil, nil
-}
-
 // SetCast sets a field's cast option.
 func SetCast(field *models.Field, option Option) {
-	// if IsMatchOptionSet(*field) {
-	// 	return
-	// }
+	if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutPointer("")) {
+		if value, ok := option.Value.([]string); ok {
+			field.Options.Cast = "(" + value[0] + ")" + value[1]
+		}
+	}
+}
 
-	// if option.Regex[0] != nil && option.Regex[0].MatchString(field.FullNameWithoutPointer("")) {
-	// 	if value, ok := option.Value.(string); ok {
-	// 		field.Options.Map = value
-	// 	}
-	// }
+// ParseModifierCast parses a cast option modifier.
+func ParseModifierCast(option string) (*Option, error) {
+	log.Printf("FEATURE TODO: ParseModifierCast: option %q", option)
+
+	// - cast modifier...
+
+	return nil, nil //nolint:nilnil
 }

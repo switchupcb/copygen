@@ -2,11 +2,15 @@ package convert
 
 // Copygen defines the functions that are generated.
 type Copygen interface {
-	// cast bool Placeholder
-	ConvertBool(bool) Placeholder
-	// cast Placeholder bool
-	ConvertPlaceholder(Placeholder) bool
-	// map Placeholder bool
-	// cast Placeholder bool
+	// cast convert.Placeholder bool
+	NoConvertPlaceholder(Placeholder) bool
+	// cast bool convert.Placeholder
+	NoConvertBool(bool) Placeholder
+	// map convert.Placeholder bool
+	// cast convert.Placeholder bool
 	MapConvertPlaceholder(Placeholder) bool
+
+	// map convert.Placeholder int
+	// cast convert.Placeholder int + 5
+	MapConvertPlaceholderWithExpression(Placeholder) int
 }

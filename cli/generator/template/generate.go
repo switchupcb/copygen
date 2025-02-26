@@ -110,6 +110,8 @@ func generateAssignment(toType models.Type) string {
 			fromField := toField.From
 			if fromField.Options.Convert != "" {
 				assign.WriteString(fromField.Options.Convert + "(" + fromField.FullVariableName("") + ")\n")
+			} else if fromField.Options.Cast != "" {
+				assign.WriteString(fromField.FullVariableName("") + "." + fromField.Options.Cast + "\n")
 			} else {
 				switch {
 				case toField.FullDefinition() == fromField.FullDefinition():

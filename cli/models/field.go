@@ -62,6 +62,9 @@ type Field struct {
 
 // FieldOptions represent options for a Field.
 type FieldOptions struct {
+	// The function the field is casted with.
+	Cast string
+
 	// The function the field is converted with (as a parameter).
 	Convert string
 
@@ -91,6 +94,7 @@ func (f *Field) Deepcopy(cyclic map[*Field]bool) *Field {
 		Definition:   f.Definition,
 		Underlying:   f.Underlying,
 		Options: FieldOptions{
+			Cast:      f.Options.Cast,
 			Convert:   f.Options.Convert,
 			Map:       f.Options.Map,
 			Tag:       f.Options.Tag,
