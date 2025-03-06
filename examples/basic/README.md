@@ -36,7 +36,7 @@ type Account struct {
 ## YML
 
 ```yml
-# Define where the code will be generated.
+# Define where the code is generated.
 generated:
   setup: ./setup.go
   output: ../copygen.go

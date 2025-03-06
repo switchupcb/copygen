@@ -90,14 +90,14 @@ type User struct {
 
 The `models.Account` and `models.User` fields will be copied to `domain.Account` fields.
 
-### Step 2. Configure the setup files.
+### Step 2. Configure the setup files
 
 You set up Copygen with a `YML` and `GO` file.
 
 #### setup.yml
 
 ```yml
-# Define where the code will be generated.
+# Define where the code is generated.
 generated:
   setup: ./setup.go
   output: ../copygen.go
@@ -148,7 +148,7 @@ Use comments to specify options for Copygen functions: Do **NOT** add empty line
 
 _[View a reference on Regex.](https://cheatography.com/davechild/cheat-sheets/regular-expressions/)_
 
-A matching option _(e.g. `map`, `automatch`, `tag`)_ determines whether the field will be matched to another field, but a modifying option _(e.g. `convert`, `cast`)_ is only applied when a field is matched.
+A matching option _(e.g. `map`, `automatch`, `tag`)_ determines whether the field is matched to another field, but a modifying option _(e.g. `convert`, `cast`)_ is only applied when a field is matched.
 
 #### Convert
 
@@ -176,7 +176,7 @@ For more information, read the [`cast` example](/examples/cast/).
 
 ### Step 3. Use the Command Line
 
-Install the command line utility: Copygen is an executable, not a dependency, so use `go install`.
+Install the command line utility: Copygen.
 
 ```
 go install github.com/switchupcb/copygen@latest
@@ -195,7 +195,6 @@ go install github.com/switchupcb/copygen@v0.4.1
 Run the executable with given options.
 
 ```bash
-# Specify the .yml configuration file.
 copygen -yml path/to/yml
 ```
 

@@ -205,7 +205,7 @@ func collectedDefinition(collected *models.Field) string {
 	// a generated file's package == setup file's package.
 	//
 	// when the field is defined in the setup file (i.e `Collection`),
-	// it will be parsed with the setup file's package (i.e `copygen.Collection`).
+	// it is parsed with the setup file's package (i.e `copygen.Collection`).
 	//
 	// do NOT reference it by package in the generated file (i.e `Collection`).
 	if collected.Import == setupPkgPath {
